@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="e-Rapot">
-    <link rel="apple-touch-icon" href="icon-192.png">
+    <link rel="apple-touch-icon" href="icon-512.png">
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
@@ -87,7 +87,7 @@
             <div class="p-4 border-b border-slate-800 flex flex-col gap-3 relative shrink-0">
                 <button onclick="toggleSidebar()" class="md:hidden absolute top-4 right-4 text-slate-400 hover:text-red-400"><i class="fas fa-times text-xl"></i></button>
                 <div class="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-700 rounded-xl flex items-center justify-center text-white shadow-lg mx-auto">
-                    <i class="fas fa-mosque text-xl"></i>
+                    <i class="fas fa-mosque text-xl"></i>                 
                 </div>
                 <div class="text-center">
                     <h1 id="side-nama-sekolah" class="font-black text-[13px] text-slate-100 tracking-tight leading-tight">Memuat...</h1>
@@ -724,15 +724,15 @@ ATURAN PENTING:
 Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan di luar HTML.`;
 
             try {
-                // Proxy via Cloudflare Worker (agar tidak diblokir CORS)
-                const WORKER_URL = "GANTI_DENGAN_URL_WORKER_ANDA"; // ← Isi setelah deploy Worker
-                const response = await fetch(WORKER_URL, {
+                // Gemini API (Gratis)
+                const GEMINI_API_KEY = "AIzaSyByAHNVkE6zBa5nMuCk-5y068nON5wI9m0";
+                const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+                const response = await fetch(GEMINI_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
-                        model: "claude-sonnet-4-20250514",
-                        max_tokens: 4000,
-                        messages: [{ role: "user", content: prompt }]
+                        contents: [{ parts: [{ text: prompt }] }],
+                        generationConfig: { maxOutputTokens: 8000, temperature: 0.7 }
                     })
                 });
 
@@ -741,7 +741,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
 
                 if (!response.ok) throw new Error(data.error?.message || 'API Error');
 
-                const rawText = data.content.map(b => b.text || '').join('');
+                const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
                 // Bersihkan dari backtick markdown jika ada
                 const cleanHtml = rawText.replace(/```html|```/g, '').trim();
 
