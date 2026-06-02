@@ -767,6 +767,7 @@
                             <button onclick="generateSoalAI()" id="btn-generate-ai" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs py-3 rounded-lg transition shadow-lg mt-2 flex justify-center items-center gap-2">
                                 <i class="fas fa-magic"></i> Generate Soal dengan AI
                             </button>
+                            <button onclick="resetGeminiKey()" class="w-full bg-slate-800 hover:bg-red-900 text-slate-400 hover:text-red-400 border border-slate-700 hover:border-red-700 font-bold text-xs py-2 rounded-lg transition mt-1 flex justify-center items-center gap-2"><i class="fas fa-key mr-1"></i> Ganti / Reset API Key Gemini</button>
                         </div>
                         <div class="lg:col-span-2 bg-slate-900 rounded-xl border border-slate-800 shadow-sm flex flex-col" style="min-height:600px;">
                             <div class="p-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/50 rounded-t-xl">
@@ -3732,7 +3733,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                     GEMINI_API_KEY = inputKey;
                     localStorage.setItem('gemini_api_key', GEMINI_API_KEY);
                 }
-                const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+                const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
                 const response = await fetch(GEMINI_URL, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -3779,6 +3780,11 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             const out = document.getElementById('ai-soal-output').innerText;
             if (!out || out.includes('Belum ada soal')) return Swal.fire('Info', 'Belum ada soal untuk disalin.', 'info');
             navigator.clipboard.writeText(out).then(() => { Swal.fire('Disalin!', 'Teks soal berhasil disalin ke Clipboard. Bisa langsung di-paste ke Word/dokumen.', 'success'); });
+        }
+
+        function resetGeminiKey() {
+            localStorage.removeItem('gemini_api_key');
+            Swal.fire({ title: 'API Key Dihapus', text: 'API Key Gemini berhasil dihapus. Klik Generate Soal untuk memasukkan key baru.', icon: 'success', confirmButtonColor: '#4f46e5', background: '#1e293b', color: '#f8fafc' });
         }
 
         function cetakSoalAI() {
@@ -7033,7 +7039,7 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
                     localStorage.setItem('gemini_api_key', GEMINI_API_KEY);
                 }
 
-                const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+                const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
                 const response = await fetch(GEMINI_URL, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
