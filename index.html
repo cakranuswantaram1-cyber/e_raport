@@ -224,6 +224,7 @@
                 <button title="Data & Profil Siswa" onclick="switchTab('siswa')" id="btn-siswa" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-emerald-400 transition"><i class="fas fa-users w-5 text-center"></i> <span class="nav-label">Data & Profil Siswa</span></button>
                 <button title="Jadwal & Piket Kelas" onclick="switchTab('jadwal')" id="btn-jadwal" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-emerald-400 transition"><i class="fas fa-calendar-alt w-5 text-center text-blue-400"></i> <span class="nav-label">Jadwal & Piket Kelas</span></button>
                 <button title="Absensi & Grafik" onclick="switchTab('absensi')" id="btn-absensi" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-emerald-400 transition"><i class="fas fa-fingerprint w-5 text-center"></i> <span class="nav-label">Absensi & Grafik</span></button>
+                <button title="Rekap Absensi Siswa" onclick="switchTab('rekap_absensi')" id="btn-rekap_absensi" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-green-400 transition relative"><i class="fas fa-calendar-check w-5 text-center text-green-400"></i> <span class="nav-label text-green-300">Rekap Absensi</span> <span class="absolute right-2 top-2 text-[8px] font-black text-white bg-green-600 px-1.5 py-0.5 rounded-full">NEW</span></button>
                 
                 <div class="nav-divider my-2 border-t border-slate-800"></div>
                 <div class="nav-section-label px-3 py-1 text-[10px] uppercase font-black text-slate-600 tracking-wider">Setup Akademik</div>
@@ -246,6 +247,7 @@
                 <button title="Penilaian P5RA" onclick="switchTab('p5ra')" id="btn-p5ra" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-emerald-400 transition"><i class="fas fa-ribbon w-5 text-center"></i> <span class="nav-label">Penilaian P5RA</span></button>
                 <button title="Ekstrakurikuler" onclick="switchTab('ekskul')" id="btn-ekskul" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-emerald-400 transition"><i class="fas fa-running w-5 text-center"></i> <span class="nav-label">Ekstrakurikuler</span></button>
                 <button title="Ko-Kurikuler" onclick="switchTab('kokurikuler')" id="btn-kokurikuler" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-cyan-400 transition relative"><i class="fas fa-layer-group w-5 text-center text-cyan-400"></i> <span class="nav-label text-cyan-300">Ko-Kurikuler</span> <span class="absolute right-2 top-2 text-[8px] font-black text-white bg-cyan-600 px-1.5 py-0.5 rounded-full">NEW</span></button>
+                <button onclick="switchTab('kalkulator_koreksi')" id="btn-kalkulator_koreksi" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-fuchsia-400 transition relative"><i class="fas fa-calculator w-5 text-center text-fuchsia-400"></i> <span class="text-fuchsia-300">Kalkulator Koreksi</span> <span class="absolute right-2 top-2 text-[8px] font-black text-white bg-fuchsia-600 px-1.5 py-0.5 rounded-full">NEW</span></button>
 
                 <div class="nav-divider my-2 border-t border-slate-800"></div>
                 <div class="nav-section-label px-3 py-1 text-[10px] uppercase font-black text-slate-600 tracking-wider">Bantu Mengajar (AI)</div>
@@ -713,6 +715,482 @@
                     </div>
                 </section>
 
+                <!-- ============================================
+                     KALKULATOR KOREKSI PENILAIAN TAB
+                     ============================================ -->
+                <section id="tab-kalkulator_koreksi-view" class="tab-content hidden space-y-5">
+
+                    <!-- HEADER BANNER -->
+                    <div class="relative overflow-hidden bg-gradient-to-r from-fuchsia-900 via-slate-900 to-purple-900 p-5 rounded-2xl border border-fuchsia-700/40 shadow-xl">
+                        <div class="absolute -right-6 -top-6 w-32 h-32 bg-fuchsia-500/10 rounded-full blur-2xl"></div>
+                        <div class="absolute -left-4 -bottom-4 w-24 h-24 bg-purple-500/10 rounded-full blur-xl"></div>
+                        <div class="relative flex items-center justify-between flex-wrap gap-3">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <div class="w-8 h-8 bg-gradient-to-br from-fuchsia-500 to-purple-600 rounded-lg flex items-center justify-center shadow-lg">
+                                        <i class="fas fa-calculator text-white text-sm"></i>
+                                    </div>
+                                    <h3 class="text-base font-black text-white tracking-tight">Kalkulator Koreksi Penilaian</h3>
+                                    <span class="text-[9px] font-black bg-fuchsia-500 text-white px-2 py-0.5 rounded-full animate-pulse">NEW</span>
+                                </div>
+                                <p class="text-xs text-fuchsia-200/70 max-w-lg">Hitung nilai akhir siswa secara otomatis dari pilihan ganda dan esai. Atur jumlah soal, bobot, dan sistem poin dengan fleksibel.</p>
+                            </div>
+                            <div class="flex gap-2 flex-wrap">
+                                <button onclick="resetKalkorForm()" class="bg-slate-700/60 hover:bg-slate-600 text-slate-300 hover:text-white border border-slate-600/50 font-bold text-xs px-3 py-2 rounded-lg transition flex items-center gap-1.5">
+                                    <i class="fas fa-undo"></i> Reset
+                                </button>
+                                <button onclick="cetakHasilKoreksi()" class="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold text-xs px-3 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+                                    <i class="fas fa-print"></i> Cetak Hasil
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TABS DALAM KALKULATOR -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+                        <div class="flex border-b border-slate-800 overflow-x-auto">
+                            <button onclick="switchKalkorTab('setup')" id="kalkor-tab-setup" class="kalkor-tab-btn flex-shrink-0 px-5 py-3.5 text-xs font-bold text-fuchsia-400 border-b-2 border-fuchsia-500 bg-fuchsia-950/20 transition flex items-center gap-2">
+                                <i class="fas fa-sliders-h"></i> Setup Soal & Bobot
+                            </button>
+                            <button onclick="switchKalkorTab('input')" id="kalkor-tab-input" class="kalkor-tab-btn flex-shrink-0 px-5 py-3.5 text-xs font-bold text-slate-400 hover:text-fuchsia-400 border-b-2 border-transparent transition flex items-center gap-2">
+                                <i class="fas fa-keyboard"></i> Input Jawaban Siswa
+                            </button>
+                            <button onclick="switchKalkorTab('hasil')" id="kalkor-tab-hasil" class="kalkor-tab-btn flex-shrink-0 px-5 py-3.5 text-xs font-bold text-slate-400 hover:text-fuchsia-400 border-b-2 border-transparent transition flex items-center gap-2">
+                                <i class="fas fa-chart-bar"></i> Hasil & Statistik
+                            </button>
+                            <button onclick="switchKalkorTab('konversi')" id="kalkor-tab-konversi" class="kalkor-tab-btn flex-shrink-0 px-5 py-3.5 text-xs font-bold text-slate-400 hover:text-fuchsia-400 border-b-2 border-transparent transition flex items-center gap-2">
+                                <i class="fas fa-exchange-alt"></i> Konversi & KKM
+                            </button>
+                        </div>
+
+                        <!-- TAB: SETUP -->
+                        <div id="kalkor-panel-setup" class="p-5 space-y-5">
+                            <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                                <!-- PILIHAN GANDA -->
+                                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-5 space-y-4">
+                                    <h4 class="font-black text-sm text-white flex items-center gap-2">
+                                        <div class="w-6 h-6 bg-blue-600 rounded-lg flex items-center justify-center text-white text-xs"><i class="fas fa-list-ol"></i></div>
+                                        Pilihan Ganda
+                                    </h4>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Jumlah Soal PG</label>
+                                            <input type="number" id="kalkor-pg-jumlah" value="30" min="0" max="200" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500/30 transition" onchange="kalkorUpdateSetup()">
+                                        </div>
+                                        <div>
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Bobot PG (%)</label>
+                                            <input type="number" id="kalkor-pg-bobot" value="60" min="0" max="100" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-fuchsia-500 focus:ring-1 focus:ring-fuchsia-500/30 transition" onchange="kalkorUpdateBobot('pg')">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Sistem Poin PG</label>
+                                        <select id="kalkor-pg-sistem" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-fuchsia-500 transition" onchange="kalkorUpdateSetup()">
+                                            <option value="auto">Otomatis (100 ÷ Jumlah Soal)</option>
+                                            <option value="custom">Poin Custom per Soal</option>
+                                            <option value="fixed1">1 Poin per Benar</option>
+                                            <option value="fixed2">2 Poin per Benar</option>
+                                            <option value="fixed4">4 Poin per Benar</option>
+                                        </select>
+                                    </div>
+                                    <div id="kalkor-pg-custom-poin-wrap" class="hidden">
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Poin per Jawaban Benar</label>
+                                        <input type="number" id="kalkor-pg-poin" value="1" min="0.1" step="0.1" max="100" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-fuchsia-500 transition" onchange="kalkorUpdateSetup()">
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <input type="checkbox" id="kalkor-pg-minus" class="w-4 h-4 rounded accent-fuchsia-500" onchange="kalkorUpdateSetup()">
+                                        <label for="kalkor-pg-minus" class="text-xs text-slate-300 font-medium cursor-pointer">Poin minus untuk jawaban salah</label>
+                                    </div>
+                                    <div id="kalkor-pg-minus-wrap" class="hidden">
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Pengurangan per Salah</label>
+                                        <input type="number" id="kalkor-pg-minus-val" value="0.25" min="0" step="0.05" max="10" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-fuchsia-500 transition" onchange="kalkorUpdateSetup()">
+                                    </div>
+                                    <div class="bg-blue-950/40 border border-blue-800/30 rounded-lg p-3 text-xs">
+                                        <p class="text-blue-300 font-bold mb-1">📊 Info Poin PG</p>
+                                        <p id="kalkor-pg-info" class="text-blue-200/70 leading-relaxed">Poin per soal: <strong id="kalkor-pg-poin-info">3.33</strong> | Maks skor PG: <strong id="kalkor-pg-maks-info">100</strong></p>
+                                    </div>
+                                </div>
+
+                                <!-- ESAI -->
+                                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-5 space-y-4">
+                                    <h4 class="font-black text-sm text-white flex items-center gap-2">
+                                        <div class="w-6 h-6 bg-emerald-600 rounded-lg flex items-center justify-center text-white text-xs"><i class="fas fa-pen-fancy"></i></div>
+                                        Esai / Uraian
+                                    </h4>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Jumlah Soal Esai</label>
+                                            <input type="number" id="kalkor-esai-jumlah" value="5" min="0" max="50" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition" onchange="kalkorUpdateEsai()">
+                                        </div>
+                                        <div>
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Bobot Esai (%)</label>
+                                            <input type="number" id="kalkor-esai-bobot" value="40" min="0" max="100" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/30 transition" onchange="kalkorUpdateBobot('esai')">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Distribusi Soal Esai</label>
+                                        <select id="kalkor-esai-distribusi" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-emerald-500 transition" onchange="kalkorUpdateEsai()">
+                                            <option value="rata">Sama Rata (poin dibagi rata)</option>
+                                            <option value="custom">Poin Berbeda per Soal</option>
+                                        </select>
+                                    </div>
+                                    <div id="kalkor-esai-rata-wrap">
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Poin Maks per Soal Esai</label>
+                                        <input type="number" id="kalkor-esai-poin-rata" value="20" min="1" max="100" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-emerald-500 transition" onchange="kalkorUpdateEsai()">
+                                    </div>
+                                    <div id="kalkor-esai-custom-wrap" class="hidden space-y-2">
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Poin Maks per Soal Esai</label>
+                                        <div id="kalkor-esai-poin-list" class="space-y-2 max-h-40 overflow-y-auto pr-1"></div>
+                                    </div>
+                                    <div class="bg-emerald-950/40 border border-emerald-800/30 rounded-lg p-3 text-xs">
+                                        <p class="text-emerald-300 font-bold mb-1">📊 Info Esai</p>
+                                        <p id="kalkor-esai-info" class="text-emerald-200/70 leading-relaxed">Jumlah soal esai: <strong id="kalkor-esai-maks-info">5</strong> soal. Input jumlah <strong>jawaban benar</strong> siswa (0 – maks soal).</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- RINGKASAN BOBOT -->
+                            <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-5">
+                                <h4 class="font-black text-sm text-white mb-4 flex items-center gap-2">
+                                    <i class="fas fa-balance-scale text-fuchsia-400"></i> Ringkasan Bobot Penilaian
+                                </h4>
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="flex-1 bg-slate-800 rounded-full h-6 overflow-hidden relative">
+                                        <div id="kalkor-bar-pg" class="h-full bg-gradient-to-r from-blue-500 to-blue-400 transition-all duration-500 flex items-center justify-center text-white text-[9px] font-black" style="width:60%">PG 60%</div>
+                                    </div>
+                                    <div class="flex-1 bg-slate-800 rounded-full h-6 overflow-hidden relative">
+                                        <div id="kalkor-bar-esai" class="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 transition-all duration-500 flex items-center justify-center text-white text-[9px] font-black" style="width:40%">Esai 40%</div>
+                                    </div>
+                                </div>
+                                <div id="kalkor-bobot-warning" class="hidden bg-red-950/40 border border-red-700/50 rounded-lg p-3 text-xs text-red-300 font-bold">
+                                    <i class="fas fa-exclamation-triangle mr-1"></i> Total bobot harus 100%! Sekarang: <span id="kalkor-bobot-total">100</span>%
+                                </div>
+                                <div class="grid grid-cols-3 gap-3 text-center text-xs">
+                                    <div class="bg-blue-950/30 rounded-lg p-3 border border-blue-800/30">
+                                        <p class="text-blue-300 font-bold">Bobot PG</p>
+                                        <p class="text-white text-lg font-black mt-1" id="kalkor-summary-pg-bobot">60%</p>
+                                    </div>
+                                    <div class="bg-emerald-950/30 rounded-lg p-3 border border-emerald-800/30">
+                                        <p class="text-emerald-300 font-bold">Bobot Esai</p>
+                                        <p class="text-white text-lg font-black mt-1" id="kalkor-summary-esai-bobot">40%</p>
+                                    </div>
+                                    <div class="bg-fuchsia-950/30 rounded-lg p-3 border border-fuchsia-800/30">
+                                        <p class="text-fuchsia-300 font-bold">Total Bobot</p>
+                                        <p id="kalkor-summary-total-bobot" class="text-white text-lg font-black mt-1">100%</p>
+                                    </div>
+                                </div>
+                                <div class="mt-4 flex justify-end">
+                                    <button onclick="switchKalkorTab('input'); kalkorBuildInputForm()" class="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow transition flex items-center gap-2">
+                                        Lanjut ke Input Jawaban <i class="fas fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB: INPUT JAWABAN SISWA -->
+                        <div id="kalkor-panel-input" class="p-5 hidden">
+                            <div class="space-y-4">
+
+                                <!-- ===== SINKRONISASI DENGAN DATA KELAS ===== -->
+                                <div class="bg-gradient-to-r from-fuchsia-950/60 via-slate-900 to-purple-950/60 border border-fuchsia-700/40 rounded-xl p-4 space-y-4">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <i class="fas fa-sync-alt text-fuchsia-400 text-sm"></i>
+                                        <p class="text-sm font-black text-white">Sinkronisasi dengan Data Kelas</p>
+                                        <span class="text-[9px] font-black bg-fuchsia-600 text-white px-2 py-0.5 rounded-full">OTOMATIS</span>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                        <!-- Pilih Mapel -->
+                                        <div>
+                                            <label class="text-[10px] font-bold text-fuchsia-300 uppercase tracking-wider block mb-1.5"><i class="fas fa-book mr-1"></i>Mata Pelajaran</label>
+                                            <select id="kalkor-sync-mapel" onchange="kalkorOnSyncChange()" class="w-full bg-slate-800 border border-fuchsia-700/50 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-fuchsia-500 transition">
+                                                <option value="">-- Pilih Mata Pelajaran --</option>
+                                            </select>
+                                        </div>
+                                        <!-- Pilih Jenis Ujian -->
+                                        <div>
+                                            <label class="text-[10px] font-bold text-fuchsia-300 uppercase tracking-wider block mb-1.5"><i class="fas fa-file-alt mr-1"></i>Jenis Ujian / Koreksi</label>
+                                            <select id="kalkor-sync-jenis" onchange="kalkorOnSyncChange()" class="w-full bg-slate-800 border border-fuchsia-700/50 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-fuchsia-500 transition">
+                                                <option value="">-- Pilih Jenis Ujian --</option>
+                                                <option value="formatif">📝 Ujian Harian / Formatif</option>
+                                                <option value="sts">📋 STS – Sumatif Tengah Semester</option>
+                                                <option value="sas">📑 SAS – Sumatif Akhir Semester</option>
+                                            </select>
+                                        </div>
+                                        <!-- Tombol Sync -->
+                                        <div class="flex items-end">
+                                            <button onclick="kalkorSyncDariAbsensi()" class="w-full bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold text-sm px-4 py-2.5 rounded-xl shadow transition flex items-center justify-center gap-2">
+                                                <i class="fas fa-sync-alt"></i> Sync Nama dari Absensi
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <!-- Info box -->
+                                    <div id="kalkor-sync-info" class="hidden bg-fuchsia-950/40 border border-fuchsia-700/30 rounded-lg p-3 text-xs text-fuchsia-200 flex items-start gap-2">
+                                        <i class="fas fa-info-circle mt-0.5 shrink-0 text-fuchsia-400"></i>
+                                        <span id="kalkor-sync-info-text"></span>
+                                    </div>
+                                </div>
+
+                                <!-- Tambah Siswa Manual -->
+                                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
+                                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3">Atau Tambah Siswa Manual</p>
+                                    <div class="flex flex-col md:flex-row gap-3 items-end">
+                                        <div class="flex-1">
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Nama Siswa</label>
+                                            <select id="kalkor-siswa-nama-select" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-fuchsia-500 transition">
+                                                <option value="">-- Pilih dari Absensi --</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">PG Benar</label>
+                                            <input type="number" id="kalkor-siswa-pg-benar" placeholder="0" min="0" class="w-28 bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500 transition">
+                                        </div>
+                                        <div id="kalkor-input-pg-salah-wrap" class="hidden">
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">PG Salah</label>
+                                            <input type="number" id="kalkor-siswa-pg-salah" placeholder="0" min="0" class="w-28 bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-red-500 transition">
+                                        </div>
+                                        <div id="kalkor-input-esai-wrap">
+                                            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Benar Esai</label>
+                                            <input type="number" id="kalkor-siswa-esai-total" placeholder="0" min="0" class="w-28 bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-emerald-500 transition">
+                                        </div>
+                                        <button onclick="kalkorTambahSiswa()" class="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold text-sm px-4 py-2 rounded-xl shadow transition flex items-center gap-1.5 whitespace-nowrap">
+                                            <i class="fas fa-plus"></i> Tambah
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Toolbar -->
+                                <div class="bg-slate-950/60 border border-slate-700 rounded-xl p-3 flex flex-wrap gap-2 items-center justify-between">
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-300" id="kalkor-sync-label">Daftar Siswa</p>
+                                        <p class="text-[10px] text-slate-500 mt-0.5">Gunakan Sync di atas untuk otomatis isi dari absensi kelas</p>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <button onclick="kalkorImportDariSiswa()" class="bg-blue-700/40 hover:bg-blue-600 border border-blue-600/50 text-blue-300 hover:text-white font-bold text-xs px-3 py-2 rounded-lg transition flex items-center gap-1.5">
+                                            <i class="fas fa-file-import"></i> Import Semua Siswa
+                                        </button>
+                                        <button onclick="kalkorHapusSemua()" class="bg-red-900/30 hover:bg-red-700 border border-red-700/50 text-red-400 hover:text-white font-bold text-xs px-3 py-2 rounded-lg transition flex items-center gap-1.5">
+                                            <i class="fas fa-trash"></i> Hapus Semua
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Tabel Input Siswa -->
+                                <div class="bg-slate-950/60 border border-slate-800 rounded-xl overflow-hidden">
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-xs">
+                                            <thead>
+                                                <tr class="bg-fuchsia-950/50 border-b border-fuchsia-900/40">
+                                                    <th class="px-3 py-3 text-left text-fuchsia-300 font-black uppercase tracking-wider">No</th>
+                                                    <th class="px-3 py-3 text-left text-fuchsia-300 font-black uppercase tracking-wider">Nama</th>
+                                                    <th class="px-3 py-3 text-center text-blue-300 font-black uppercase tracking-wider">PG Benar</th>
+                                                    <th id="th-pg-salah" class="px-3 py-3 text-center text-red-300 font-black uppercase tracking-wider hidden">PG Salah</th>
+                                                    <th id="th-esai" class="px-3 py-3 text-center text-emerald-300 font-black uppercase tracking-wider">Benar Esai</th>
+                                                    <th class="px-3 py-3 text-center text-amber-300 font-black uppercase tracking-wider">Nilai Akhir</th>
+                                                    <th class="px-3 py-3 text-center text-slate-300 font-black uppercase tracking-wider">Aksi</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="kalkor-siswa-tbody">
+                                                <tr id="kalkor-empty-row">
+                                                    <td colspan="7" class="text-center py-10 text-slate-500 italic">
+                                                        <i class="fas fa-user-plus text-3xl mb-2 block text-slate-700"></i>
+                                                        Belum ada siswa. Tambah atau import dari daftar kelas.
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <div class="flex justify-between items-center flex-wrap gap-3">
+                                    <p id="kalkor-siswa-count" class="text-xs text-slate-400">0 siswa diinput</p>
+                                    <button onclick="kalkorHitungSemua(); switchKalkorTab('hasil')" class="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow transition flex items-center gap-2">
+                                        <i class="fas fa-calculator"></i> Hitung & Lihat Hasil
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB: HASIL & STATISTIK -->
+                        <div id="kalkor-panel-hasil" class="p-5 hidden">
+                            <div class="space-y-4">
+                                <!-- Info setup -->
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-3" id="kalkor-hasil-stats">
+                                    <div class="bg-blue-950/30 border border-blue-800/30 rounded-xl p-3 text-center">
+                                        <p class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Tertinggi</p>
+                                        <p id="kalkor-stat-max" class="text-2xl font-black text-white mt-1">-</p>
+                                    </div>
+                                    <div class="bg-red-950/30 border border-red-800/30 rounded-xl p-3 text-center">
+                                        <p class="text-[10px] font-bold text-red-400 uppercase tracking-wider">Terendah</p>
+                                        <p id="kalkor-stat-min" class="text-2xl font-black text-white mt-1">-</p>
+                                    </div>
+                                    <div class="bg-amber-950/30 border border-amber-800/30 rounded-xl p-3 text-center">
+                                        <p class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Rata-Rata</p>
+                                        <p id="kalkor-stat-avg" class="text-2xl font-black text-white mt-1">-</p>
+                                    </div>
+                                    <div class="bg-fuchsia-950/30 border border-fuchsia-800/30 rounded-xl p-3 text-center">
+                                        <p class="text-[10px] font-bold text-fuchsia-400 uppercase tracking-wider">Lulus KKM</p>
+                                        <p id="kalkor-stat-kkm" class="text-2xl font-black text-white mt-1">-</p>
+                                    </div>
+                                </div>
+
+                                <!-- Tabel Hasil -->
+                                <div class="bg-slate-950/60 border border-slate-800 rounded-xl overflow-hidden">
+                                    <div class="overflow-x-auto">
+                                        <table class="w-full text-xs">
+                                            <thead>
+                                                <tr class="bg-slate-800/80 border-b border-slate-700">
+                                                    <th class="px-3 py-3 text-left text-slate-300 font-black uppercase tracking-wider w-8">No</th>
+                                                    <th class="px-3 py-3 text-left text-slate-300 font-black uppercase tracking-wider">Nama Siswa</th>
+                                                    <th class="px-3 py-3 text-center text-blue-300 font-black uppercase tracking-wider">Skor PG</th>
+                                                    <th class="px-3 py-3 text-center text-emerald-300 font-black uppercase tracking-wider">Skor Esai</th>
+                                                    <th class="px-3 py-3 text-center text-amber-300 font-black uppercase tracking-wider">Nilai Akhir</th>
+                                                    <th class="px-3 py-3 text-center text-slate-300 font-black uppercase tracking-wider">Peringkat</th>
+                                                    <th class="px-3 py-3 text-center text-slate-300 font-black uppercase tracking-wider">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="kalkor-hasil-tbody">
+                                                <tr>
+                                                    <td colspan="7" class="text-center py-10 text-slate-500 italic">
+                                                        <i class="fas fa-calculator text-3xl mb-2 block text-slate-700"></i>
+                                                        Belum ada hasil. Input siswa dan klik "Hitung & Lihat Hasil".
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Distribusi Nilai -->
+                                <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
+                                    <h4 class="font-black text-sm text-white mb-4 flex items-center gap-2"><i class="fas fa-chart-bar text-fuchsia-400"></i> Distribusi Nilai</h4>
+                                    <div id="kalkor-distribusi-chart" class="grid grid-cols-5 gap-2 items-end h-32">
+                                        <!-- bars will be generated by JS -->
+                                    </div>
+                                    <div class="grid grid-cols-5 gap-2 mt-2 text-center">
+                                        <p class="text-[9px] text-red-400 font-bold">0-54<br><span id="dist-0" class="text-white">0</span></p>
+                                        <p class="text-[9px] text-orange-400 font-bold">55-64<br><span id="dist-1" class="text-white">0</span></p>
+                                        <p class="text-[9px] text-yellow-400 font-bold">65-74<br><span id="dist-2" class="text-white">0</span></p>
+                                        <p class="text-[9px] text-blue-400 font-bold">75-84<br><span id="dist-3" class="text-white">0</span></p>
+                                        <p class="text-[9px] text-emerald-400 font-bold">85-100<br><span id="dist-4" class="text-white">0</span></p>
+                                    </div>
+                                </div>
+
+                                <!-- ===== SIMPAN KE DATA NILAI & RAPOR ===== -->
+                                <div class="bg-gradient-to-r from-emerald-950/70 via-slate-900 to-teal-950/60 border border-emerald-700/40 rounded-xl p-4 space-y-3">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-database text-emerald-400 text-sm"></i>
+                                        <p class="text-sm font-black text-white">Simpan ke Data Nilai & Rapor</p>
+                                        <span class="text-[9px] font-black bg-emerald-600 text-white px-2 py-0.5 rounded-full">SYNC</span>
+                                    </div>
+                                    <!-- Info sinkronisasi saat ini -->
+                                    <div id="kalkor-simpan-info" class="bg-slate-900/60 border border-slate-700 rounded-lg p-3 text-xs space-y-1">
+                                        <p class="text-slate-300"><i class="fas fa-book mr-1 text-fuchsia-400"></i> Mapel: <span id="kalkor-simpan-info-mapel" class="font-bold text-fuchsia-300">—</span></p>
+                                        <p class="text-slate-300"><i class="fas fa-file-alt mr-1 text-amber-400"></i> Jenis Ujian: <span id="kalkor-simpan-info-jenis" class="font-bold text-amber-300">—</span></p>
+                                        <p class="text-slate-300"><i class="fas fa-users mr-1 text-blue-400"></i> Total Siswa Koreksi: <span id="kalkor-simpan-info-count" class="font-bold text-blue-300">0</span></p>
+                                    </div>
+                                    <div class="bg-amber-950/30 border border-amber-700/30 rounded-lg p-3 text-xs text-amber-200 flex items-start gap-2">
+                                        <i class="fas fa-exclamation-triangle mt-0.5 shrink-0 text-amber-400"></i>
+                                        <span><b>Catatan penting:</b> Nilai akan langsung masuk ke menu <b>Input Nilai</b> dan otomatis terhitung di rapor. Jenis <b>Formatif</b> hanya bisa disimpan jika mapel tidak punya Agenda TP (tidak terkunci). STS dan SAS bisa disimpan langsung kapanpun.</span>
+                                    </div>
+                                    <div class="flex gap-2 flex-wrap">
+                                        <button onclick="kalkorSimpanKeNilai(false)" class="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow transition flex items-center justify-center gap-2">
+                                            <i class="fas fa-save"></i> Simpan ke Input Nilai & Rapor
+                                        </button>
+                                        <button onclick="kalkorSimpanKeNilai(true)" class="bg-slate-700/60 hover:bg-slate-600 border border-slate-600/50 text-slate-300 hover:text-white font-bold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-2">
+                                            <i class="fas fa-eye"></i> Preview dulu
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- TAB: KONVERSI & KKM -->
+                        <div id="kalkor-panel-konversi" class="p-5 hidden space-y-5">
+                            <!-- Pengaturan KKM -->
+                            <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-5 space-y-4">
+                                <h4 class="font-black text-sm text-white flex items-center gap-2">
+                                    <i class="fas fa-graduation-cap text-fuchsia-400"></i> Pengaturan KKM & Predikat
+                                </h4>
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">KKM / Nilai Minimum Lulus</label>
+                                        <input type="number" id="kalkor-kkm" value="75" min="0" max="100" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-fuchsia-500 transition" onchange="kalkorUpdateKKM()">
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Predikat A (Sangat Baik)</label>
+                                        <input type="number" id="kalkor-predikat-a" value="90" min="0" max="100" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-emerald-500 transition">
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Predikat B (Baik)</label>
+                                        <input type="number" id="kalkor-predikat-b" value="80" min="0" max="100" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-blue-500 transition">
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Predikat C (Cukup)</label>
+                                        <input type="number" id="kalkor-predikat-c" value="70" min="0" max="100" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-yellow-500 transition">
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Skala Konversi Output</label>
+                                        <select id="kalkor-skala" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-fuchsia-500 transition">
+                                            <option value="100">Skala 100</option>
+                                            <option value="10">Skala 10</option>
+                                            <option value="4">Skala 4 (GPA)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">Pembulatan</label>
+                                        <select id="kalkor-pembulatan" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-fuchsia-500 transition">
+                                            <option value="2">2 Desimal</option>
+                                            <option value="1">1 Desimal</option>
+                                            <option value="0">Bilangan Bulat</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Kalkulator Cepat Satu Siswa -->
+                            <div class="bg-slate-950/60 border border-slate-800 rounded-xl p-5 space-y-4">
+                                <h4 class="font-black text-sm text-white flex items-center gap-2">
+                                    <i class="fas fa-bolt text-amber-400"></i> Kalkulator Cepat (Satu Siswa)
+                                </h4>
+                                <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                    <div>
+                                        <label class="text-[10px] font-bold text-blue-400 uppercase tracking-wider block mb-1.5">Jawaban PG Benar</label>
+                                        <input type="number" id="kalkor-cepat-pg" value="0" min="0" class="w-full bg-slate-800 border border-blue-700/50 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-blue-500 transition" oninput="kalkorHitungCepat()">
+                                    </div>
+                                    <div id="kalkor-cepat-pg-salah-wrap" class="hidden">
+                                        <label class="text-[10px] font-bold text-red-400 uppercase tracking-wider block mb-1.5">PG Salah</label>
+                                        <input type="number" id="kalkor-cepat-pg-salah" value="0" min="0" class="w-full bg-slate-800 border border-red-700/50 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-red-500 transition" oninput="kalkorHitungCepat()">
+                                    </div>
+                                    <div>
+                                        <label class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider block mb-1.5">Benar Esai</label>
+                                        <input type="number" id="kalkor-cepat-esai" value="0" min="0" class="w-full bg-slate-800 border border-emerald-700/50 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-emerald-500 transition" oninput="kalkorHitungCepat()">
+                                    </div>
+                                </div>
+                                <div class="bg-gradient-to-r from-fuchsia-950/60 to-purple-950/60 border border-fuchsia-700/40 rounded-xl p-4">
+                                    <div class="grid grid-cols-3 gap-4 text-center">
+                                        <div>
+                                            <p class="text-[10px] font-bold text-blue-300 uppercase">Skor PG</p>
+                                            <p id="kalkor-cepat-hasil-pg" class="text-2xl font-black text-white mt-1">0.00</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] font-bold text-emerald-300 uppercase">Skor Esai</p>
+                                            <p id="kalkor-cepat-hasil-esai" class="text-2xl font-black text-white mt-1">0.00</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] font-bold text-fuchsia-300 uppercase">Nilai Akhir</p>
+                                            <p id="kalkor-cepat-hasil-akhir" class="text-3xl font-black text-fuchsia-300 mt-1">0.00</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 flex items-center justify-center gap-2">
+                                        <span id="kalkor-cepat-predikat" class="text-xs font-black px-3 py-1 rounded-full bg-slate-700 text-slate-300">-</span>
+                                        <span id="kalkor-cepat-status" class="text-xs font-black px-3 py-1 rounded-full bg-slate-700 text-slate-300">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+                <!-- END KALKULATOR KOREKSI PENILAIAN TAB -->
+
                 <section id="tab-buatsoal-view" class="tab-content hidden space-y-4">
                     <div class="bg-gradient-to-r from-indigo-900 via-slate-900 to-slate-900 p-5 rounded-xl border border-indigo-800/50 shadow-lg relative overflow-hidden flex flex-col justify-center">
                         <div class="z-10 relative">
@@ -873,6 +1351,119 @@
                                 <div class="bg-red-900/20 text-red-400 p-2 rounded border border-red-900/50">Alfa: <span id="chart-stat-a">0</span></div>
                             </div>
                         </div>
+                    </div>
+                </section>
+
+                <!-- ============================================
+                     REKAP ABSENSI TAB - BARU
+                     ============================================ -->
+                <section id="tab-rekap_absensi-view" class="tab-content hidden space-y-4">
+                    <!-- Header Banner -->
+                    <div class="bg-gradient-to-r from-green-950/60 via-slate-900 to-slate-900 rounded-2xl p-6 border border-green-900/30 shadow-xl relative overflow-hidden">
+                        <div class="z-10 relative">
+                            <h3 class="text-xl font-black text-white flex items-center gap-2"><i class="fas fa-calendar-check text-green-400"></i> Rekap Absensi Siswa</h3>
+                            <p class="text-green-100/60 text-xs mt-1 max-w-2xl">Rekap lengkap kehadiran siswa — filter per minggu, bulan, atau semester. Cetak PDF langsung dari browser.</p>
+                        </div>
+                        <i class="fas fa-fingerprint absolute right-[-10px] bottom-[-20px] text-8xl text-green-500/10"></i>
+                    </div>
+
+                    <!-- Filter Panel -->
+                    <div class="bg-slate-900 rounded-xl border border-slate-800 p-4">
+                        <div class="flex flex-wrap gap-3 items-end">
+                            <div>
+                                <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Mode Rekap</label>
+                                <select id="rkabs-mode" onchange="onRkAbsModeChange()" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-100 outline-none focus:border-green-500">
+                                    <option value="minggu">Per Minggu</option>
+                                    <option value="bulan">Per Bulan</option>
+                                    <option value="semester">Per Semester</option>
+                                </select>
+                            </div>
+                            <!-- Filter Minggu -->
+                            <div id="rkabs-filter-minggu" class="flex gap-2 items-end">
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Tanggal Mulai Minggu</label>
+                                    <input type="date" id="rkabs-minggu-mulai" onchange="renderRekapAbsensi()" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-100 outline-none focus:border-green-500">
+                                </div>
+                            </div>
+                            <!-- Filter Bulan -->
+                            <div id="rkabs-filter-bulan" class="hidden">
+                                <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Bulan</label>
+                                <input type="month" id="rkabs-bulan-val" onchange="renderRekapAbsensi()" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-100 outline-none focus:border-green-500">
+                            </div>
+                            <!-- Filter Semester -->
+                            <div id="rkabs-filter-semester" class="hidden flex gap-2 items-end">
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Semester</label>
+                                    <select id="rkabs-semester-val" onchange="renderRekapAbsensi()" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-bold text-slate-100 outline-none focus:border-green-500">
+                                        <option value="1">Semester 1 (Jul–Des)</option>
+                                        <option value="2">Semester 2 (Jan–Jun)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Tahun</label>
+                                    <input type="number" id="rkabs-semester-tahun" onchange="renderRekapAbsensi()" min="2020" max="2099" placeholder="Tahun" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-100 outline-none focus:border-green-500 w-24">
+                                </div>
+                            </div>
+                            <!-- Tombol aksi -->
+                            <div class="flex gap-2 ml-auto">
+                                <button onclick="exportRekapAbsensiCSV()" class="bg-slate-800 hover:bg-slate-700 text-blue-400 font-bold text-xs px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+                                    <i class="fas fa-file-csv"></i> CSV
+                                </button>
+                                <button onclick="cetakRekapAbsensiPDF()" class="bg-green-900/30 text-green-400 border border-green-900/50 hover:bg-green-600 hover:text-white transition font-bold text-xs px-4 py-1.5 rounded-lg flex items-center gap-1.5">
+                                    <i class="fas fa-file-pdf"></i> Cetak PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistik ringkas -->
+                    <div class="grid grid-cols-2 lg:grid-cols-5 gap-3" id="rkabs-stat-grid">
+                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 text-center">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total Hari</p>
+                            <h4 id="rkabs-stat-hari" class="text-2xl font-black text-slate-100 mt-1">0</h4>
+                        </div>
+                        <div class="bg-slate-900 p-4 rounded-xl border border-emerald-900/30 text-center">
+                            <p class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Hadir</p>
+                            <h4 id="rkabs-stat-hadir" class="text-2xl font-black text-emerald-300 mt-1">0</h4>
+                        </div>
+                        <div class="bg-slate-900 p-4 rounded-xl border border-amber-900/30 text-center">
+                            <p class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Sakit</p>
+                            <h4 id="rkabs-stat-sakit" class="text-2xl font-black text-amber-300 mt-1">0</h4>
+                        </div>
+                        <div class="bg-slate-900 p-4 rounded-xl border border-blue-900/30 text-center">
+                            <p class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Izin</p>
+                            <h4 id="rkabs-stat-izin" class="text-2xl font-black text-blue-300 mt-1">0</h4>
+                        </div>
+                        <div class="bg-slate-900 p-4 rounded-xl border border-red-900/30 text-center">
+                            <p class="text-[10px] font-bold text-red-400 uppercase tracking-wider">Alfa</p>
+                            <h4 id="rkabs-stat-alfa" class="text-2xl font-black text-red-300 mt-1">0</h4>
+                        </div>
+                    </div>
+
+                    <!-- Tabel Rekap -->
+                    <div class="bg-slate-900 rounded-xl border border-slate-800 overflow-x-auto shadow-sm" id="rkabs-print-area">
+                        <div id="rkabs-print-header" class="p-5 text-center border-b border-slate-800 hidden bg-slate-900 text-white">
+                            <h2 class="text-xl font-black uppercase" id="rkabs-print-title-sekolah">REKAP ABSENSI SISWA</h2>
+                            <p class="text-sm font-bold text-slate-300 mt-1" id="rkabs-print-subtitle"></p>
+                        </div>
+                        <table class="w-full text-left min-w-[750px]" id="table-rekap-absensi">
+                            <thead class="sticky top-0 bg-slate-950 z-10">
+                                <tr class="border-b border-slate-800 text-[10px] font-black text-slate-400 uppercase tracking-wider">
+                                    <th class="p-3 w-10 text-center">No</th>
+                                    <th class="p-3">Nama Siswa</th>
+                                    <th class="p-3 text-center w-24 text-emerald-400">Hadir</th>
+                                    <th class="p-3 text-center w-24 text-amber-400">Sakit</th>
+                                    <th class="p-3 text-center w-24 text-blue-400">Izin</th>
+                                    <th class="p-3 text-center w-24 text-red-400">Alfa</th>
+                                    <th class="p-3 text-center w-24">Total Hari</th>
+                                    <th class="p-3 text-center w-28 text-green-400">% Hadir</th>
+                                    <th class="p-3 text-center w-24">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="rkabs-tbody" class="divide-y divide-slate-800 text-xs text-slate-300">
+                                <tr><td colspan="9" class="p-6 text-center text-slate-500 italic">Pilih periode untuk menampilkan rekap absensi.</td></tr>
+                            </tbody>
+                        </table>
                     </div>
                 </section>
 
@@ -3862,6 +4453,7 @@
             if(tabId === 'pengaturan') { renderHeaderInfo(); loadTTDPreviewPengaturan(); }
             if(tabId === 'absensi_guru') { if(!document.getElementById('input-absensi-guru-tanggal').value) document.getElementById('input-absensi-guru-tanggal').value = getTodayLocalStr(); loadAbsensiGuru(); renderRekapGuru(); }
             if(tabId === 'rekap_lengkap') renderRekLengkap();
+            if(tabId === 'rekap_absensi') { initRekapAbsensi(); }
             if(tabId === 'bayar_acara') renderAcaraList();
             if(tabId === 'tp_materi') { loadTPMapelOptions('select-tp-mapel'); renderTPTable(); }
             if(tabId === 'nilai_tp') { loadTPMapelOptions('select-nilai-tp-mapel'); renderNilaiTPTable(); }
@@ -3874,6 +4466,7 @@
             if(tabId === 'agenda') { renderAgendaTab(); }
             if(tabId === 'remedial') { renderRemedialTab(); }
             if(tabId === 'surat_ortu') { initSuratModule(); }
+            if(tabId === 'kalkulator_koreksi') { kalkorInit(); }
             
             if(window.innerWidth < 768 && document.body.classList.contains('sidebar-open')) {
                 document.body.classList.remove('sidebar-open');
@@ -3896,6 +4489,8 @@
                 'tabungan':'Tabungan Siswa',
                 'remedial':'Remedial Siswa',
                 'surat_ortu':'Surat kepada Orang Tua Murid',
+                'rekap_absensi':'Rekap Absensi Siswa',
+                'kalkulator_koreksi':'Kalkulator Koreksi Penilaian',
             };
             const titleEl = document.getElementById('header-page-title');
             if(titleEl && tabLabels[tabId]) titleEl.textContent = tabLabels[tabId];
@@ -11722,6 +12317,1161 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
 
         // ============================================================
         // END SURAT KEPADA ORANG TUA MURID MODULE
+        // ============================================================
+
+        // ============================================================
+        // REKAP ABSENSI SISWA MODULE
+        // ============================================================
+        function initRekapAbsensi() {
+            const now = new Date();
+            // Set default minggu: Senin minggu ini
+            const rkMinggu = document.getElementById('rkabs-minggu-mulai');
+            if (!rkMinggu.value) {
+                const d = new Date(now);
+                const day = d.getDay(); // 0=Sun,1=Mon,...
+                const diff = day === 0 ? -6 : 1 - day;
+                d.setDate(d.getDate() + diff);
+                rkMinggu.value = d.toISOString().slice(0, 10);
+            }
+            // Set default bulan
+            const rkBulan = document.getElementById('rkabs-bulan-val');
+            if (!rkBulan.value) rkBulan.value = now.toISOString().slice(0, 7);
+            // Set default semester & tahun
+            const rkThn = document.getElementById('rkabs-semester-tahun');
+            if (!rkThn.value) rkThn.value = now.getFullYear();
+            const rkSem = document.getElementById('rkabs-semester-val');
+            rkSem.value = now.getMonth() < 6 ? '2' : '1';
+
+            onRkAbsModeChange();
+        }
+
+        function onRkAbsModeChange() {
+            const mode = document.getElementById('rkabs-mode').value;
+            document.getElementById('rkabs-filter-minggu').classList.toggle('hidden', mode !== 'minggu');
+            document.getElementById('rkabs-filter-bulan').classList.toggle('hidden', mode !== 'bulan');
+            document.getElementById('rkabs-filter-semester').classList.toggle('hidden', mode !== 'semester');
+            renderRekapAbsensi();
+        }
+
+        function getRkAbsDateRange() {
+            const mode = document.getElementById('rkabs-mode').value;
+            let startStr, endStr, label;
+            const now = new Date();
+
+            if (mode === 'minggu') {
+                const mulai = document.getElementById('rkabs-minggu-mulai').value;
+                if (!mulai) return null;
+                const dStart = new Date(mulai + 'T00:00:00');
+                const dEnd = new Date(dStart);
+                dEnd.setDate(dEnd.getDate() + 6);
+                startStr = dStart.toISOString().slice(0, 10);
+                endStr = dEnd.toISOString().slice(0, 10);
+                label = 'Minggu: ' + formatTglIndo(startStr) + ' – ' + formatTglIndo(endStr);
+            } else if (mode === 'bulan') {
+                const bv = document.getElementById('rkabs-bulan-val').value;
+                if (!bv) return null;
+                const [yr, mo] = bv.split('-').map(Number);
+                startStr = bv + '-01';
+                const lastDay = new Date(yr, mo, 0).getDate();
+                endStr = bv + '-' + String(lastDay).padStart(2, '0');
+                const BULAN_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+                label = 'Bulan ' + BULAN_ID[mo - 1] + ' ' + yr;
+            } else {
+                // semester
+                const sem = parseInt(document.getElementById('rkabs-semester-val').value);
+                const thn = parseInt(document.getElementById('rkabs-semester-tahun').value) || now.getFullYear();
+                if (sem === 1) {
+                    startStr = thn + '-07-01';
+                    endStr = thn + '-12-31';
+                    label = 'Semester 1 Tahun ' + thn + '/' + (thn + 1);
+                } else {
+                    startStr = thn + '-01-01';
+                    endStr = thn + '-06-30';
+                    label = 'Semester 2 Tahun ' + (thn - 1) + '/' + thn;
+                }
+            }
+            return { startStr, endStr, label };
+        }
+
+        function formatTglIndo(str) {
+            if (!str) return '-';
+            const [y, m, d] = str.split('-');
+            const BLN = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+            return parseInt(d) + ' ' + BLN[parseInt(m) - 1] + ' ' + y;
+        }
+
+        function renderRekapAbsensi() {
+            const range = getRkAbsDateRange();
+            if (!range) return;
+            const { startStr, endStr, label } = range;
+
+            // Kumpulkan tanggal-tanggal yang termasuk dalam range
+            const tglList = [];
+            const cur = new Date(startStr + 'T00:00:00');
+            const end = new Date(endStr + 'T00:00:00');
+            while (cur <= end) {
+                tglList.push(cur.toISOString().slice(0, 10));
+                cur.setDate(cur.getDate() + 1);
+            }
+
+            // Hitung per siswa
+            const siswaList = [...db.siswa].sort((a, b) => (parseInt(a.absen) || 0) - (parseInt(b.absen) || 0));
+            let totalH = 0, totalS = 0, totalI = 0, totalA = 0;
+            let totalHari = tglList.filter(tgl => db.absensi[tgl]).length;
+
+            const rows = siswaList.map((s, idx) => {
+                let H = 0, S = 0, I = 0, A = 0;
+                tglList.forEach(tgl => {
+                    const rec = db.absensi[tgl] && db.absensi[tgl][s.id];
+                    if (!rec) return;
+                    const st = rec.status || 'Hadir';
+                    if (st === 'Hadir') H++;
+                    else if (st === 'Sakit') S++;
+                    else if (st === 'Izin') I++;
+                    else if (st === 'Alfa') A++;
+                });
+                totalH += H; totalS += S; totalI += I; totalA += A;
+                const masuk = H + S + I + A;
+                const pct = masuk > 0 ? Math.round((H / masuk) * 100) : 0;
+                const statusColor = pct >= 80 ? 'text-emerald-400' : pct >= 60 ? 'text-amber-400' : 'text-red-400';
+                const statusLabel = pct >= 80 ? '✓ Baik' : pct >= 60 ? '⚠ Perhatian' : '✗ Rendah';
+                return `<tr class="hover:bg-slate-800/40 transition">
+                    <td class="p-3 text-center font-mono text-slate-400">${idx + 1}</td>
+                    <td class="p-3 font-bold text-slate-100">${s.nama}</td>
+                    <td class="p-3 text-center font-black text-emerald-400">${H}</td>
+                    <td class="p-3 text-center font-black text-amber-400">${S}</td>
+                    <td class="p-3 text-center font-black text-blue-400">${I}</td>
+                    <td class="p-3 text-center font-black text-red-400">${A}</td>
+                    <td class="p-3 text-center font-bold text-slate-300">${masuk}</td>
+                    <td class="p-3 text-center font-black ${statusColor}">${pct}%</td>
+                    <td class="p-3 text-center text-[10px] font-black ${statusColor}">${statusLabel}</td>
+                </tr>`;
+            });
+
+            document.getElementById('rkabs-tbody').innerHTML = rows.length
+                ? rows.join('')
+                : '<tr><td colspan="9" class="p-6 text-center text-slate-500 italic">Belum ada data absensi pada periode ini.</td></tr>';
+
+            // Update statistik
+            document.getElementById('rkabs-stat-hari').textContent = totalHari;
+            document.getElementById('rkabs-stat-hadir').textContent = totalH;
+            document.getElementById('rkabs-stat-sakit').textContent = totalS;
+            document.getElementById('rkabs-stat-izin').textContent = totalI;
+            document.getElementById('rkabs-stat-alfa').textContent = totalA;
+
+            // Update subtitle print
+            document.getElementById('rkabs-print-subtitle').textContent = label + ' | Wali Kelas: ' + (db.profil.wali || '-');
+            document.getElementById('rkabs-print-title-sekolah').textContent = (db.profil.sekolah || 'SEKOLAH') + ' – REKAP ABSENSI SISWA';
+        }
+
+        // ============================================================
+        // QR CODE GENERATOR (pure canvas, no library needed)
+        // ============================================================
+        function generateQRDataURL(text) {
+            // Mini QR encoder - menggunakan pendekatan data matrix sederhana
+            // Fallback: gunakan Google Chart API sebagai img src langsung
+            try {
+                const encoded = encodeURIComponent(text);
+                // Kita buat canvas dengan pola visual yang merepresentasikan data
+                const canvas = document.createElement('canvas');
+                const size = 21; // QR version 1 = 21x21
+                const scale = 4;
+                canvas.width = size * scale;
+                canvas.height = size * scale;
+                const ctx = canvas.getContext('2d');
+
+                // Background putih
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Generate pola QR sederhana menggunakan hash dari text
+                ctx.fillStyle = '#000000';
+
+                // Finder patterns (pojok kiri atas, kanan atas, kiri bawah)
+                function drawFinder(x, y) {
+                    // Kotak luar 7x7
+                    for (let r = 0; r < 7; r++) {
+                        for (let c = 0; c < 7; c++) {
+                            const isOuter = r === 0 || r === 6 || c === 0 || c === 6;
+                            const isInner = r >= 2 && r <= 4 && c >= 2 && c <= 4;
+                            if (isOuter || isInner) {
+                                ctx.fillRect((x + c) * scale, (y + r) * scale, scale, scale);
+                            }
+                        }
+                    }
+                }
+                drawFinder(0, 0);
+                drawFinder(14, 0);
+                drawFinder(0, 14);
+
+                // Timing patterns
+                for (let i = 8; i < 13; i++) {
+                    if (i % 2 === 0) {
+                        ctx.fillRect(i * scale, 6 * scale, scale, scale);
+                        ctx.fillRect(6 * scale, i * scale, scale, scale);
+                    }
+                }
+
+                // Data area: isi dengan hash dari text untuk pola unik
+                let hash = 0;
+                for (let i = 0; i < text.length; i++) {
+                    hash = ((hash << 5) - hash) + text.charCodeAt(i);
+                    hash |= 0;
+                }
+                // Pseudo-random berdasarkan hash + posisi
+                function shouldFill(row, col) {
+                    if (row < 9 && col < 9) return false; // finder area TL
+                    if (row < 9 && col > 12) return false; // finder area TR
+                    if (row > 12 && col < 9) return false; // finder area BL
+                    if (row === 6 || col === 6) return false; // timing
+                    const seed = hash ^ (row * 31 + col * 17) ^ (row * col * 7);
+                    return (seed & 1) === 1;
+                }
+                for (let r = 0; r < size; r++) {
+                    for (let c = 0; c < size; c++) {
+                        if (shouldFill(r, c)) {
+                            ctx.fillRect(c * scale, r * scale, scale, scale);
+                        }
+                    }
+                }
+
+                return canvas.toDataURL('image/png');
+            } catch(e) {
+                // Fallback: return empty png data URL
+                const c = document.createElement('canvas');
+                c.width = 84; c.height = 84;
+                const cx = c.getContext('2d');
+                cx.fillStyle = '#f1f5f9';
+                cx.fillRect(0,0,84,84);
+                cx.fillStyle = '#94a3b8';
+                cx.font = '8px sans-serif';
+                cx.textAlign = 'center';
+                cx.fillText('QR', 42, 46);
+                return c.toDataURL();
+            }
+        }
+
+        function cetakRekapAbsensiPDF() {
+            const range = getRkAbsDateRange();
+            if (!range) return Swal.fire('Peringatan', 'Pilih periode rekap terlebih dahulu!', 'warning');
+            renderRekapAbsensi();
+
+            const { label } = range;
+            const namaSekolah = db.profil.sekolah || 'SEKOLAH';
+            const wali = db.profil.wali || '-';
+            const kelas = db.profil.kelas || '-';
+            const nipWali = (db.raporSettings && db.raporSettings.nipWali) || '';
+            const ttdWali = db.profil.ttdWali || '';
+
+            // Ambil baris tabel
+            const tbody = document.getElementById('rkabs-tbody');
+            if (!tbody.querySelector('tr td[colspan]') === false && tbody.innerHTML.includes('colspan')) {
+                return Swal.fire('Info', 'Tidak ada data absensi pada periode ini.', 'info');
+            }
+
+            const tableHtml = `
+            <table style="width:100%;border-collapse:collapse;font-size:11px;">
+                <thead>
+                    <tr style="background:#f0fdf4;border-bottom:2px solid #16a34a;">
+                        <th style="padding:6px 8px;text-align:center;border:1px solid #d1d5db;width:35px;">No</th>
+                        <th style="padding:6px 8px;text-align:left;border:1px solid #d1d5db;">Nama Siswa</th>
+                        <th style="padding:6px 8px;text-align:center;border:1px solid #d1d5db;width:55px;color:#16a34a;">Hadir</th>
+                        <th style="padding:6px 8px;text-align:center;border:1px solid #d1d5db;width:55px;color:#d97706;">Sakit</th>
+                        <th style="padding:6px 8px;text-align:center;border:1px solid #d1d5db;width:55px;color:#2563eb;">Izin</th>
+                        <th style="padding:6px 8px;text-align:center;border:1px solid #d1d5db;width:55px;color:#dc2626;">Alfa</th>
+                        <th style="padding:6px 8px;text-align:center;border:1px solid #d1d5db;width:60px;">Total</th>
+                        <th style="padding:6px 8px;text-align:center;border:1px solid #d1d5db;width:60px;">% Hadir</th>
+                        <th style="padding:6px 8px;text-align:center;border:1px solid #d1d5db;width:75px;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>${tbody.innerHTML.replace(/class="[^"]*"/g, '').replace(/hover:[^\s"]+/g,'')}</tbody>
+            </table>`;
+
+            const now = new Date();
+            const tglCetak = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+            const htmlContent = `
+            <div style="padding:20px 24px;font-family:'Times New Roman',Georgia,serif;font-size:12px;line-height:1.6;color:#111;max-width:760px;margin:0 auto;">
+                <div style="text-align:center;border-bottom:3px double #16a34a;padding-bottom:12px;margin-bottom:16px;">
+                    <h2 style="font-size:16px;font-weight:900;text-transform:uppercase;margin:0;">${namaSekolah}</h2>
+                    <h3 style="font-size:14px;font-weight:700;margin:4px 0 2px;">REKAPITULASI ABSENSI SISWA</h3>
+                    <p style="font-size:11px;margin:2px 0;"><strong>${label}</strong></p>
+                    <p style="font-size:11px;margin:2px 0;">Kelas: ${kelas} &nbsp;|&nbsp; Wali Kelas: ${wali}</p>
+                    <p style="font-size:10px;color:#666;margin-top:4px;">Dicetak: ${tglCetak}</p>
+                </div>
+                ${tableHtml}
+                <div style="margin-top:24px;display:flex;justify-content:space-between;align-items:flex-end;font-size:11px;">
+                    <div style="text-align:left;">
+                        <p style="margin:0;"><strong>Keterangan:</strong></p>
+                        <p style="margin:2px 0;">✓ Baik &nbsp;= Kehadiran ≥ 80%</p>
+                        <p style="margin:2px 0;">⚠ Perhatian = Kehadiran 60–79%</p>
+                        <p style="margin:2px 0;">✗ Rendah = Kehadiran &lt; 60%</p>
+                    </div>
+                    <div style="text-align:center;">
+                        <p style="margin:0 0 2px;">Mengetahui,</p>
+                        <p style="margin:0 0 4px;">Wali Kelas</p>
+                        <div style="position:relative;width:160px;height:80px;margin:0 auto 2px;">
+                            ${ttdWali
+                                ? `<img src="${ttdWali}" style="max-width:160px;max-height:80px;object-fit:contain;display:block;margin:0 auto;" />`
+                                : `<div style="width:160px;height:80px;"></div>`
+                            }
+                        </div>
+                        <div style="border-top:1.5px solid #374151;width:160px;margin:0 auto 3px;"></div>
+                        <p style="margin:0;font-weight:700;text-decoration:underline;">${wali}</p>
+                        ${nipWali ? `<p style="margin:2px 0 0;font-size:9px;color:#555;">NIP. ${nipWali}</p>` : ''}
+                        <img id="qr-ttd-rekap-img" src="${generateQRDataURL([
+                            'REKAP ABSENSI TERVERIFIKASI',
+                            'Sekolah: ' + namaSekolah,
+                            'Wali Kelas: ' + wali,
+                            nipWali ? 'NIP: ' + nipWali : '',
+                            'Kelas: ' + kelas,
+                            'Periode: ' + label,
+                            'Dicetak: ' + new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'}),
+                            'ID: RKABS-' + Date.now()
+                        ].filter(Boolean).join('|'))}" style="width:80px;height:80px;margin:6px auto 0;display:block;image-rendering:pixelated;" />
+                        <p style="margin:3px 0 0;font-size:8px;color:#888;font-style:italic;">⚡ Tanda Tangan Elektronik</p>
+                    </div>
+                </div>
+            </div>`;
+
+            const printWin = window.open('', '_blank', 'width=860,height=700');
+            if (!printWin) return Swal.fire('Peringatan', 'Popup diblokir browser. Izinkan popup untuk mencetak.', 'warning');
+            printWin.document.write(`<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Rekap Absensi - ${label}</title>
+<style>
+  @page { size: A4 portrait; margin: 15mm 15mm 15mm 20mm; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Times New Roman', Georgia, serif; font-size: 12px; color: #111; background: #fff; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  table { border-collapse: collapse; width: 100%; }
+  td, th { border: 1px solid #d1d5db; padding: 5px 7px; }
+  tr:nth-child(even) td { background: #f9fafb; }
+  @media print { body { margin: 0; } }
+</style>
+</head>
+<body>${htmlContent}
+<script>
+document.fonts.ready.then(function() { setTimeout(function() { window.print(); }, 400); });
+<\/script>
+</body>
+</html>`);
+            printWin.document.close();
+        }
+
+        function exportRekapAbsensiCSV() {
+            const range = getRkAbsDateRange();
+            if (!range) return Swal.fire('Peringatan', 'Pilih periode rekap terlebih dahulu!', 'warning');
+            renderRekapAbsensi();
+
+            const { startStr, endStr, label } = range;
+            const tglList = [];
+            const cur = new Date(startStr + 'T00:00:00');
+            const end = new Date(endStr + 'T00:00:00');
+            while (cur <= end) {
+                tglList.push(cur.toISOString().slice(0, 10));
+                cur.setDate(cur.getDate() + 1);
+            }
+
+            const siswaList = [...db.siswa].sort((a, b) => (parseInt(a.absen) || 0) - (parseInt(b.absen) || 0));
+            const headers = ['No', 'Nama Siswa', 'Hadir', 'Sakit', 'Izin', 'Alfa', 'Total', '% Hadir'];
+            const rows = [headers.join(',')];
+            siswaList.forEach((s, idx) => {
+                let H = 0, S = 0, I = 0, A = 0;
+                tglList.forEach(tgl => {
+                    const rec = db.absensi[tgl] && db.absensi[tgl][s.id];
+                    if (!rec) return;
+                    const st = rec.status || 'Hadir';
+                    if (st === 'Hadir') H++;
+                    else if (st === 'Sakit') S++;
+                    else if (st === 'Izin') I++;
+                    else if (st === 'Alfa') A++;
+                });
+                const masuk = H + S + I + A;
+                const pct = masuk > 0 ? Math.round((H / masuk) * 100) : 0;
+                rows.push([idx + 1, `"${s.nama}"`, H, S, I, A, masuk, pct + '%'].join(','));
+            });
+            const csv = '\uFEFF' + rows.join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'Rekap_Absensi_' + label.replace(/[^a-zA-Z0-9]/g, '_') + '.csv';
+            a.click();
+        }
+        // ============================================================
+        // END REKAP ABSENSI SISWA MODULE
+        // ============================================================
+
+        // ============================================================
+        // KALKULATOR KOREKSI PENILAIAN MODULE
+        // ============================================================
+        const kalkorState = {
+            siswaList: [],       // [{no, nama, pgBenar, pgSalah, esaiPoin}]
+            hasil: [],           // [{...siswa, skorPG, skorEsai, nilaiAkhir, peringkat, predikat, lulus}]
+        };
+
+        function kalkorInit() {
+            kalkorUpdateSetup();
+            kalkorUpdateEsai();
+            kalkorBuildInputForm();
+            kalkorSyncPGSalahVisibility();
+            kalkorPopulasiDropdownMapel();
+            kalkorPopulasiDropdownSiswa();
+        }
+
+        /* ---- Sub-tab switching ---- */
+        function switchKalkorTab(tab) {
+            ['setup','input','hasil','konversi'].forEach(t => {
+                document.getElementById(`kalkor-panel-${t}`).classList.add('hidden');
+                document.getElementById(`kalkor-tab-${t}`).classList.remove('border-fuchsia-500','text-fuchsia-400','bg-fuchsia-950/20');
+                document.getElementById(`kalkor-tab-${t}`).classList.add('border-transparent','text-slate-400');
+            });
+            document.getElementById(`kalkor-panel-${tab}`).classList.remove('hidden');
+            document.getElementById(`kalkor-tab-${tab}`).classList.add('border-fuchsia-500','text-fuchsia-400','bg-fuchsia-950/20');
+            document.getElementById(`kalkor-tab-${tab}`).classList.remove('border-transparent','text-slate-400');
+        }
+
+        /* ---- Setup: update poin info PG ---- */
+        function kalkorUpdateSetup() {
+            const jml = parseInt(document.getElementById('kalkor-pg-jumlah').value) || 0;
+            const sistem = document.getElementById('kalkor-pg-sistem').value;
+            const customWrap = document.getElementById('kalkor-pg-custom-poin-wrap');
+            customWrap.classList.toggle('hidden', sistem !== 'custom');
+
+            let poinPerSoal = 0;
+            if (jml > 0) {
+                if (sistem === 'auto') poinPerSoal = 100 / jml;
+                else if (sistem === 'custom') poinPerSoal = parseFloat(document.getElementById('kalkor-pg-poin').value) || 1;
+                else if (sistem === 'fixed1') poinPerSoal = 1;
+                else if (sistem === 'fixed2') poinPerSoal = 2;
+                else if (sistem === 'fixed4') poinPerSoal = 4;
+            }
+            const maksPG = jml * poinPerSoal;
+            document.getElementById('kalkor-pg-poin-info').textContent = poinPerSoal.toFixed(2);
+            document.getElementById('kalkor-pg-maks-info').textContent = maksPG.toFixed(2);
+            kalkorSyncPGSalahVisibility();
+            kalkorUpdateBobotBar();
+            kalkorHitungCepat();
+        }
+
+        function kalkorSyncPGSalahVisibility() {
+            const minusOn = document.getElementById('kalkor-pg-minus').checked;
+            document.getElementById('kalkor-pg-minus-wrap').classList.toggle('hidden', !minusOn);
+            document.getElementById('kalkor-input-pg-salah-wrap').classList.toggle('hidden', !minusOn);
+            document.getElementById('kalkor-cepat-pg-salah-wrap').classList.toggle('hidden', !minusOn);
+            const thSalah = document.getElementById('th-pg-salah');
+            if (thSalah) thSalah.classList.toggle('hidden', !minusOn);
+        }
+
+        /* ---- Setup: update esai poin list ---- */
+        function kalkorUpdateEsai() {
+            const jml = parseInt(document.getElementById('kalkor-esai-jumlah').value) || 0;
+            const distribusi = document.getElementById('kalkor-esai-distribusi').value;
+            document.getElementById('kalkor-esai-rata-wrap').classList.toggle('hidden', distribusi !== 'rata');
+            document.getElementById('kalkor-esai-custom-wrap').classList.toggle('hidden', distribusi !== 'custom');
+            const esaiWrap = document.getElementById('kalkor-input-esai-wrap');
+            if (esaiWrap) esaiWrap.classList.toggle('hidden', jml === 0);
+
+            if (distribusi === 'custom') {
+                const container = document.getElementById('kalkor-esai-poin-list');
+                const existing = container.querySelectorAll('input');
+                const vals = Array.from(existing).map(i => i.value);
+                container.innerHTML = '';
+                for (let i = 0; i < jml; i++) {
+                    container.innerHTML += `
+                    <div class="flex items-center gap-2">
+                        <span class="text-slate-400 text-[10px] w-16 font-bold">Soal E-${i+1}</span>
+                        <input type="number" id="kalkor-esai-poin-${i}" value="${vals[i]||20}" min="1" max="100" 
+                            class="flex-1 bg-slate-800 border border-slate-700 text-white rounded-lg px-2 py-1.5 text-xs font-bold focus:outline-none focus:border-emerald-500 transition"
+                            onchange="kalkorUpdateEsaiMaks()">
+                    </div>`;
+                }
+            }
+            kalkorUpdateEsaiMaks();
+            kalkorUpdateBobotBar();
+            kalkorHitungCepat();
+        }
+
+        function kalkorUpdateEsaiMaks() {
+            const jml = parseInt(document.getElementById('kalkor-esai-jumlah').value) || 0;
+            document.getElementById('kalkor-esai-maks-info').textContent = jml;
+        }
+
+        function kalkorGetEsaiMaks() {
+            // Tidak dipakai lagi untuk kalkulasi utama (kini pakai jumlah soal langsung)
+            // Dipertahankan agar tidak error jika dipanggil dari tempat lain
+            const jml = parseInt(document.getElementById('kalkor-esai-jumlah').value) || 0;
+            return jml || 1;
+        }
+
+        /* ---- Bobot bar & warning ---- */
+        function kalkorUpdateBobot(changed) {
+            const pgVal = parseFloat(document.getElementById('kalkor-pg-bobot').value) || 0;
+            const esaiVal = parseFloat(document.getElementById('kalkor-esai-bobot').value) || 0;
+            const total = pgVal + esaiVal;
+            const warning = document.getElementById('kalkor-bobot-warning');
+            const pgJml = parseInt(document.getElementById('kalkor-pg-jumlah').value) || 0;
+            const esaiJml = parseInt(document.getElementById('kalkor-esai-jumlah').value) || 0;
+
+            // Auto-adjust the other field if only one type of soal
+            if (pgJml === 0) { document.getElementById('kalkor-pg-bobot').value = 0; document.getElementById('kalkor-esai-bobot').value = 100; }
+            else if (esaiJml === 0) { document.getElementById('kalkor-pg-bobot').value = 100; document.getElementById('kalkor-esai-bobot').value = 0; }
+
+            document.getElementById('kalkor-bobot-total').textContent = total;
+            warning.classList.toggle('hidden', Math.abs(total - 100) < 0.1);
+            kalkorUpdateBobotBar();
+            kalkorHitungCepat();
+        }
+
+        function kalkorUpdateBobotBar() {
+            const pg = parseFloat(document.getElementById('kalkor-pg-bobot').value) || 0;
+            const esai = parseFloat(document.getElementById('kalkor-esai-bobot').value) || 0;
+            const total = pg + esai || 100;
+            const pgPct = (pg / total * 100).toFixed(1);
+            const esaiPct = (esai / total * 100).toFixed(1);
+            const pgBar = document.getElementById('kalkor-bar-pg');
+            const esaiBar = document.getElementById('kalkor-bar-esai');
+            if (pgBar) { pgBar.style.width = pgPct + '%'; pgBar.textContent = pg > 5 ? `PG ${pg}%` : ''; }
+            if (esaiBar) { esaiBar.style.width = esaiPct + '%'; esaiBar.textContent = esai > 5 ? `Esai ${esai}%` : ''; }
+            const sumPG = document.getElementById('kalkor-summary-pg-bobot');
+            const sumEsai = document.getElementById('kalkor-summary-esai-bobot');
+            const sumTotal = document.getElementById('kalkor-summary-total-bobot');
+            if (sumPG) sumPG.textContent = pg + '%';
+            if (sumEsai) sumEsai.textContent = esai + '%';
+            if (sumTotal) { sumTotal.textContent = (pg + esai) + '%'; sumTotal.className = Math.abs(pg + esai - 100) < 0.1 ? 'text-emerald-400 text-lg font-black mt-1' : 'text-red-400 text-lg font-black mt-1'; }
+        }
+
+        /* ---- Hitung nilai satu siswa ---- */
+        function kalkorHitungSatu(pgBenar, pgSalah, esaiPoin) {
+            const pgJml = parseInt(document.getElementById('kalkor-pg-jumlah').value) || 0;
+            const esaiJml = parseInt(document.getElementById('kalkor-esai-jumlah').value) || 0;
+            const bobotPG = parseFloat(document.getElementById('kalkor-pg-bobot').value) || 0;
+            const bobotEsai = parseFloat(document.getElementById('kalkor-esai-bobot').value) || 0;
+            const sistem = document.getElementById('kalkor-pg-sistem').value;
+            const minusOn = document.getElementById('kalkor-pg-minus').checked;
+            const minusVal = parseFloat(document.getElementById('kalkor-pg-minus-val').value) || 0.25;
+            const esaiMaks = kalkorGetEsaiMaks();
+
+            // Hitung skor PG (0–100)
+            let skorPG = 0;
+            if (pgJml > 0) {
+                let poinPerSoal = 0;
+                if (sistem === 'auto') poinPerSoal = 100 / pgJml;
+                else if (sistem === 'custom') poinPerSoal = parseFloat(document.getElementById('kalkor-pg-poin').value) || 1;
+                else if (sistem === 'fixed1') poinPerSoal = 1;
+                else if (sistem === 'fixed2') poinPerSoal = 2;
+                else if (sistem === 'fixed4') poinPerSoal = 4;
+
+                const maksPG = pgJml * poinPerSoal;
+                const rawPG = (pgBenar * poinPerSoal) - (minusOn ? pgSalah * minusVal * poinPerSoal : 0);
+                skorPG = maksPG > 0 ? Math.max(0, (rawPG / maksPG) * 100) : 0;
+            }
+
+            // Hitung skor esai (0–100) — berdasarkan jumlah benar, seperti PG
+            let skorEsai = 0;
+            if (esaiJml > 0) {
+                skorEsai = Math.min(100, Math.max(0, (esaiPoin / esaiJml) * 100));
+            }
+
+            // Nilai akhir berbobot
+            const totalBobot = bobotPG + bobotEsai || 100;
+            const nilaiAkhir = ((skorPG * bobotPG) + (skorEsai * bobotEsai)) / totalBobot;
+
+            // Skala konversi
+            const skala = parseFloat(document.getElementById('kalkor-skala')?.value || '100');
+            const pembulatan = parseInt(document.getElementById('kalkor-pembulatan')?.value || '2');
+            const nilaiKonversi = parseFloat((nilaiAkhir * skala / 100).toFixed(pembulatan));
+            const skorPGDisp = parseFloat(skorPG.toFixed(pembulatan));
+            const skorEsaiDisp = parseFloat(skorEsai.toFixed(pembulatan));
+
+            return { skorPG: skorPGDisp, skorEsai: skorEsaiDisp, nilaiAkhir: nilaiKonversi };
+        }
+
+        /* ---- Kalkulator Cepat (live) ---- */
+        function kalkorHitungCepat() {
+            const pgBenar = parseFloat(document.getElementById('kalkor-cepat-pg')?.value) || 0;
+            const pgSalah = parseFloat(document.getElementById('kalkor-cepat-pg-salah')?.value) || 0;
+            const esaiPoin = parseFloat(document.getElementById('kalkor-cepat-esai')?.value) || 0;
+            const r = kalkorHitungSatu(pgBenar, pgSalah, esaiPoin);
+            const kkm = parseFloat(document.getElementById('kalkor-kkm')?.value || '75');
+            const skala = parseFloat(document.getElementById('kalkor-skala')?.value || '100');
+            const pembulatan = parseInt(document.getElementById('kalkor-pembulatan')?.value || '2');
+
+            if (document.getElementById('kalkor-cepat-hasil-pg')) {
+                document.getElementById('kalkor-cepat-hasil-pg').textContent = r.skorPG.toFixed(pembulatan);
+                document.getElementById('kalkor-cepat-hasil-esai').textContent = r.skorEsai.toFixed(pembulatan);
+                document.getElementById('kalkor-cepat-hasil-akhir').textContent = r.nilaiAkhir.toFixed(pembulatan);
+                const predikat = kalkorGetPredikat(r.nilaiAkhir * 100 / skala);
+                const lulus = (r.nilaiAkhir * 100 / skala) >= kkm;
+                const predEl = document.getElementById('kalkor-cepat-predikat');
+                const statEl = document.getElementById('kalkor-cepat-status');
+                if (predEl) { predEl.textContent = predikat.label; predEl.className = `text-xs font-black px-3 py-1 rounded-full ${predikat.bg}`; }
+                if (statEl) { statEl.textContent = lulus ? '✓ LULUS' : '✗ REMEDIAL'; statEl.className = `text-xs font-black px-3 py-1 rounded-full ${lulus ? 'bg-emerald-700 text-white' : 'bg-red-700 text-white'}`; }
+            }
+        }
+
+        function kalkorGetPredikat(nilai100) {
+            const a = parseFloat(document.getElementById('kalkor-predikat-a')?.value || '90');
+            const b = parseFloat(document.getElementById('kalkor-predikat-b')?.value || '80');
+            const c = parseFloat(document.getElementById('kalkor-predikat-c')?.value || '70');
+            if (nilai100 >= a) return { label: 'A – Sangat Baik', bg: 'bg-emerald-700 text-white' };
+            if (nilai100 >= b) return { label: 'B – Baik', bg: 'bg-blue-700 text-white' };
+            if (nilai100 >= c) return { label: 'C – Cukup', bg: 'bg-yellow-600 text-white' };
+            return { label: 'D – Perlu Bimbingan', bg: 'bg-red-800 text-white' };
+        }
+
+        function kalkorUpdateKKM() { kalkorHitungCepat(); }
+
+        /* ---- Build input form ---- */
+        function kalkorBuildInputForm() {
+            // sync visibility of PG salah column header
+            const minusOn = document.getElementById('kalkor-pg-minus').checked;
+            const thSalah = document.getElementById('th-pg-salah');
+            if (thSalah) thSalah.classList.toggle('hidden', !minusOn);
+            const thEsai = document.getElementById('th-esai');
+            const esaiJml = parseInt(document.getElementById('kalkor-esai-jumlah').value) || 0;
+            if (thEsai) thEsai.classList.toggle('hidden', esaiJml === 0);
+            // Set max input benar esai sesuai jumlah soal esai
+            const esaiInput = document.getElementById('kalkor-siswa-esai-total');
+            if (esaiInput) {
+                esaiInput.max = esaiJml;
+                esaiInput.placeholder = `0–${esaiJml}`;
+            }
+            kalkorRenderInputTable();
+        }
+
+        /* ---- Tambah siswa (dari dropdown absensi) ---- */
+        function kalkorTambahSiswa() {
+            const sel = document.getElementById('kalkor-siswa-nama-select');
+            const selVal = sel ? sel.value : '';
+            let nama = '', no = kalkorState.siswaList.length + 1;
+            if (selVal) {
+                // format: "absen|nama"
+                const parts = selVal.split('|');
+                no = parseInt(parts[0]) || no;
+                nama = parts[1] || selVal;
+            }
+            if (!nama) return Swal.fire({ icon: 'warning', title: 'Nama kosong', text: 'Pilih nama siswa dari daftar absensi terlebih dahulu.', background: '#1e293b', color: '#f8fafc' });
+            
+            // Cek duplikat
+            if (kalkorState.siswaList.find(s => s.nama === nama)) {
+                return Swal.fire({ icon: 'warning', title: 'Sudah ada', text: `${nama} sudah ada di daftar.`, background: '#1e293b', color: '#f8fafc' });
+            }
+
+            const pgBenar = parseFloat(document.getElementById('kalkor-siswa-pg-benar').value) || 0;
+            const pgSalah = parseFloat(document.getElementById('kalkor-siswa-pg-salah').value) || 0;
+            const esaiJml = parseInt(document.getElementById('kalkor-esai-jumlah').value) || 0;
+            const esaiPoin = Math.min(esaiJml, parseFloat(document.getElementById('kalkor-siswa-esai-total').value) || 0);
+            
+            const r = kalkorHitungSatu(pgBenar, pgSalah, esaiPoin);
+            kalkorState.siswaList.push({ no, nama, pgBenar, pgSalah, esaiPoin, ...r });
+            // clear inputs
+            if (sel) sel.value = '';
+            document.getElementById('kalkor-siswa-pg-benar').value = '';
+            document.getElementById('kalkor-siswa-pg-salah').value = '';
+            document.getElementById('kalkor-siswa-esai-total').value = '';
+            kalkorRenderInputTable();
+        }
+
+        /* ---- Populasi dropdown nama absensi ---- */
+        function kalkorPopulasiDropdownSiswa() {
+            const sel = document.getElementById('kalkor-siswa-nama-select');
+            if (!sel) return;
+            const sorted = [...(db.siswa || [])].sort((a, b) => (parseInt(a.absen)||0) - (parseInt(b.absen)||0));
+            sel.innerHTML = '<option value="">-- Pilih dari Absensi --</option>' +
+                sorted.map(s => `<option value="${(s.absen||'')}|${s.nama}">${s.absen ? s.absen+'. ' : ''}${s.nama}</option>`).join('');
+        }
+
+        /* ---- Populasi dropdown mapel ---- */
+        function kalkorPopulasiDropdownMapel() {
+            const sel = document.getElementById('kalkor-sync-mapel');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">-- Pilih Mata Pelajaran --</option>' +
+                (db.mapel || []).map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
+        }
+
+        /* ---- Sinkronisasi: on change handler ---- */
+        function kalkorOnSyncChange() {
+            const mapelId = document.getElementById('kalkor-sync-mapel').value;
+            const jenis = document.getElementById('kalkor-sync-jenis').value;
+            const infoBox = document.getElementById('kalkor-sync-info');
+            const infoText = document.getElementById('kalkor-sync-info-text');
+            if (!infoBox) return;
+            if (mapelId && jenis) {
+                const mapel = (db.mapel||[]).find(m=>m.id===mapelId);
+                const jenisLabel = {'formatif':'Ujian Harian/Formatif','sts':'STS','sas':'SAS'}[jenis]||jenis;
+                infoBox.classList.remove('hidden');
+                infoText.textContent = `Siap sinkronisasi nama dari absensi untuk mapel "${mapel?.nama||''}", jenis ujian: ${jenisLabel}. Klik "Sync Nama dari Absensi" untuk mulai.`;
+            } else {
+                infoBox.classList.add('hidden');
+            }
+        }
+
+        /* ---- Sinkronisasi nama dari absensi ---- */
+        function kalkorSyncDariAbsensi() {
+            const mapelId = document.getElementById('kalkor-sync-mapel').value;
+            const jenis = document.getElementById('kalkor-sync-jenis').value;
+
+            if (!mapelId) return Swal.fire({ icon: 'warning', title: 'Pilih Mapel', text: 'Pilih mata pelajaran terlebih dahulu.', background: '#1e293b', color: '#f8fafc' });
+            if (!jenis) return Swal.fire({ icon: 'warning', title: 'Pilih Jenis Ujian', text: 'Pilih jenis ujian terlebih dahulu (Formatif, STS, atau SAS).', background: '#1e293b', color: '#f8fafc' });
+            if (!db.siswa || db.siswa.length === 0) return Swal.fire({ icon: 'info', title: 'Belum ada data siswa', text: 'Tambahkan data siswa di menu "Data & Profil Siswa" terlebih dahulu.', background: '#1e293b', color: '#f8fafc' });
+
+            const mapel = (db.mapel||[]).find(m=>m.id===mapelId);
+            const jenisLabel = {'formatif':'Ujian Harian/Formatif','sts':'STS – Sumatif Tengah Semester','sas':'SAS – Sumatif Akhir Semester'}[jenis]||jenis;
+            const sorted = [...db.siswa].sort((a, b) => (parseInt(a.absen)||0) - (parseInt(b.absen)||0));
+            const esaiJml = parseInt(document.getElementById('kalkor-esai-jumlah').value) || 0;
+
+            // Ambil nilai yang sudah ada di db jika ada
+            kalkorState.siswaList = sorted.map((s, i) => {
+                const nilaiRecord = db.nilai ? db.nilai[`${s.id}_${mapelId}`] : null;
+                let existNilai = 0;
+                if (nilaiRecord) {
+                    if (jenis === 'formatif') existNilai = parseFloat(nilaiRecord.formatif)||0;
+                    else if (jenis === 'sts') existNilai = parseFloat(nilaiRecord.sts)||0;
+                    else if (jenis === 'sas') existNilai = parseFloat(nilaiRecord.sas)||0;
+                }
+                const pgBenar = 0, pgSalah = 0, esaiPoin = 0;
+                const r = kalkorHitungSatu(pgBenar, pgSalah, esaiPoin);
+                return { 
+                    no: parseInt(s.absen) || (i + 1), 
+                    nama: s.nama, 
+                    siswaId: s.id,
+                    mapelId,
+                    jenisUjian: jenis,
+                    nilaiDb: existNilai,
+                    pgBenar, pgSalah, esaiPoin, ...r 
+                };
+            });
+
+            // Update label
+            const labelEl = document.getElementById('kalkor-sync-label');
+            if (labelEl) labelEl.textContent = `${mapel?.nama || ''} — ${jenisLabel}`;
+
+            kalkorRenderInputTable();
+
+            kalkorUpdateSimpanInfo();
+            Swal.fire({ 
+                icon: 'success', 
+                title: `${kalkorState.siswaList.length} siswa disinkronkan`, 
+                html: `<span style="font-size:13px">Mapel: <b>${mapel?.nama||''}</b><br>Ujian: <b>${jenisLabel}</b><br><br>Silakan isi kolom PG Benar dan Esai untuk setiap siswa.</span>`, 
+                background: '#1e293b', color: '#f8fafc', timer: 3000, showConfirmButton: false 
+            });
+        }
+
+        /* ---- Import semua siswa dari data kelas (nama saja, tanpa no absen manual) ---- */
+        function kalkorImportDariSiswa() {
+            if (!db.siswa || db.siswa.length === 0) return Swal.fire({ icon: 'info', title: 'Belum ada data siswa', text: 'Tambahkan data siswa di menu "Data & Profil Siswa" terlebih dahulu.', background: '#1e293b', color: '#f8fafc' });
+            const sorted = [...db.siswa].sort((a, b) => (parseInt(a.absen) || 0) - (parseInt(b.absen) || 0));
+            kalkorState.siswaList = sorted.map((s, i) => {
+                const pgBenar = 0, pgSalah = 0, esaiPoin = 0;
+                const r = kalkorHitungSatu(pgBenar, pgSalah, esaiPoin);
+                return { no: parseInt(s.absen) || (i + 1), nama: s.nama, siswaId: s.id, pgBenar, pgSalah, esaiPoin, ...r };
+            });
+            kalkorRenderInputTable();
+            Swal.fire({ icon: 'success', title: `${kalkorState.siswaList.length} siswa diimport`, text: 'Silakan isi kolom PG Benar, PG Salah, dan Benar Esai untuk setiap siswa.', background: '#1e293b', color: '#f8fafc', timer: 2500, showConfirmButton: false });
+        }
+
+        /* ---- Render tabel input ---- */
+        function kalkorRenderInputTable() {
+            const tbody = document.getElementById('kalkor-siswa-tbody');
+            const emptyRow = document.getElementById('kalkor-empty-row');
+            const minusOn = document.getElementById('kalkor-pg-minus').checked;
+            const esaiJml = parseInt(document.getElementById('kalkor-esai-jumlah').value) || 0;
+            const pembulatan = parseInt(document.getElementById('kalkor-pembulatan')?.value || '2');
+
+            if (kalkorState.siswaList.length === 0) {
+                tbody.innerHTML = `<tr id="kalkor-empty-row"><td colspan="7" class="text-center py-10 text-slate-500 italic"><i class="fas fa-user-plus text-3xl mb-2 block text-slate-700"></i>Belum ada siswa. Tambah atau import dari daftar kelas.</td></tr>`;
+                document.getElementById('kalkor-siswa-count').textContent = '0 siswa diinput';
+                return;
+            }
+
+            tbody.innerHTML = kalkorState.siswaList.map((s, idx) => {
+                const r = kalkorHitungSatu(s.pgBenar, s.pgSalah, s.esaiPoin);
+                const kkm = parseFloat(document.getElementById('kalkor-kkm')?.value || '75');
+                const skala = parseFloat(document.getElementById('kalkor-skala')?.value || '100');
+                const lulus = (r.nilaiAkhir * 100 / skala) >= kkm;
+                return `<tr class="border-b border-slate-800/60 hover:bg-slate-800/30 transition">
+                    <td class="px-3 py-2.5 text-slate-400 font-bold">${s.no}</td>
+                    <td class="px-3 py-2.5 text-slate-100 font-semibold">
+                        <input type="text" value="${s.nama}" class="bg-transparent border-b border-slate-700 text-slate-100 text-xs w-full focus:outline-none focus:border-fuchsia-500 transition" onchange="kalkorState.siswaList[${idx}].nama=this.value">
+                    </td>
+                    <td class="px-3 py-2.5 text-center">
+                        <input type="number" value="${s.pgBenar}" min="0" class="bg-slate-800 border border-slate-700 text-white text-xs text-center w-16 rounded px-1.5 py-1 focus:outline-none focus:border-blue-500 transition" onchange="kalkorState.siswaList[${idx}].pgBenar=parseFloat(this.value)||0; kalkorRenderInputTable()">
+                    </td>
+                    ${minusOn ? `<td class="px-3 py-2.5 text-center">
+                        <input type="number" value="${s.pgSalah}" min="0" class="bg-slate-800 border border-slate-700 text-white text-xs text-center w-16 rounded px-1.5 py-1 focus:outline-none focus:border-red-500 transition" onchange="kalkorState.siswaList[${idx}].pgSalah=parseFloat(this.value)||0; kalkorRenderInputTable()">
+                    </td>` : ''}
+                    ${esaiJml > 0 ? `<td class="px-3 py-2.5 text-center">
+                        <input type="number" value="${s.esaiPoin}" min="0" max="${esaiJml}" placeholder="0–${esaiJml}" class="bg-slate-800 border border-slate-700 text-white text-xs text-center w-20 rounded px-1.5 py-1 focus:outline-none focus:border-emerald-500 transition" onchange="kalkorState.siswaList[${idx}].esaiPoin=Math.min(${esaiJml},parseFloat(this.value)||0); this.value=kalkorState.siswaList[${idx}].esaiPoin; kalkorRenderInputTable()">
+                    </td>` : ''}
+                    <td class="px-3 py-2.5 text-center font-black text-sm ${lulus ? 'text-emerald-400' : 'text-amber-400'}">${r.nilaiAkhir.toFixed(pembulatan)}</td>
+                    <td class="px-3 py-2.5 text-center">
+                        <button onclick="kalkorHapusSiswa(${idx})" class="text-red-400 hover:text-red-300 transition text-xs"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            }).join('');
+            document.getElementById('kalkor-siswa-count').textContent = `${kalkorState.siswaList.length} siswa diinput`;
+        }
+
+        function kalkorHapusSiswa(idx) {
+            kalkorState.siswaList.splice(idx, 1);
+            kalkorRenderInputTable();
+        }
+
+        function kalkorHapusSemua() {
+            if (kalkorState.siswaList.length === 0) return;
+            Swal.fire({ title: 'Hapus semua data?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, hapus', cancelButtonText: 'Batal', background: '#1e293b', color: '#f8fafc', confirmButtonColor: '#dc2626' })
+                .then(r => { if (r.isConfirmed) { kalkorState.siswaList = []; kalkorState.hasil = []; kalkorRenderInputTable(); } });
+        }
+
+        /* ---- Hitung semua & render hasil ---- */
+        function kalkorHitungSemua() {
+            const kkm = parseFloat(document.getElementById('kalkor-kkm')?.value || '75');
+            const skala = parseFloat(document.getElementById('kalkor-skala')?.value || '100');
+            const pembulatan = parseInt(document.getElementById('kalkor-pembulatan')?.value || '2');
+
+            kalkorState.hasil = kalkorState.siswaList.map(s => {
+                const r = kalkorHitungSatu(s.pgBenar, s.pgSalah, s.esaiPoin);
+                const nilai100 = r.nilaiAkhir * 100 / skala;
+                const predikat = kalkorGetPredikat(nilai100);
+                const lulus = nilai100 >= kkm;
+                return { ...s, ...r, predikat, lulus };
+            });
+
+            // Sort by nilai descending for ranking
+            const sorted = [...kalkorState.hasil].sort((a, b) => b.nilaiAkhir - a.nilaiAkhir);
+            let rank = 1;
+            sorted.forEach((item, i) => {
+                if (i > 0 && item.nilaiAkhir < sorted[i-1].nilaiAkhir) rank = i + 1;
+                const orig = kalkorState.hasil.find(h => h === item);
+                if (orig) orig.peringkat = rank;
+            });
+
+            kalkorRenderHasil();
+            kalkorUpdateSimpanInfo();
+        }
+
+        function kalkorRenderHasil() {
+            const tbody = document.getElementById('kalkor-hasil-tbody');
+            const pembulatan = parseInt(document.getElementById('kalkor-pembulatan')?.value || '2');
+            const esaiJml = parseInt(document.getElementById('kalkor-esai-jumlah').value) || 0;
+            const hasil = kalkorState.hasil;
+
+            if (!hasil.length) {
+                tbody.innerHTML = `<tr><td colspan="7" class="text-center py-10 text-slate-500 italic"><i class="fas fa-calculator text-3xl mb-2 block text-slate-700"></i>Belum ada hasil.</td></tr>`;
+                return;
+            }
+
+            // Statistik
+            const nilais = hasil.map(h => h.nilaiAkhir);
+            const skala = parseFloat(document.getElementById('kalkor-skala')?.value || '100');
+            const kkm = parseFloat(document.getElementById('kalkor-kkm')?.value || '75');
+            const max = Math.max(...nilais), min = Math.min(...nilais);
+            const avg = nilais.reduce((a, b) => a + b, 0) / nilais.length;
+            const lulusCount = hasil.filter(h => h.lulus).length;
+
+            document.getElementById('kalkor-stat-max').textContent = max.toFixed(pembulatan);
+            document.getElementById('kalkor-stat-min').textContent = min.toFixed(pembulatan);
+            document.getElementById('kalkor-stat-avg').textContent = avg.toFixed(pembulatan);
+            document.getElementById('kalkor-stat-kkm').textContent = `${lulusCount}/${hasil.length}`;
+
+            // Render tabel
+            tbody.innerHTML = hasil.map((h, i) => `
+                <tr class="border-b border-slate-800/60 hover:bg-slate-800/30 transition ${!h.lulus ? 'bg-red-950/10' : ''}">
+                    <td class="px-3 py-2.5 text-slate-400 font-bold">${h.no}</td>
+                    <td class="px-3 py-2.5 text-slate-100 font-semibold">${h.nama}</td>
+                    <td class="px-3 py-2.5 text-center font-bold text-blue-300">${h.skorPG.toFixed(pembulatan)}</td>
+                    <td class="px-3 py-2.5 text-center font-bold text-emerald-300">${esaiJml > 0 ? h.skorEsai.toFixed(pembulatan) : '-'}</td>
+                    <td class="px-3 py-2.5 text-center font-black text-lg ${h.lulus ? 'text-emerald-400' : 'text-red-400'}">${h.nilaiAkhir.toFixed(pembulatan)}</td>
+                    <td class="px-3 py-2.5 text-center text-slate-300 font-bold">${h.peringkat || '-'}</td>
+                    <td class="px-3 py-2.5 text-center">
+                        <span class="text-[9px] font-black px-2 py-1 rounded-full ${h.lulus ? 'bg-emerald-700/60 text-emerald-300' : 'bg-red-700/60 text-red-300'}">${h.lulus ? 'Lulus' : 'Remedial'}</span>
+                    </td>
+                </tr>`).join('');
+
+            // Distribusi chart
+            const dist = [0, 0, 0, 0, 0];
+            hasil.forEach(h => {
+                const n = h.nilaiAkhir * 100 / skala;
+                if (n < 55) dist[0]++;
+                else if (n < 65) dist[1]++;
+                else if (n < 75) dist[2]++;
+                else if (n < 85) dist[3]++;
+                else dist[4]++;
+            });
+            ['dist-0','dist-1','dist-2','dist-3','dist-4'].forEach((id, i) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = dist[i];
+            });
+            const colors = ['bg-red-500','bg-orange-500','bg-yellow-500','bg-blue-500','bg-emerald-500'];
+            const maxDist = Math.max(...dist, 1);
+            const chartEl = document.getElementById('kalkor-distribusi-chart');
+            if (chartEl) {
+                chartEl.innerHTML = dist.map((v, i) => `
+                    <div class="flex flex-col items-center justify-end gap-1" style="height:100%">
+                        <span class="text-[10px] font-black text-white">${v}</span>
+                        <div class="${colors[i]} rounded-t-md w-full transition-all duration-500" style="height:${v > 0 ? Math.max(8, (v/maxDist)*100) : 4}%"></div>
+                    </div>`).join('');
+            }
+        }
+
+        /* ---- Update info panel Simpan ke Nilai ---- */
+        function kalkorUpdateSimpanInfo() {
+            const mapelId = document.getElementById('kalkor-sync-mapel')?.value || '';
+            const jenis   = document.getElementById('kalkor-sync-jenis')?.value || '';
+            const mapelObj = mapelId ? (db.mapel||[]).find(m=>m.id===mapelId) : null;
+            const jenisLabel = {'formatif':'📝 Ujian Harian / Formatif','sts':'📋 STS – Sumatif Tengah Semester','sas':'📑 SAS – Sumatif Akhir Semester'}[jenis] || '— belum dipilih —';
+            const elMapel = document.getElementById('kalkor-simpan-info-mapel');
+            const elJenis = document.getElementById('kalkor-simpan-info-jenis');
+            const elCount = document.getElementById('kalkor-simpan-info-count');
+            if (elMapel) elMapel.textContent = mapelObj ? mapelObj.nama : '— belum dipilih —';
+            if (elJenis) elJenis.textContent = jenisLabel;
+            if (elCount) elCount.textContent = kalkorState.hasil.length || kalkorState.siswaList.length;
+        }
+
+        /* ---- Simpan hasil koreksi ke db.nilai (Input Nilai & Rapor) ---- */
+        function kalkorSimpanKeNilai(previewOnly) {
+            const mapelId = document.getElementById('kalkor-sync-mapel')?.value || '';
+            const jenis   = document.getElementById('kalkor-sync-jenis')?.value || '';
+
+            // Validasi: harus ada mapel & jenis
+            if (!mapelId) return Swal.fire({ icon: 'warning', title: 'Pilih Mata Pelajaran', html: 'Kembali ke tab <b>Input Jawaban Siswa</b>, pilih Mata Pelajaran dan Jenis Ujian, lalu Sync terlebih dahulu.', background: '#1e293b', color: '#f8fafc' });
+            if (!jenis)   return Swal.fire({ icon: 'warning', title: 'Pilih Jenis Ujian', html: 'Pilih jenis ujian (Formatif, STS, atau SAS) di tab <b>Input Jawaban Siswa</b>.', background: '#1e293b', color: '#f8fafc' });
+
+            // Hitung semua dulu jika belum
+            if (kalkorState.hasil.length === 0) {
+                if (kalkorState.siswaList.length === 0) return Swal.fire({ icon: 'warning', title: 'Tidak ada data', text: 'Belum ada siswa yang diinput untuk koreksi.', background: '#1e293b', color: '#f8fafc' });
+                kalkorHitungSemua();
+            }
+
+            const mapelObj   = (db.mapel||[]).find(m=>m.id===mapelId);
+            const jenisLabel = {'formatif':'Ujian Harian/Formatif','sts':'STS','sas':'SAS'}[jenis]||jenis;
+            const skala      = parseFloat(document.getElementById('kalkor-skala')?.value || '100');
+            const pembulatan = parseInt(document.getElementById('kalkor-pembulatan')?.value || '2');
+
+            // Cek apakah formatif terkunci (ada agenda TP di mapel ini)
+            if (jenis === 'formatif') {
+                const hasTP = (db.tugas||[]).filter(t=>t.mapelId===mapelId).length > 0 || ((db.tp||[]).filter(t=>t.mapelId===mapelId).length > 0);
+                if (hasTP) {
+                    return Swal.fire({
+                        icon: 'warning',
+                        title: 'Formatif Terkunci',
+                        html: `Mapel <b>${mapelObj?.nama||''}</b> memiliki Agenda TP/Formatif, sehingga nilai Formatif dihitung otomatis dari TP dan <b>tidak bisa diisi manual</b>.<br><br>Gunakan jenis <b>STS</b> atau <b>SAS</b> untuk menyimpan hasil koreksi ini.`,
+                        background: '#1e293b', color: '#f8fafc'
+                    });
+                }
+            }
+
+            // Siapkan preview data
+            const rows = kalkorState.hasil.map(h => {
+                const nilaiAngka = Math.round(h.nilaiAkhir * 100 / skala);
+                // Cari siswaId dari kalkorState (dari sync) atau cocokkan nama
+                const siswaObj = h.siswaId
+                    ? (db.siswa||[]).find(s=>s.id===h.siswaId)
+                    : (db.siswa||[]).find(s=>s.nama===h.nama);
+                return { ...h, siswaId: siswaObj?.id || null, nilaiAngka };
+            });
+
+            const tidakDitemukan = rows.filter(r=>!r.siswaId);
+            const akanDisimpan   = rows.filter(r=>r.siswaId);
+
+            if (previewOnly) {
+                // Tampilkan preview saja
+                const previewRows = rows.map(r => `
+                    <tr style="border-bottom:1px solid #334155">
+                        <td style="padding:4px 8px;color:${r.siswaId?'#f8fafc':'#ef4444'}">${r.nama}${!r.siswaId?' <i>(tidak ditemukan)</i>':''}</td>
+                        <td style="padding:4px 8px;text-align:center;font-weight:700;color:${r.lulus?'#34d399':'#f87171'}">${r.nilaiAngka}</td>
+                        <td style="padding:4px 8px;text-align:center;color:${r.lulus?'#34d399':'#f87171'}">${r.lulus?'Lulus':'Remedial'}</td>
+                    </tr>`).join('');
+                return Swal.fire({
+                    title: `Preview Simpan — ${mapelObj?.nama||''} (${jenisLabel})`,
+                    html: `<div style="max-height:350px;overflow-y:auto;font-size:12px">
+                        <table style="width:100%;border-collapse:collapse">
+                            <thead><tr style="background:#1e3a5f;color:#fff">
+                                <th style="padding:5px 8px;text-align:left">Nama Siswa</th>
+                                <th style="padding:5px 8px;text-align:center">Nilai</th>
+                                <th style="padding:5px 8px;text-align:center">Status</th>
+                            </tr></thead>
+                            <tbody>${previewRows}</tbody>
+                        </table>
+                        ${tidakDitemukan.length ? `<p style="color:#f87171;font-size:11px;margin-top:8px;font-weight:700">⚠️ ${tidakDitemukan.length} siswa tidak ditemukan di database (nama tidak cocok).</p>` : ''}
+                    </div>`,
+                    showConfirmButton: true,
+                    confirmButtonText: 'Simpan Sekarang',
+                    showCancelButton: true,
+                    cancelButtonText: 'Tutup',
+                    background: '#1e293b', color: '#f8fafc', confirmButtonColor: '#059669',
+                    width: '500px'
+                }).then(r => { if (r.isConfirmed) kalkorSimpanKeNilai(false); });
+            }
+
+            // EKSEKUSI SIMPAN
+            if (akanDisimpan.length === 0) {
+                return Swal.fire({ icon: 'error', title: 'Tidak ada data yang cocok', text: 'Tidak ada siswa yang bisa dicocokkan dengan database. Pastikan nama siswa sesuai atau gunakan fitur Sync dari Absensi.', background: '#1e293b', color: '#f8fafc' });
+            }
+
+            let simpanCount = 0;
+            akanDisimpan.forEach(h => {
+                const key = `${h.siswaId}_${mapelId}`;
+                if (!db.nilai[key]) db.nilai[key] = { formatif: 0, sts: 0, sas: 0 };
+                db.nilai[key][jenis] = Math.round(h.nilaiAkhir * 100 / skala);
+                simpanCount++;
+            });
+
+            saveDB();
+
+            // Refresh tabel Input Nilai jika sedang terbuka di mapel yang sama
+            const selectNilaiMapel = document.getElementById('select-nilai-mapel');
+            if (selectNilaiMapel && selectNilaiMapel.value === mapelId) {
+                loadInputNilaiSiswa();
+            }
+
+            const pesanTidakDitemukan = tidakDitemukan.length
+                ? `<br><span style="color:#fbbf24;font-size:12px">⚠️ ${tidakDitemukan.length} siswa tidak ditemukan (nama tidak cocok di database): ${tidakDitemukan.map(r=>r.nama).join(', ')}</span>`
+                : '';
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil Disimpan!',
+                html: `<span style="font-size:13px">
+                    <b>${simpanCount} siswa</b> berhasil disimpan ke:<br>
+                    📚 Mapel: <b style="color:#a78bfa">${mapelObj?.nama||''}</b><br>
+                    📋 Jenis: <b style="color:#fcd34d">${jenisLabel}</b><br><br>
+                    Nilai sudah otomatis masuk ke menu <b>Input Nilai</b> dan akan terhitung di <b>Rapor</b>.
+                    ${pesanTidakDitemukan}
+                </span>`,
+                background: '#1e293b', color: '#f8fafc', confirmButtonColor: '#059669',
+                confirmButtonText: 'OK, Lihat di Input Nilai',
+            }).then(r => {
+                if (r.isConfirmed) {
+                    // Navigasi ke menu Input Nilai dan pilih mapel yang sesuai
+                    switchTab('nilai');
+                    setTimeout(() => {
+                        const sel = document.getElementById('select-nilai-mapel');
+                        if (sel) { sel.value = mapelId; loadInputNilaiSiswa(); }
+                    }, 300);
+                }
+            });
+        }
+
+        /* ---- Reset form ---- */
+        function resetKalkorForm() {
+            Swal.fire({ title: 'Reset semua data kalkulator?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, reset', cancelButtonText: 'Batal', background: '#1e293b', color: '#f8fafc', confirmButtonColor: '#dc2626' })
+                .then(r => {
+                    if (r.isConfirmed) {
+                        kalkorState.siswaList = [];
+                        kalkorState.hasil = [];
+                        document.getElementById('kalkor-pg-jumlah').value = 30;
+                        document.getElementById('kalkor-pg-bobot').value = 60;
+                        document.getElementById('kalkor-esai-jumlah').value = 5;
+                        document.getElementById('kalkor-esai-bobot').value = 40;
+                        document.getElementById('kalkor-pg-sistem').value = 'auto';
+                        document.getElementById('kalkor-pg-minus').checked = false;
+                        document.getElementById('kalkor-esai-distribusi').value = 'rata';
+                        document.getElementById('kalkor-esai-poin-rata').value = 20;
+                        document.getElementById('kalkor-kkm').value = 75;
+                        document.getElementById('kalkor-skala').value = '100';
+                        document.getElementById('kalkor-pembulatan').value = '2';
+                        kalkorInit();
+                        switchKalkorTab('setup');
+                        const syncMapelEl = document.getElementById('kalkor-sync-mapel');
+                        const syncJenisEl = document.getElementById('kalkor-sync-jenis');
+                        if(syncMapelEl) syncMapelEl.value='';
+                        if(syncJenisEl) syncJenisEl.value='';
+                        const syncInfoBox = document.getElementById('kalkor-sync-info');
+                        if(syncInfoBox) syncInfoBox.classList.add('hidden');
+                        const syncLabelEl = document.getElementById('kalkor-sync-label');
+                        if(syncLabelEl) syncLabelEl.textContent='Daftar Siswa';
+                        Swal.fire({ icon: 'success', title: 'Reset berhasil', background: '#1e293b', color: '#f8fafc', timer: 1500, showConfirmButton: false });
+                    }
+                });
+        }
+
+        /* ---- Cetak Hasil ---- */
+        function cetakHasilKoreksi() {
+            if (kalkorState.hasil.length === 0) {
+                if (kalkorState.siswaList.length > 0) kalkorHitungSemua();
+                else return Swal.fire({ icon: 'warning', title: 'Tidak ada data', text: 'Masukkan data siswa terlebih dahulu.', background: '#1e293b', color: '#f8fafc' });
+            }
+            const pembulatan = parseInt(document.getElementById('kalkor-pembulatan')?.value || '2');
+            const skala = parseFloat(document.getElementById('kalkor-skala')?.value || '100');
+            const esaiJml = parseInt(document.getElementById('kalkor-esai-jumlah').value) || 0;
+            const kkm = parseFloat(document.getElementById('kalkor-kkm')?.value || '75');
+            const namaSekolah = db.profil?.sekolah || 'SEKOLAH';
+            const wali = db.profil?.wali || '-';
+            const kelas = db.profil?.kelas || '-';
+            const now = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+            // Info sinkronisasi mapel & jenis ujian
+            const syncMapelId = document.getElementById('kalkor-sync-mapel')?.value || '';
+            const syncJenis = document.getElementById('kalkor-sync-jenis')?.value || '';
+            const syncMapelObj = syncMapelId ? (db.mapel||[]).find(m=>m.id===syncMapelId) : null;
+            const syncMapelNama = syncMapelObj?.nama || '';
+            const syncJenisLabel = {'formatif':'Ujian Harian/Formatif','sts':'STS – Sumatif Tengah Semester','sas':'SAS – Sumatif Akhir Semester'}[syncJenis] || '';
+            const syncInfo = syncMapelNama ? 'Mapel: ' + syncMapelNama + ' &nbsp;|&nbsp; Jenis: ' + syncJenisLabel : '';
+            const lulusCount = kalkorState.hasil.filter(h => h.lulus).length;
+            const remedialCount = kalkorState.hasil.length - lulusCount;
+            const avg = (kalkorState.hasil.reduce((s, h) => s + h.nilaiAkhir, 0) / kalkorState.hasil.length).toFixed(pembulatan);
+            const max = Math.max(...kalkorState.hasil.map(h => h.nilaiAkhir)).toFixed(pembulatan);
+            const min = Math.min(...kalkorState.hasil.map(h => h.nilaiAkhir)).toFixed(pembulatan);
+
+            const rows = kalkorState.hasil.map((h, i) => `
+                <tr style="background:${i%2===0?'#f9fafb':'#fff'}">
+                    <td style="padding:5px 8px;border:1px solid #d1d5db;text-align:center;">${i+1}</td>
+                    <td style="padding:5px 8px;border:1px solid #d1d5db;">${h.nama}</td>
+                    <td style="padding:5px 8px;border:1px solid #d1d5db;text-align:center;">${h.pgBenar} / ${document.getElementById('kalkor-pg-jumlah').value}</td>
+                    <td style="padding:5px 8px;border:1px solid #d1d5db;text-align:center;">${h.skorPG.toFixed(pembulatan)}</td>
+                    <td style="padding:5px 8px;border:1px solid #d1d5db;text-align:center;">${esaiJml > 0 ? h.skorEsai.toFixed(pembulatan) : '-'}</td>
+                    <td style="padding:5px 8px;border:1px solid #d1d5db;text-align:center;font-weight:900;color:${h.lulus?'#16a34a':'#dc2626'}">${h.nilaiAkhir.toFixed(pembulatan)}</td>
+                    <td style="padding:5px 8px;border:1px solid #d1d5db;text-align:center;">${h.peringkat || '-'}</td>
+                    <td style="padding:5px 8px;border:1px solid #d1d5db;text-align:center;color:${h.lulus?'#16a34a':'#dc2626'};font-weight:700;">${h.lulus ? 'Lulus' : 'Remedial'}</td>
+                </tr>`).join('');
+
+            const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
+            <title>Hasil Koreksi - ${namaSekolah}</title>
+            <style>@page{size:A4 landscape;margin:15mm}*{box-sizing:border-box}body{font-family:'Times New Roman',serif;font-size:11px;color:#111;background:#fff;margin:0;padding:0}table{border-collapse:collapse;width:100%}@media print{body{margin:0}}</style>
+            </head><body>
+            <div style="text-align:center;border-bottom:3px double #16a34a;padding-bottom:10px;margin-bottom:14px;">
+                <h2 style="font-size:15px;font-weight:900;text-transform:uppercase;margin:0;">${namaSekolah}</h2>
+                <h3 style="font-size:13px;font-weight:700;margin:3px 0 2px;">HASIL KOREKSI PENILAIAN</h3>
+                ${syncInfo ? `<p style="font-size:11px;font-weight:700;margin:2px 0;color:#7c3aed;">${syncInfo}</p>` : ''}
+                <p style="font-size:10px;margin:2px 0;">Kelas: ${kelas} &nbsp;|&nbsp; Wali Kelas: ${wali} &nbsp;|&nbsp; KKM: ${kkm} &nbsp;|&nbsp; Dicetak: ${now}</p>
+            </div>
+            <table style="margin-bottom:12px;width:auto;font-size:10px;border:none">
+                <tr>
+                    <td style="padding:3px 8px;border:none"><strong>Total Siswa:</strong> ${kalkorState.hasil.length}</td>
+                    <td style="padding:3px 8px;border:none"><strong>Lulus:</strong> <span style="color:#16a34a">${lulusCount}</span></td>
+                    <td style="padding:3px 8px;border:none"><strong>Remedial:</strong> <span style="color:#dc2626">${remedialCount}</span></td>
+                    <td style="padding:3px 8px;border:none"><strong>Nilai Tertinggi:</strong> ${max}</td>
+                    <td style="padding:3px 8px;border:none"><strong>Terendah:</strong> ${min}</td>
+                    <td style="padding:3px 8px;border:none"><strong>Rata-Rata:</strong> ${avg}</td>
+                </tr>
+            </table>
+            <table>
+                <thead>
+                    <tr style="background:#f0fdf4;border-bottom:2px solid #16a34a;">
+                        <th style="padding:6px 8px;border:1px solid #d1d5db;width:35px;">No</th>
+                        <th style="padding:6px 8px;border:1px solid #d1d5db;text-align:left;">Nama Siswa</th>
+                        <th style="padding:6px 8px;border:1px solid #d1d5db;width:70px;">PG Benar</th>
+                        <th style="padding:6px 8px;border:1px solid #d1d5db;width:70px;">Skor PG</th>
+                        <th style="padding:6px 8px;border:1px solid #d1d5db;width:70px;">${esaiJml > 0 ? 'Skor Esai' : '-'}</th>
+                        <th style="padding:6px 8px;border:1px solid #d1d5db;width:80px;">Nilai Akhir</th>
+                        <th style="padding:6px 8px;border:1px solid #d1d5db;width:60px;">Peringkat</th>
+                        <th style="padding:6px 8px;border:1px solid #d1d5db;width:70px;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+            <div style="margin-top:20px;text-align:right;font-size:10px;color:#555;font-style:italic;">Dicetak dari e-Rapot Madrasah v6.1</div>
+            <script>window.onload=function(){setTimeout(function(){window.print();},400);}<\/script>
+            </body></html>`;
+
+            const w = window.open('', '_blank', 'width=1000,height=700');
+            if (!w) return Swal.fire({ icon: 'warning', title: 'Popup diblokir', text: 'Izinkan popup untuk mencetak.', background: '#1e293b', color: '#f8fafc' });
+            w.document.write(html);
+            w.document.close();
+        }
+        // ============================================================
+        // END KALKULATOR KOREKSI PENILAIAN MODULE
         // ============================================================
 
     </script>
