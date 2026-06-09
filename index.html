@@ -3123,6 +3123,9 @@
                                 <button onclick="exportRemedialExcel()" class="text-xs font-bold px-3 py-1.5 bg-emerald-700/30 text-emerald-400 border border-emerald-700/40 hover:bg-emerald-700 hover:text-white rounded-lg transition flex items-center gap-1">
                                     <i class="fas fa-file-excel"></i> Export
                                 </button>
+                                <button onclick="cetakPDFRemedial()" class="text-xs font-bold px-3 py-1.5 bg-red-700/30 text-red-400 border border-red-700/40 hover:bg-red-700 hover:text-white rounded-lg transition flex items-center gap-1">
+                                    <i class="fas fa-file-pdf"></i> Cetak PDF
+                                </button>
                             </div>
                         </div>
                         <div class="overflow-x-auto">
@@ -5998,6 +6001,133 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                 XLSX.utils.book_append_sheet(wb, ws, `Remedial ${jenisLabel}`);
                 XLSX.writeFile(wb, `Remedial_${m.nama.replace(/\s/g,'_')}_${jenisLabel}.xlsx`);
             });
+        }
+
+        function cetakPDFRemedial() {
+            ensureRemedialDB();
+            const mId = document.getElementById('select-remedial-mapel').value;
+            const jenis = document.getElementById('select-remedial-jenis').value;
+            if (!mId) return Swal.fire('Peringatan', 'Pilih mapel terlebih dahulu.', 'warning');
+
+            const m = db.mapel.find(x => x.id == mId);
+            const kkm = parseFloat(m?.kkm) || 0;
+            const jenisLabel = jenis === 'formatif' ? 'Formatif (Rata-rata TP)' : jenis === 'sts' ? 'STS – Sumatif Tengah Semester' : 'SAS – Sumatif Akhir Semester';
+            const namaSekolah = db.profil?.sekolah || 'SEKOLAH';
+            const wali = db.profil?.wali || '-';
+            const kelas = db.profil?.kelas || '-';
+            const now = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+            const hanyaPerlu = document.getElementById('toggle-hanya-perlu-remedial').checked;
+
+            let totalPerlu = 0, totalDiisi = 0, totalLulus = 0, totalBelumTuntas = 0;
+            let rows = '';
+            let no = 0;
+
+            db.siswa.forEach((s) => {
+                const asli = getNilaiAsliRemedial(s.id, mId, jenis);
+                const perluRemedial = asli !== null && asli < kkm;
+                const key = `${s.id}_${mId}_${jenis}`;
+                const remVal = db.remedial[key];
+                const sudahDiisi = remVal !== undefined && remVal !== null && remVal !== '';
+                const nilaiAkhir = getNilaiAkhirSetelahRemedial(s.id, mId, jenis);
+
+                if (asli !== null && asli < kkm) totalPerlu++;
+                if (sudahDiisi) totalDiisi++;
+                if (nilaiAkhir !== null && nilaiAkhir >= kkm) totalLulus++;
+                if (nilaiAkhir !== null && nilaiAkhir < kkm) totalBelumTuntas++;
+
+                if (hanyaPerlu && !perluRemedial) return;
+                no++;
+
+                const statusAsli = asli === null ? 'Belum Ada'
+                    : asli >= kkm ? 'Tuntas' : 'Remedial';
+                const statusAsliColor = asli === null ? '#94a3b8'
+                    : asli >= kkm ? '#16a34a' : '#dc2626';
+                const hasilAkhir = nilaiAkhir === null ? '-'
+                    : nilaiAkhir >= kkm ? '✓ Tuntas' : 'Belum Tuntas';
+                const hasilColor = nilaiAkhir === null ? '#94a3b8'
+                    : nilaiAkhir >= kkm ? '#16a34a' : '#d97706';
+                const rowBg = no % 2 === 0 ? '#ffffff' : '#f9fafb';
+                const remedialHighlight = perluRemedial ? '#fff5f5' : rowBg;
+
+                rows += `<tr style="background:${remedialHighlight}">
+                    <td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;font-size:11px;">${no}</td>
+                    <td style="padding:5px 8px;border:1px solid #e2e8f0;font-size:11px;">${s.nama}</td>
+                    <td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;font-size:10px;color:#64748b;">${s.absen || '-'}</td>
+                    <td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;font-weight:700;font-size:12px;color:${asli === null ? '#94a3b8' : asli >= kkm ? '#16a34a' : '#dc2626'};">${asli !== null ? asli.toFixed(1) : '-'}</td>
+                    <td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;font-size:11px;color:#475569;">${kkm}</td>
+                    <td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">
+                        <span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;background:${statusAsliColor}20;color:${statusAsliColor};border:1px solid ${statusAsliColor}60;">${statusAsli}</span>
+                    </td>
+                    <td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;font-weight:700;font-size:12px;color:#7c3aed;">${sudahDiisi ? parseFloat(remVal).toFixed(1) : '<span style="color:#94a3b8;font-size:10px;">—</span>'}</td>
+                    <td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;font-weight:900;font-size:13px;color:${hasilColor === '#16a34a' ? '#15803d' : hasilColor};">${nilaiAkhir !== null ? nilaiAkhir.toFixed(1) : '-'}</td>
+                    <td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">
+                        <span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;background:${hasilColor}20;color:${hasilColor};border:1px solid ${hasilColor}60;">${hasilAkhir}</span>
+                    </td>
+                </tr>`;
+            });
+
+            if (!rows) rows = `<tr><td colspan="9" style="text-align:center;padding:20px;color:#94a3b8;font-style:italic;">Tidak ada data siswa yang ditampilkan.</td></tr>`;
+
+            const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
+            <title>Remedial – ${m.nama} – ${namaSekolah}</title>
+            <style>
+                @page { size: A4 landscape; margin: 12mm; }
+                * { box-sizing: border-box; }
+                body { font-family: 'Times New Roman', serif; font-size: 11px; color: #1e293b; background: #fff; margin: 0; padding: 0; }
+                table { border-collapse: collapse; width: 100%; }
+                @media print { body { margin: 0; } }
+            </style>
+            </head><body>
+            <div style="text-align:center;border-bottom:3px double #dc2626;padding-bottom:10px;margin-bottom:14px;">
+                <h2 style="font-size:16px;font-weight:900;text-transform:uppercase;margin:0 0 3px 0;">${namaSekolah}</h2>
+                <h3 style="font-size:13px;font-weight:700;margin:0 0 4px 0;">DAFTAR NILAI REMEDIAL</h3>
+                <p style="font-size:11px;font-weight:700;margin:2px 0;color:#7c3aed;">Mata Pelajaran: ${m.nama} &nbsp;|&nbsp; Jenis: ${jenisLabel}</p>
+                <p style="font-size:10px;margin:2px 0;color:#475569;">Kelas: ${kelas} &nbsp;|&nbsp; Wali Kelas: ${wali} &nbsp;|&nbsp; KKM: ${kkm} &nbsp;|&nbsp; Dicetak: ${now}</p>
+            </div>
+            <table style="margin-bottom:12px;width:auto;font-size:10px;border:none;">
+                <tr>
+                    <td style="padding:3px 10px;border:none;"><strong>Total Siswa:</strong> ${db.siswa.length}</td>
+                    <td style="padding:3px 10px;border:none;"><strong>Perlu Remedial:</strong> <span style="color:#dc2626">${totalPerlu}</span></td>
+                    <td style="padding:3px 10px;border:none;"><strong>Sudah Diisi:</strong> <span style="color:#7c3aed">${totalDiisi}</span></td>
+                    <td style="padding:3px 10px;border:none;"><strong>Tuntas:</strong> <span style="color:#16a34a">${totalLulus}</span></td>
+                    <td style="padding:3px 10px;border:none;"><strong>Belum Tuntas:</strong> <span style="color:#d97706">${totalBelumTuntas}</span></td>
+                </tr>
+            </table>
+            <table>
+                <thead>
+                    <tr style="background:#fef2f2;border-bottom:2px solid #dc2626;">
+                        <th style="padding:7px 8px;border:1px solid #e2e8f0;width:32px;">No</th>
+                        <th style="padding:7px 8px;border:1px solid #e2e8f0;text-align:left;">Nama Siswa</th>
+                        <th style="padding:7px 8px;border:1px solid #e2e8f0;width:40px;">Abs.</th>
+                        <th style="padding:7px 8px;border:1px solid #e2e8f0;width:70px;color:#92400e;">Nilai Asli</th>
+                        <th style="padding:7px 8px;border:1px solid #e2e8f0;width:45px;color:#475569;">KKM</th>
+                        <th style="padding:7px 8px;border:1px solid #e2e8f0;width:80px;">Status</th>
+                        <th style="padding:7px 8px;border:1px solid #e2e8f0;width:80px;color:#7c3aed;">Nilai Remedial</th>
+                        <th style="padding:7px 8px;border:1px solid #e2e8f0;width:75px;color:#166534;">Nilai Akhir</th>
+                        <th style="padding:7px 8px;border:1px solid #e2e8f0;width:80px;">Hasil</th>
+                    </tr>
+                </thead>
+                <tbody>${rows}</tbody>
+            </table>
+            <div style="margin-top:24px;display:flex;justify-content:space-between;font-size:10px;color:#475569;">
+                <div>
+                    <p style="margin:0;font-style:italic;">Keterangan: Nilai Akhir = Nilai Remedial jika lebih tinggi dari Nilai Asli, jika tidak maka tetap Nilai Asli.</p>
+                    <p style="margin:2px 0 0;font-style:italic;color:#94a3b8;">Dicetak dari e-Rapot Madrasah v6.1</p>
+                </div>
+                <div style="text-align:right;">
+                    <p style="margin:0;">Mengetahui,</p>
+                    <p style="margin:0;">Wali Kelas</p>
+                    <br><br>
+                    <p style="margin:0;font-weight:700;border-top:1px solid #475569;padding-top:2px;">${wali}</p>
+                </div>
+            </div>
+            <script>window.onload=function(){setTimeout(function(){window.print();},400);}<\/script>
+            </body></html>`;
+
+            const w = window.open('', '_blank', 'width=1100,height=750');
+            if (!w) return Swal.fire({ icon: 'warning', title: 'Popup diblokir', text: 'Izinkan popup browser untuk mencetak PDF.', background: '#1e293b', color: '#f8fafc' });
+            w.document.write(html);
+            w.document.close();
         }
 
         // ============================================================
