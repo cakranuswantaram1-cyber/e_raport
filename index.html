@@ -1100,6 +1100,22 @@
                                         </button>
                                     </div>
                                 </div>
+
+                                <!-- ===== KIRIM KE REMEDIAL ===== -->
+                                <div class="bg-gradient-to-r from-red-950/70 via-slate-900 to-orange-950/60 border border-red-700/40 rounded-xl p-4 space-y-3">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-redo-alt text-red-400 text-sm"></i>
+                                        <p class="text-sm font-black text-white">Sinkron ke Remedial</p>
+                                        <span class="text-[9px] font-black bg-red-600 text-white px-2 py-0.5 rounded-full">OTOMATIS</span>
+                                    </div>
+                                    <div class="bg-slate-900/60 border border-slate-700 rounded-lg p-3 text-xs text-slate-300 flex items-start gap-2">
+                                        <i class="fas fa-info-circle mt-0.5 shrink-0 text-sky-400"></i>
+                                        <span>Siswa yang nilainya <b class="text-red-400">di bawah KKM</b> akan otomatis terdaftar di menu <b>Remedial</b> sesuai mapel dan jenis ujian yang dipilih. Kolom nilai remedial siap diisi, nilai akhir otomatis diambil yang terbaik.</span>
+                                    </div>
+                                    <button onclick="kalkorKirimKeRemedial()" class="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-bold text-sm px-5 py-2.5 rounded-xl shadow transition flex items-center justify-center gap-2">
+                                        <i class="fas fa-share-square"></i> Kirim Siswa Remedial ke Menu Remedial
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -13244,8 +13260,28 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
         }
 
         function kalkorHapusSiswa(idx) {
-            kalkorState.siswaList.splice(idx, 1);
-            kalkorRenderInputTable();
+            const siswa = kalkorState.siswaList[idx];
+            const namaSiswa = siswa ? siswa.nama : 'siswa ini';
+            Swal.fire({
+                title: 'Hapus data siswa?',
+                html: `Yakin ingin menghapus <b>${namaSiswa}</b> dari daftar koreksi?<br><small style="color:#94a3b8">Data jawaban siswa ini akan hilang.</small>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-trash"></i> Ya, Hapus',
+                cancelButtonText: 'Batal',
+                background: '#1e293b',
+                color: '#f8fafc',
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#475569',
+                focusCancel: true
+            }).then(r => {
+                if (r.isConfirmed) {
+                    kalkorState.siswaList.splice(idx, 1);
+                    kalkorState.hasil = [];
+                    kalkorRenderInputTable();
+                    Swal.fire({ icon: 'success', title: 'Dihapus', text: `${namaSiswa} telah dihapus dari daftar.`, background: '#1e293b', color: '#f8fafc', timer: 1500, showConfirmButton: false });
+                }
+            });
         }
 
         function kalkorHapusSemua() {
@@ -13484,6 +13520,138 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             });
         }
 
+        /* ---- Kirim ke Remedial ---- */
+        function kalkorKirimKeRemedial() {
+            // Hitung dulu jika belum ada hasil
+            if (kalkorState.hasil.length === 0) {
+                if (kalkorState.siswaList.length > 0) kalkorHitungSemua();
+                else return Swal.fire({ icon: 'warning', title: 'Tidak ada data', text: 'Masukkan data siswa terlebih dahulu.', background: '#1e293b', color: '#f8fafc' });
+            }
+
+            const mapelId  = document.getElementById('kalkor-sync-mapel')?.value || '';
+            const jenis    = document.getElementById('kalkor-sync-jenis')?.value  || '';
+
+            if (!mapelId) return Swal.fire({
+                icon: 'warning', title: 'Pilih Mata Pelajaran',
+                html: 'Kembali ke tab <b>Input Jawaban Siswa</b>, pilih Mata Pelajaran dan Jenis Ujian terlebih dahulu.',
+                background: '#1e293b', color: '#f8fafc'
+            });
+            if (!jenis) return Swal.fire({
+                icon: 'warning', title: 'Pilih Jenis Ujian',
+                html: 'Pilih jenis ujian (Formatif, STS, atau SAS) di tab <b>Input Jawaban Siswa</b>.',
+                background: '#1e293b', color: '#f8fafc'
+            });
+
+            ensureRemedialDB();
+
+            const mapelObj   = (db.mapel||[]).find(m => m.id === mapelId);
+            const jenisLabel = {'formatif':'Ujian Harian/Formatif','sts':'STS - Sumatif Tengah Semester','sas':'SAS - Sumatif Akhir Semester'}[jenis] || jenis;
+            const kkm        = parseFloat(document.getElementById('kalkor-kkm')?.value || '75');
+            const skala      = parseFloat(document.getElementById('kalkor-skala')?.value || '100');
+
+            // Identifikasi siswa remedial (nilai di bawah KKM) & cocokkan dengan db.siswa
+            const remedialList = [];
+            const lulusList    = [];
+            const tidakCocok   = [];
+
+            kalkorState.hasil.forEach(h => {
+                const nilai100 = Math.round(h.nilaiAkhir * 100 / skala);
+                if (nilai100 >= kkm) { lulusList.push(h.nama); return; }
+
+                const siswaObj = h.siswaId
+                    ? (db.siswa||[]).find(s => s.id === h.siswaId)
+                    : (db.siswa||[]).find(s => s.nama === h.nama);
+
+                if (!siswaObj) { tidakCocok.push(h.nama); return; }
+                remedialList.push({ siswaId: siswaObj.id, nama: h.nama, nilaiAsli: nilai100 });
+            });
+
+            if (remedialList.length === 0) {
+                return Swal.fire({
+                    icon: 'success', title: 'Semua Siswa Lulus! 🎉',
+                    html: `Tidak ada siswa yang perlu remedial untuk mapel <b>${mapelObj?.nama||''}</b> (${jenisLabel}).<br><br>Semua nilai sudah di atas atau sama dengan KKM <b>${kkm}</b>.`,
+                    background: '#1e293b', color: '#f8fafc'
+                });
+            }
+
+            const previewRows = remedialList.map(r =>
+                `<tr style="border-bottom:1px solid #334155">
+                    <td style="padding:4px 8px;color:#f8fafc">${r.nama}</td>
+                    <td style="padding:4px 8px;text-align:center;color:#f87171;font-weight:700">${r.nilaiAsli}</td>
+                    <td style="padding:4px 8px;text-align:center;color:#fcd34d">Perlu Remedial</td>
+                </tr>`
+            ).join('');
+
+            const warningTidakCocok = tidakCocok.length
+                ? `<p style="color:#fbbf24;font-size:11px;margin-top:8px">⚠️ ${tidakCocok.length} siswa tidak ditemukan di database (nama tidak cocok): ${tidakCocok.join(', ')}</p>`
+                : '';
+
+            Swal.fire({
+                icon: 'question',
+                title: `Kirim ${remedialList.length} Siswa ke Remedial?`,
+                html: `<div style="font-size:12px;margin-bottom:8px;color:#94a3b8">
+                    📚 <b style="color:#a78bfa">${mapelObj?.nama||''}</b> &nbsp;|&nbsp; 📋 <b style="color:#fcd34d">${jenisLabel}</b>
+                </div>
+                <div style="max-height:260px;overflow-y:auto;font-size:12px">
+                    <table style="width:100%;border-collapse:collapse">
+                        <thead><tr style="background:#3b0f0f;color:#fca5a5">
+                            <th style="padding:5px 8px;text-align:left">Nama Siswa</th>
+                            <th style="padding:5px 8px;text-align:center">Nilai Asli</th>
+                            <th style="padding:5px 8px;text-align:center">Status</th>
+                        </tr></thead>
+                        <tbody>${previewRows}</tbody>
+                    </table>
+                    ${warningTidakCocok}
+                </div>
+                <p style="font-size:11px;color:#64748b;margin-top:10px;text-align:left">Siswa akan langsung muncul di menu Remedial. Guru tinggal mengisi nilai remedialnya — nilai akhir otomatis diambil yang lebih tinggi.</p>`,
+                showConfirmButton: true,
+                confirmButtonText: 'Ya, Kirim ke Remedial',
+                showCancelButton: true,
+                cancelButtonText: 'Batal',
+                background: '#1e293b', color: '#f8fafc',
+                confirmButtonColor: '#dc2626',
+                width: '520px'
+            }).then(res => {
+                if (!res.isConfirmed) return;
+
+                // Pastikan nilai asli tersimpan di db.nilai agar muncul di tabel remedial
+                // (Jika belum disimpan sebelumnya, simpan dulu nilai aslinya)
+                remedialList.forEach(r => {
+                    const nilaiKey = `${r.siswaId}_${mapelId}`;
+                    if (!db.nilai[nilaiKey]) db.nilai[nilaiKey] = { formatif: 0, sts: 0, sas: 0 };
+                    // Hanya update jika nilai masih 0 (belum pernah disimpan)
+                    if (!db.nilai[nilaiKey][jenis] || db.nilai[nilaiKey][jenis] === 0) {
+                        db.nilai[nilaiKey][jenis] = r.nilaiAsli;
+                    }
+                });
+
+                saveDB();
+
+                // Navigasi ke tab Remedial, pilih mapel & jenis yang sesuai
+                switchTab('remedial');
+                setTimeout(() => {
+                    const selMapel = document.getElementById('select-remedial-mapel');
+                    const selJenis = document.getElementById('select-remedial-jenis');
+                    if (selMapel) selMapel.value = mapelId;
+                    if (selJenis) selJenis.value = jenis;
+
+                    // Aktifkan filter hanya perlu remedial agar langsung fokus
+                    const toggleEl = document.getElementById('toggle-hanya-perlu-remedial');
+                    if (toggleEl) toggleEl.checked = true;
+
+                    renderRemedialTab();
+
+                    Swal.fire({
+                        toast: true, position: 'top-end', icon: 'success',
+                        title: `${remedialList.length} siswa siap diisi nilai remedialnya!`,
+                        html: `<span style="font-size:12px">Mapel: <b>${mapelObj?.nama||''}</b><br>${jenisLabel}</span>`,
+                        showConfirmButton: false, timer: 4000,
+                        background: '#1e293b', color: '#f8fafc'
+                    });
+                }, 350);
+            });
+        }
+
         /* ---- Reset form ---- */
         function resetKalkorForm() {
             Swal.fire({ title: 'Reset semua data kalkulator?', icon: 'warning', showCancelButton: true, confirmButtonText: 'Ya, reset', cancelButtonText: 'Batal', background: '#1e293b', color: '#f8fafc', confirmButtonColor: '#dc2626' })
@@ -13535,18 +13703,31 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             const syncMapelId = document.getElementById('kalkor-sync-mapel')?.value || '';
             const syncJenis = document.getElementById('kalkor-sync-jenis')?.value || '';
             const syncMapelObj = syncMapelId ? (db.mapel||[]).find(m=>m.id===syncMapelId) : null;
-            const syncMapelNama = syncMapelObj?.nama || '';
-            const syncJenisLabel = {'formatif':'Ujian Harian/Formatif','sts':'STS – Sumatif Tengah Semester','sas':'SAS – Sumatif Akhir Semester'}[syncJenis] || '';
-            const syncInfo = syncMapelNama ? 'Mapel: ' + syncMapelNama + ' &nbsp;|&nbsp; Jenis: ' + syncJenisLabel : '';
-            const lulusCount = kalkorState.hasil.filter(h => h.lulus).length;
-            const remedialCount = kalkorState.hasil.length - lulusCount;
-            const avg = (kalkorState.hasil.reduce((s, h) => s + h.nilaiAkhir, 0) / kalkorState.hasil.length).toFixed(pembulatan);
-            const max = Math.max(...kalkorState.hasil.map(h => h.nilaiAkhir)).toFixed(pembulatan);
-            const min = Math.min(...kalkorState.hasil.map(h => h.nilaiAkhir)).toFixed(pembulatan);
+            const syncMapelNama = syncMapelObj?.nama || '—';
+            const syncJenisLabel = {'formatif':'Ujian Harian / Formatif','sts':'STS – Sumatif Tengah Semester','sas':'SAS – Sumatif Akhir Semester'}[syncJenis] || '—';
 
-            const rows = kalkorState.hasil.map((h, i) => `
-                <tr style="background:${i%2===0?'#f9fafb':'#fff'}">
-                    <td style="padding:5px 8px;border:1px solid #d1d5db;text-align:center;">${i+1}</td>
+            // Urutkan berdasarkan nomor absen (no) dari kecil ke besar
+            const hasilTerurut = [...kalkorState.hasil].sort((a, b) => (parseInt(a.no)||0) - (parseInt(b.no)||0));
+
+            const lulusCount = hasilTerurut.filter(h => h.lulus).length;
+            const remedialCount = hasilTerurut.length - lulusCount;
+            const belumUjianCount = hasilTerurut.filter(h => h.pgBenar === 0 && h.esaiPoin === 0).length;
+            const avg = (hasilTerurut.reduce((s, h) => s + h.nilaiAkhir, 0) / hasilTerurut.length).toFixed(pembulatan);
+            const max = Math.max(...hasilTerurut.map(h => h.nilaiAkhir)).toFixed(pembulatan);
+            const min = Math.min(...hasilTerurut.map(h => h.nilaiAkhir)).toFixed(pembulatan);
+
+            const rows = hasilTerurut.map((h, i) => {
+                const belumUjian = h.pgBenar === 0 && h.esaiPoin === 0 && h.pgSalah === 0;
+                if (belumUjian) {
+                    return `<tr style="background:${i%2===0?'#fefce8':'#fef9c3'}">
+                        <td style="padding:5px 8px;border:1px solid #d1d5db;text-align:center;">${h.no}</td>
+                        <td style="padding:5px 8px;border:1px solid #d1d5db;">${h.nama}</td>
+                        <td colspan="5" style="padding:5px 8px;border:1px solid #d1d5db;text-align:center;color:#b45309;font-style:italic;font-weight:700;">— Belum Mengikuti Ujian —</td>
+                        <td style="padding:5px 8px;border:1px solid #d1d5db;text-align:center;color:#b45309;font-weight:700;">—</td>
+                    </tr>`;
+                }
+                return `<tr style="background:${i%2===0?'#f9fafb':'#fff'}">
+                    <td style="padding:5px 8px;border:1px solid #d1d5db;text-align:center;">${h.no}</td>
                     <td style="padding:5px 8px;border:1px solid #d1d5db;">${h.nama}</td>
                     <td style="padding:5px 8px;border:1px solid #d1d5db;text-align:center;">${h.pgBenar} / ${document.getElementById('kalkor-pg-jumlah').value}</td>
                     <td style="padding:5px 8px;border:1px solid #d1d5db;text-align:center;">${h.skorPG.toFixed(pembulatan)}</td>
@@ -13554,7 +13735,8 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
                     <td style="padding:5px 8px;border:1px solid #d1d5db;text-align:center;font-weight:900;color:${h.lulus?'#16a34a':'#dc2626'}">${h.nilaiAkhir.toFixed(pembulatan)}</td>
                     <td style="padding:5px 8px;border:1px solid #d1d5db;text-align:center;">${h.peringkat || '-'}</td>
                     <td style="padding:5px 8px;border:1px solid #d1d5db;text-align:center;color:${h.lulus?'#16a34a':'#dc2626'};font-weight:700;">${h.lulus ? 'Lulus' : 'Remedial'}</td>
-                </tr>`).join('');
+                </tr>`;
+            }).join('');
 
             const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
             <title>Hasil Koreksi - ${namaSekolah}</title>
@@ -13563,14 +13745,26 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             <div style="text-align:center;border-bottom:3px double #16a34a;padding-bottom:10px;margin-bottom:14px;">
                 <h2 style="font-size:15px;font-weight:900;text-transform:uppercase;margin:0;">${namaSekolah}</h2>
                 <h3 style="font-size:13px;font-weight:700;margin:3px 0 2px;">HASIL KOREKSI PENILAIAN</h3>
-                ${syncInfo ? `<p style="font-size:11px;font-weight:700;margin:2px 0;color:#7c3aed;">${syncInfo}</p>` : ''}
-                <p style="font-size:10px;margin:2px 0;">Kelas: ${kelas} &nbsp;|&nbsp; Wali Kelas: ${wali} &nbsp;|&nbsp; KKM: ${kkm} &nbsp;|&nbsp; Dicetak: ${now}</p>
+                <table style="border:none;margin:6px auto 0;width:auto;font-size:11px;">
+                    <tr>
+                        <td style="border:none;padding:2px 10px 2px 0;font-weight:700;color:#111;">Mata Pelajaran</td>
+                        <td style="border:none;padding:2px 4px;color:#111;">:</td>
+                        <td style="border:none;padding:2px 0;font-weight:900;color:#7c3aed;font-size:12px;">${syncMapelNama}</td>
+                    </tr>
+                    <tr>
+                        <td style="border:none;padding:2px 10px 2px 0;font-weight:700;color:#111;">Jenis Penilaian</td>
+                        <td style="border:none;padding:2px 4px;color:#111;">:</td>
+                        <td style="border:none;padding:2px 0;font-weight:900;color:#0369a1;font-size:12px;">${syncJenisLabel}</td>
+                    </tr>
+                </table>
+                <p style="font-size:10px;margin:6px 0 0;">Kelas: ${kelas} &nbsp;|&nbsp; Wali Kelas: ${wali} &nbsp;|&nbsp; KKM: ${kkm} &nbsp;|&nbsp; Dicetak: ${now}</p>
             </div>
             <table style="margin-bottom:12px;width:auto;font-size:10px;border:none">
                 <tr>
-                    <td style="padding:3px 8px;border:none"><strong>Total Siswa:</strong> ${kalkorState.hasil.length}</td>
+                    <td style="padding:3px 8px;border:none"><strong>Total Siswa:</strong> ${hasilTerurut.length}</td>
                     <td style="padding:3px 8px;border:none"><strong>Lulus:</strong> <span style="color:#16a34a">${lulusCount}</span></td>
                     <td style="padding:3px 8px;border:none"><strong>Remedial:</strong> <span style="color:#dc2626">${remedialCount}</span></td>
+                    ${belumUjianCount > 0 ? `<td style="padding:3px 8px;border:none"><strong>Belum Ujian:</strong> <span style="color:#b45309">${belumUjianCount}</span></td>` : ''}
                     <td style="padding:3px 8px;border:none"><strong>Nilai Tertinggi:</strong> ${max}</td>
                     <td style="padding:3px 8px;border:none"><strong>Terendah:</strong> ${min}</td>
                     <td style="padding:3px 8px;border:none"><strong>Rata-Rata:</strong> ${avg}</td>
@@ -13602,6 +13796,55 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
         }
         // ============================================================
         // END KALKULATOR KOREKSI PENILAIAN MODULE
+        // ============================================================
+
+        // ============================================================
+        // BACK BUTTON / EXIT WARNING
+        // Menampilkan peringatan saat tombol Back ditekan agar
+        // pengguna tidak keluar aplikasi secara tidak sengaja.
+        // ============================================================
+        (function() {
+            // Tambahkan state palsu ke history agar tombol back
+            // tidak langsung keluar, melainkan memicu popstate.
+            history.pushState({ page: 'app' }, '', window.location.href);
+
+            let isExiting = false; // flag agar Swal tidak muncul dua kali
+
+            window.addEventListener('popstate', function(e) {
+                if (isExiting) return;
+
+                // Kembalikan state palsu supaya app tetap di history
+                history.pushState({ page: 'app' }, '', window.location.href);
+
+                // Tampilkan dialog konfirmasi keluar
+                Swal.fire({
+                    icon: 'question',
+                    title: 'Keluar Aplikasi?',
+                    html: '<span style="font-size:15px;">Apakah Anda yakin ingin keluar dari<br><strong>e-Rapot Madrasah</strong>?<br><span style="color:#94a3b8;font-size:13px;">Data yang belum disimpan mungkin akan hilang.</span></span>',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fa fa-sign-out-alt"></i> Ya, Keluar',
+                    cancelButtonText: '<i class="fa fa-arrow-left"></i> Batal',
+                    confirmButtonColor: '#dc2626',
+                    cancelButtonColor: '#059669',
+                    background: '#1e293b',
+                    color: '#f8fafc',
+                    reverseButtons: true,
+                    focusCancel: true,
+                    customClass: {
+                        popup: 'border border-slate-600 rounded-xl',
+                    }
+                }).then(function(result) {
+                    if (result.isConfirmed) {
+                        isExiting = true;
+                        // Hapus state palsu lalu navigasi mundur (keluar)
+                        history.go(-2);
+                    }
+                    // Jika Batal → tidak melakukan apa-apa, app tetap terbuka
+                });
+            });
+        })();
+        // ============================================================
+        // END BACK BUTTON WARNING
         // ============================================================
 
     </script>
