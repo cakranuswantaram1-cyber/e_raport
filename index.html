@@ -911,12 +911,23 @@
                                         <!-- Pilih Jenis Ujian -->
                                         <div>
                                             <label class="text-[10px] font-bold text-fuchsia-300 uppercase tracking-wider block mb-1.5"><i class="fas fa-file-alt mr-1"></i>Jenis Ujian / Koreksi</label>
-                                            <select id="kalkor-sync-jenis" onchange="kalkorOnSyncChange()" class="w-full bg-slate-800 border border-fuchsia-700/50 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-fuchsia-500 transition">
+                                            <select id="kalkor-sync-jenis" onchange="kalkorOnSyncChange(); kalkorToggleRemedialJenis();" class="w-full bg-slate-800 border border-fuchsia-700/50 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-fuchsia-500 transition">
                                                 <option value="">-- Pilih Jenis Ujian --</option>
-                                                <option value="formatif">📝 Ujian Harian / Formatif</option>
-                                                <option value="sts">📋 STS – Sumatif Tengah Semester</option>
-                                                <option value="sas">📑 SAS – Sumatif Akhir Semester</option>
+                                                <option value="formatif">&#128221; Ujian Harian / Formatif</option>
+                                                <option value="sts">&#128203; STS - Sumatif Tengah Semester</option>
+                                                <option value="sas">&#128209; SAS - Sumatif Akhir Semester</option>
+                                                <option value="remedial">&#128260; Perbaikan Nilai / Remedial</option>
                                             </select>
+                                        </div>
+                                        <!-- Sub-pilihan jenis asal untuk Remedial -->
+                                        <div id="kalkor-remedial-jenis-box" class="hidden">
+                                            <label class="text-[10px] font-bold text-amber-300 uppercase tracking-wider block mb-1.5"><i class="fas fa-redo-alt mr-1"></i>Remedial untuk Ujian Mana?</label>
+                                            <select id="kalkor-remedial-jenis-asal" class="w-full bg-slate-800 border border-amber-600/60 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-amber-500 transition">
+                                                <option value="formatif">&#128221; Remedial Ujian Harian / Formatif</option>
+                                                <option value="sts">&#128203; Remedial STS</option>
+                                                <option value="sas">&#128209; Remedial SAS</option>
+                                            </select>
+                                            <p class="text-[10px] text-amber-400/80 mt-1.5 flex items-start gap-1"><i class="fas fa-info-circle mt-0.5 shrink-0"></i><span>Nilai akan tersinkron ke kolom Remedial di menu Remedial dan terlihat di menu Input Nilai sebagai nilai perbaikan.</span></p>
                                         </div>
                                         <!-- Tombol Sync -->
                                         <div class="flex items-end">
@@ -13467,12 +13478,15 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             if (!infoBox) return;
             if (mapelId && jenis) {
                 const mapel = (db.mapel||[]).find(m=>m.id===mapelId);
-                const jenisLabel = {'formatif':'Ujian Harian/Formatif','sts':'STS','sas':'SAS'}[jenis]||jenis;
+                const jenisLabel = {'formatif':'Ujian Harian/Formatif','sts':'STS','sas':'SAS','remedial':'Perbaikan Nilai/Remedial'}[jenis]||jenis;
                 infoBox.classList.remove('hidden');
                 infoText.textContent = `Siap sinkronisasi nama dari absensi untuk mapel "${mapel?.nama||''}", jenis ujian: ${jenisLabel}. Klik "Sync Nama dari Absensi" untuk mulai.`;
             } else {
                 infoBox.classList.add('hidden');
             }
+            // Panggil toggle box remedial
+            if (typeof kalkorToggleRemedialJenis === 'function') kalkorToggleRemedialJenis();
+            kalkorUpdateSimpanInfo();
         }
 
         /* ---- Sinkronisasi nama dari absensi ---- */
@@ -13481,22 +13495,29 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             const jenis = document.getElementById('kalkor-sync-jenis').value;
 
             if (!mapelId) return Swal.fire({ icon: 'warning', title: 'Pilih Mapel', text: 'Pilih mata pelajaran terlebih dahulu.', background: '#1e293b', color: '#f8fafc' });
-            if (!jenis) return Swal.fire({ icon: 'warning', title: 'Pilih Jenis Ujian', text: 'Pilih jenis ujian terlebih dahulu (Formatif, STS, atau SAS).', background: '#1e293b', color: '#f8fafc' });
+            if (!jenis) return Swal.fire({ icon: 'warning', title: 'Pilih Jenis Ujian', text: 'Pilih jenis ujian terlebih dahulu (Formatif, STS, SAS, atau Remedial).', background: '#1e293b', color: '#f8fafc' });
             if (!db.siswa || db.siswa.length === 0) return Swal.fire({ icon: 'info', title: 'Belum ada data siswa', text: 'Tambahkan data siswa di menu "Data & Profil Siswa" terlebih dahulu.', background: '#1e293b', color: '#f8fafc' });
 
             const mapel = (db.mapel||[]).find(m=>m.id===mapelId);
-            const jenisLabel = {'formatif':'Ujian Harian/Formatif','sts':'STS – Sumatif Tengah Semester','sas':'SAS – Sumatif Akhir Semester'}[jenis]||jenis;
+            const jenisRemedialAsal = jenis === 'remedial' ? (document.getElementById('kalkor-remedial-jenis-asal')?.value || 'formatif') : null;
+            const jenisLabel = {'formatif':'Ujian Harian/Formatif','sts':'STS – Sumatif Tengah Semester','sas':'SAS – Sumatif Akhir Semester','remedial':'Perbaikan Nilai/Remedial'}[jenis]||jenis;
             const sorted = [...db.siswa].sort((a, b) => (parseInt(a.absen)||0) - (parseInt(b.absen)||0));
             const esaiJml = parseInt(document.getElementById('kalkor-esai-jumlah').value) || 0;
 
             // Ambil nilai yang sudah ada di db jika ada
             kalkorState.siswaList = sorted.map((s, i) => {
-                const nilaiRecord = db.nilai ? db.nilai[`${s.id}_${mapelId}`] : null;
                 let existNilai = 0;
-                if (nilaiRecord) {
-                    if (jenis === 'formatif') existNilai = parseFloat(nilaiRecord.formatif)||0;
-                    else if (jenis === 'sts') existNilai = parseFloat(nilaiRecord.sts)||0;
-                    else if (jenis === 'sas') existNilai = parseFloat(nilaiRecord.sas)||0;
+                if (jenis === 'remedial') {
+                    // Untuk remedial: ambil nilai remedial yang sudah ada dari db.remedial
+                    const remKey = `${s.id}_${mapelId}_${jenisRemedialAsal}`;
+                    existNilai = db.remedial ? (parseFloat(db.remedial[remKey]) || 0) : 0;
+                } else {
+                    const nilaiRecord = db.nilai ? db.nilai[`${s.id}_${mapelId}`] : null;
+                    if (nilaiRecord) {
+                        if (jenis === 'formatif') existNilai = parseFloat(nilaiRecord.formatif)||0;
+                        else if (jenis === 'sts') existNilai = parseFloat(nilaiRecord.sts)||0;
+                        else if (jenis === 'sas') existNilai = parseFloat(nilaiRecord.sas)||0;
+                    }
                 }
                 const pgBenar = 0, pgSalah = 0, esaiPoin = 0;
                 const r = kalkorHitungSatu(pgBenar, pgSalah, esaiPoin);
@@ -13703,12 +13724,33 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             }
         }
 
+        /* ---- Toggle kotak sub-pilihan jenis remedial ---- */
+        function kalkorToggleRemedialJenis() {
+            const jenis = document.getElementById('kalkor-sync-jenis')?.value || '';
+            const box = document.getElementById('kalkor-remedial-jenis-box');
+            if (box) {
+                if (jenis === 'remedial') {
+                    box.classList.remove('hidden');
+                } else {
+                    box.classList.add('hidden');
+                }
+            }
+            kalkorUpdateSimpanInfo();
+        }
+
         /* ---- Update info panel Simpan ke Nilai ---- */
         function kalkorUpdateSimpanInfo() {
             const mapelId = document.getElementById('kalkor-sync-mapel')?.value || '';
             const jenis   = document.getElementById('kalkor-sync-jenis')?.value || '';
             const mapelObj = mapelId ? (db.mapel||[]).find(m=>m.id===mapelId) : null;
-            const jenisLabel = {'formatif':'📝 Ujian Harian / Formatif','sts':'📋 STS – Sumatif Tengah Semester','sas':'📑 SAS – Sumatif Akhir Semester'}[jenis] || '— belum dipilih —';
+            let jenisLabel;
+            if (jenis === 'remedial') {
+                const jenisAsal = document.getElementById('kalkor-remedial-jenis-asal')?.value || 'formatif';
+                const asalLabel = {'formatif':'Ujian Harian/Formatif','sts':'STS','sas':'SAS'}[jenisAsal] || jenisAsal;
+                jenisLabel = '\uD83D\uDD01 Remedial ' + asalLabel;
+            } else {
+                jenisLabel = {'formatif':'\uD83D\uDCDD Ujian Harian / Formatif','sts':'\uD83D\uDCCB STS \u2013 Sumatif Tengah Semester','sas':'\uD83D\uDCD1 SAS \u2013 Sumatif Akhir Semester'}[jenis] || '\u2014 belum dipilih \u2014';
+            }
             const elMapel = document.getElementById('kalkor-simpan-info-mapel');
             const elJenis = document.getElementById('kalkor-simpan-info-jenis');
             const elCount = document.getElementById('kalkor-simpan-info-count');
@@ -13724,7 +13766,12 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
 
             // Validasi: harus ada mapel & jenis
             if (!mapelId) return Swal.fire({ icon: 'warning', title: 'Pilih Mata Pelajaran', html: 'Kembali ke tab <b>Input Jawaban Siswa</b>, pilih Mata Pelajaran dan Jenis Ujian, lalu Sync terlebih dahulu.', background: '#1e293b', color: '#f8fafc' });
-            if (!jenis)   return Swal.fire({ icon: 'warning', title: 'Pilih Jenis Ujian', html: 'Pilih jenis ujian (Formatif, STS, atau SAS) di tab <b>Input Jawaban Siswa</b>.', background: '#1e293b', color: '#f8fafc' });
+            if (!jenis)   return Swal.fire({ icon: 'warning', title: 'Pilih Jenis Ujian', html: 'Pilih jenis ujian (Formatif, STS, SAS, atau Remedial) di tab <b>Input Jawaban Siswa</b>.', background: '#1e293b', color: '#f8fafc' });
+
+            // Ambil jenis asal untuk remedial
+            const jenisRemedialAsal = jenis === 'remedial'
+                ? (document.getElementById('kalkor-remedial-jenis-asal')?.value || 'formatif')
+                : null;
 
             // Hitung semua dulu jika belum
             if (kalkorState.hasil.length === 0) {
@@ -13733,9 +13780,16 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             }
 
             const mapelObj   = (db.mapel||[]).find(m=>m.id===mapelId);
-            const jenisLabel = {'formatif':'Ujian Harian/Formatif','sts':'STS','sas':'SAS'}[jenis]||jenis;
             const skala      = parseFloat(document.getElementById('kalkor-skala')?.value || '100');
             const pembulatan = parseInt(document.getElementById('kalkor-pembulatan')?.value || '2');
+
+            let jenisLabel;
+            if (jenis === 'remedial') {
+                const asalLabel = {'formatif':'Ujian Harian/Formatif','sts':'STS','sas':'SAS'}[jenisRemedialAsal] || jenisRemedialAsal;
+                jenisLabel = 'Remedial ' + asalLabel;
+            } else {
+                jenisLabel = {'formatif':'Ujian Harian/Formatif','sts':'STS','sas':'SAS'}[jenis] || jenis;
+            }
 
             // Cek apakah formatif terkunci (ada agenda TP di mapel ini)
             if (jenis === 'formatif') {
@@ -13744,7 +13798,7 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
                     return Swal.fire({
                         icon: 'warning',
                         title: 'Formatif Terkunci',
-                        html: `Mapel <b>${mapelObj?.nama||''}</b> memiliki Agenda TP/Formatif, sehingga nilai Formatif dihitung otomatis dari TP dan <b>tidak bisa diisi manual</b>.<br><br>Gunakan jenis <b>STS</b> atau <b>SAS</b> untuk menyimpan hasil koreksi ini.`,
+                        html: `Mapel <b>${mapelObj?.nama||''}</b> memiliki Agenda TP/Formatif, sehingga nilai Formatif dihitung otomatis dari TP dan <b>tidak bisa diisi manual</b>.<br><br>Gunakan jenis <b>STS</b>, <b>SAS</b>, atau <b>Remedial</b> untuk menyimpan hasil koreksi ini.`,
                         background: '#1e293b', color: '#f8fafc'
                     });
                 }
@@ -13765,11 +13819,12 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
 
             if (previewOnly) {
                 // Tampilkan preview saja
+                const isRemedial = jenis === 'remedial';
                 const previewRows = rows.map(r => `
                     <tr style="border-bottom:1px solid #334155">
                         <td style="padding:4px 8px;color:${r.siswaId?'#f8fafc':'#ef4444'}">${r.nama}${!r.siswaId?' <i>(tidak ditemukan)</i>':''}</td>
-                        <td style="padding:4px 8px;text-align:center;font-weight:700;color:${r.lulus?'#34d399':'#f87171'}">${r.nilaiAngka}</td>
-                        <td style="padding:4px 8px;text-align:center;color:${r.lulus?'#34d399':'#f87171'}">${r.lulus?'Lulus':'Remedial'}</td>
+                        <td style="padding:4px 8px;text-align:center;font-weight:700;color:${isRemedial?'#fbbf24':(r.lulus?'#34d399':'#f87171')}">${r.nilaiAngka}</td>
+                        <td style="padding:4px 8px;text-align:center;color:${isRemedial?'#fbbf24':(r.lulus?'#34d399':'#f87171')}">${isRemedial?'Perbaikan':r.lulus?'Lulus':'Remedial'}</td>
                     </tr>`).join('');
                 return Swal.fire({
                     title: `Preview Simpan — ${mapelObj?.nama||''} (${jenisLabel})`,
@@ -13801,8 +13856,15 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             let simpanCount = 0;
             akanDisimpan.forEach(h => {
                 const key = `${h.siswaId}_${mapelId}`;
-                if (!db.nilai[key]) db.nilai[key] = { formatif: 0, sts: 0, sas: 0 };
-                db.nilai[key][jenis] = Math.round(h.nilaiAkhir * 100 / skala);
+                // Preserve nilai lain yang sudah ada, jangan di-reset ke 0
+                if (!db.nilai[key]) db.nilai[key] = { formatif: '', sts: '', sas: '' };
+                if (jenis === 'remedial') {
+                    // Untuk remedial: simpan ke db.remedial sesuai jenis asalnya
+                    if (!db.remedial) db.remedial = {};
+                    db.remedial[`${h.siswaId}_${mapelId}_${jenisRemedialAsal}`] = Math.round(h.nilaiAkhir * 100 / skala);
+                } else {
+                    db.nilai[key][jenis] = Math.round(h.nilaiAkhir * 100 / skala);
+                }
                 simpanCount++;
             });
 
@@ -13818,26 +13880,50 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
                 ? `<br><span style="color:#fbbf24;font-size:12px">⚠️ ${tidakDitemukan.length} siswa tidak ditemukan (nama tidak cocok di database): ${tidakDitemukan.map(r=>r.nama).join(', ')}</span>`
                 : '';
 
-            Swal.fire({
-                icon: 'success',
-                title: 'Berhasil Disimpan!',
-                html: `<span style="font-size:13px">
+            // Pesan sukses berbeda untuk remedial
+            const isRemedialSave = jenis === 'remedial';
+            const successHtml = isRemedialSave
+                ? `<span style="font-size:13px">
+                    <b>${simpanCount} siswa</b> berhasil disimpan sebagai:<br>
+                    📚 Mapel: <b style="color:#a78bfa">${mapelObj?.nama||''}</b><br>
+                    🔁 Jenis: <b style="color:#fbbf24">${jenisLabel}</b><br><br>
+                    Nilai perbaikan sudah otomatis masuk ke menu <b>Remedial</b> dan terlihat di <b>Input Nilai</b>.
+                    ${pesanTidakDitemukan}
+                  </span>`
+                : `<span style="font-size:13px">
                     <b>${simpanCount} siswa</b> berhasil disimpan ke:<br>
                     📚 Mapel: <b style="color:#a78bfa">${mapelObj?.nama||''}</b><br>
                     📋 Jenis: <b style="color:#fcd34d">${jenisLabel}</b><br><br>
                     Nilai sudah otomatis masuk ke menu <b>Input Nilai</b> dan akan terhitung di <b>Rapor</b>.
                     ${pesanTidakDitemukan}
-                </span>`,
+                  </span>`;
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Berhasil Disimpan!',
+                html: successHtml,
                 background: '#1e293b', color: '#f8fafc', confirmButtonColor: '#059669',
-                confirmButtonText: 'OK, Lihat di Input Nilai',
+                confirmButtonText: isRemedialSave ? 'OK, Lihat di Menu Remedial' : 'OK, Lihat di Input Nilai',
             }).then(r => {
                 if (r.isConfirmed) {
-                    // Navigasi ke menu Input Nilai dan pilih mapel yang sesuai
-                    switchTab('nilai');
-                    setTimeout(() => {
-                        const sel = document.getElementById('select-nilai-mapel');
-                        if (sel) { sel.value = mapelId; loadInputNilaiSiswa(); }
-                    }, 300);
+                    if (isRemedialSave) {
+                        // Navigasi ke menu Remedial dan pilih mapel + jenis yang sesuai
+                        switchTab('remedial');
+                        setTimeout(() => {
+                            const selMapel = document.getElementById('select-remedial-mapel');
+                            const selJenis = document.getElementById('select-remedial-jenis');
+                            if (selMapel) selMapel.value = mapelId;
+                            if (selJenis) selJenis.value = jenisRemedialAsal;
+                            if (typeof renderRemedialTab === 'function') renderRemedialTab();
+                        }, 300);
+                    } else {
+                        // Navigasi ke menu Input Nilai dan pilih mapel yang sesuai
+                        switchTab('nilai');
+                        setTimeout(() => {
+                            const sel = document.getElementById('select-nilai-mapel');
+                            if (sel) { sel.value = mapelId; loadInputNilaiSiswa(); }
+                        }, 300);
+                    }
                 }
             });
         }
@@ -13998,6 +14084,9 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
                         const syncJenisEl = document.getElementById('kalkor-sync-jenis');
                         if(syncMapelEl) syncMapelEl.value='';
                         if(syncJenisEl) syncJenisEl.value='';
+                        // Sembunyikan box remedial saat reset
+                        const remedialBox = document.getElementById('kalkor-remedial-jenis-box');
+                        if(remedialBox) remedialBox.classList.add('hidden');
                         const syncInfoBox = document.getElementById('kalkor-sync-info');
                         if(syncInfoBox) syncInfoBox.classList.add('hidden');
                         const syncLabelEl = document.getElementById('kalkor-sync-label');
