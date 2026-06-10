@@ -14335,22 +14335,62 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             <div id="tap-step-input" class="hidden flex-1 flex flex-col overflow-hidden">
 
                 <!-- Navigasi siswa -->
-                <div class="px-5 py-3 border-b border-slate-800 bg-slate-900/60 shrink-0">
+                <div class="px-4 py-3 border-b border-slate-800 bg-slate-900/60 shrink-0">
+                    <!-- Baris 1: Prev | Nama + Reset | Next -->
                     <div class="flex items-center justify-between gap-2 mb-2">
-                        <button onclick="tapSiswaPrev()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+                        <button onclick="tapSiswaPrev()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1 shrink-0">
                             <i class="fas fa-chevron-left"></i> Prev
                         </button>
-                        <div class="text-center flex-1">
+                        <div class="text-center flex-1 min-w-0">
                             <p id="tap-siswa-label" class="font-black text-white text-sm truncate">-</p>
                             <p id="tap-siswa-progress" class="text-[10px] text-slate-400">Siswa 1 / 17</p>
                         </div>
-                        <button onclick="tapSiswaNext()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+                        <button onclick="tapSiswaNext()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1 shrink-0">
                             Next <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <!-- Baris 2: Pilih Siswa & Reset -->
+                    <div class="flex gap-2 mb-2">
+                        <!-- Tombol Pilih Nama Siswa -->
+                        <button onclick="tapShowSiswaPickerModal()"
+                            class="flex-1 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-xs py-1.5 px-3 rounded-lg transition flex items-center gap-1.5 min-w-0">
+                            <i class="fas fa-search text-amber-400 shrink-0"></i>
+                            <span class="truncate">Cari / Pilih Siswa</span>
+                        </button>
+                        <!-- Tombol Reset Jawaban Siswa Ini -->
+                        <button onclick="tapResetJawabanSiswaIni()"
+                            class="bg-red-900/40 hover:bg-red-800/60 border border-red-800/50 text-red-400 hover:text-red-300 font-bold text-xs py-1.5 px-3 rounded-lg transition flex items-center gap-1.5 shrink-0">
+                            <i class="fas fa-trash-alt"></i>
+                            <span>Reset</span>
                         </button>
                     </div>
                     <!-- Progress bar -->
                     <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
                         <div id="tap-progress-bar" class="h-full bg-gradient-to-r from-amber-500 to-orange-400 rounded-full transition-all duration-300" style="width:0%"></div>
+                    </div>
+                </div>
+
+                <!-- Modal Picker Siswa -->
+                <div id="tap-siswa-picker-modal" class="hidden fixed inset-0 z-[200] flex items-end justify-center p-0">
+                    <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" onclick="tapCloseSiswaPicker()"></div>
+                    <div class="relative w-full max-w-lg bg-slate-900 border-t border-slate-700 rounded-t-2xl shadow-2xl z-10 flex flex-col max-h-[75vh]">
+                        <!-- Header picker -->
+                        <div class="flex items-center justify-between px-4 py-3 border-b border-slate-800 shrink-0">
+                            <p class="font-black text-white text-sm"><i class="fas fa-users mr-1 text-amber-400"></i> Pilih Siswa</p>
+                            <button onclick="tapCloseSiswaPicker()" class="text-slate-400 hover:text-white text-lg leading-none">&times;</button>
+                        </div>
+                        <!-- Search box -->
+                        <div class="px-4 py-2 shrink-0">
+                            <div class="flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-xl px-3 py-2">
+                                <i class="fas fa-search text-slate-400 text-xs"></i>
+                                <input type="text" id="tap-siswa-search-input" placeholder="Ketik nama siswa..."
+                                    class="flex-1 bg-transparent text-white text-sm placeholder-slate-500 focus:outline-none"
+                                    oninput="tapFilterSiswaList(this.value)">
+                                <button onclick="document.getElementById('tap-siswa-search-input').value=''; tapFilterSiswaList('');" class="text-slate-500 hover:text-slate-300 text-xs">✕</button>
+                            </div>
+                        </div>
+                        <!-- Daftar siswa -->
+                        <div id="tap-siswa-picker-list" class="flex-1 overflow-y-auto px-3 pb-4 space-y-1"></div>
                     </div>
                 </div>
 
@@ -14844,6 +14884,95 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             tapRenderSiswaInput();
             tapAutoSave();
         }
+    }
+
+    // ---- RESET jawaban siswa aktif ----
+    function tapResetJawabanSiswaIni() {
+        const siswa = tapState.siswaList[tapState.currentIdx];
+        Swal.fire({
+            icon: 'warning',
+            title: 'Reset Jawaban?',
+            html: `Hapus semua jawaban <b>${siswa.nama}</b>?<br><small class="text-slate-400">Tindakan ini tidak bisa dibatalkan.</small>`,
+            showCancelButton: true,
+            confirmButtonText: '<i class="fas fa-trash-alt mr-1"></i> Ya, Reset',
+            cancelButtonText: 'Batal',
+            background: '#1e293b', color: '#f8fafc',
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#475569',
+        }).then(r => {
+            if (r.isConfirmed) {
+                const pgJml = tapState.kunci.length;
+                const esaiJml = tapState.esaiMaks.length;
+                tapState.jawaban[tapState.currentIdx] = {
+                    pg: Array(pgJml).fill(''),
+                    esai: Array(esaiJml).fill(null),
+                };
+                tapRenderSiswaInput();
+                tapAutoSave();
+                Swal.fire({ icon: 'success', title: 'Direset!', text: `Jawaban ${siswa.nama} telah dihapus.`,
+                    timer: 1500, showConfirmButton: false, background: '#1e293b', color: '#f8fafc' });
+            }
+        });
+    }
+
+    // ---- STUDENT PICKER MODAL ----
+    function tapShowSiswaPickerModal() {
+        const modal = document.getElementById('tap-siswa-picker-modal');
+        modal.classList.remove('hidden');
+        // Reset search
+        const inp = document.getElementById('tap-siswa-search-input');
+        if (inp) { inp.value = ''; }
+        tapFilterSiswaList('');
+        // Focus search after transition
+        setTimeout(() => { if (inp) inp.focus(); }, 100);
+    }
+
+    function tapCloseSiswaPicker() {
+        document.getElementById('tap-siswa-picker-modal').classList.add('hidden');
+    }
+
+    function tapFilterSiswaList(q) {
+        const container = document.getElementById('tap-siswa-picker-list');
+        const query = (q || '').toLowerCase().trim();
+        container.innerHTML = '';
+        tapState.siswaList.forEach((s, i) => {
+            const nama = (s.nama || '').toLowerCase();
+            const absen = String(s.absen || '');
+            if (query && !nama.includes(query) && !absen.includes(query)) return;
+
+            // Cek apakah sudah diisi
+            const jaw = tapState.jawaban[i];
+            const sudahDiisi = jaw && (jaw.pg.some(p => p !== '') || jaw.esai.some(p => p !== null));
+            const isActive = i === tapState.currentIdx;
+
+            const btn = document.createElement('button');
+            btn.onclick = () => tapJumpToSiswa(i);
+            btn.className = `w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition ${
+                isActive
+                    ? 'bg-amber-600/30 border border-amber-500/50 text-white'
+                    : 'bg-slate-800 hover:bg-slate-700 border border-slate-700/50 text-slate-200'
+            }`;
+            btn.innerHTML = `
+                <span class="text-[11px] font-black text-slate-500 w-6 shrink-0 text-center">${s.absen || i+1}</span>
+                <span class="flex-1 text-sm font-bold truncate">${s.nama}</span>
+                ${isActive ? '<span class="text-[10px] text-amber-400 shrink-0 font-bold">← Aktif</span>' : ''}
+                ${sudahDiisi && !isActive ? '<span class="text-[10px] text-emerald-400 shrink-0">✓</span>' : ''}
+            `;
+            container.appendChild(btn);
+        });
+        if (container.children.length === 0) {
+            container.innerHTML = '<p class="text-center text-slate-500 text-xs py-6">Tidak ditemukan.</p>';
+        }
+    }
+
+    function tapJumpToSiswa(idx) {
+        tapState.currentIdx = idx;
+        tapCloseSiswaPicker();
+        tapRenderSiswaInput();
+        tapAutoSave();
+        // Scroll content to top
+        const scrollEl = document.querySelector('#tap-step-input .overflow-y-auto');
+        if (scrollEl) scrollEl.scrollTop = 0;
     }
 
     function tapSimpanSiswaDanLanjut() {
