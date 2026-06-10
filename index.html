@@ -1501,7 +1501,7 @@
                 </section>
 
                 <section id="tab-mapel-view" class="tab-content hidden space-y-4"><div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div class="bg-slate-900 p-5 rounded-xl border border-slate-800 space-y-4 h-fit"><h3 class="text-sm font-bold text-slate-100 border-b border-slate-800 pb-2">Pengaturan Bobot Akhir (%)</h3><div class="space-y-3"><div><label class="block text-[11px] text-slate-400 mb-1">Formatif</label><input type="number" id="input-bobot-formatif" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs font-bold text-slate-100 outline-none focus:border-emerald-500"></div><div><label class="block text-[11px] text-slate-400 mb-1">Sumatif Tengah Semester (STS)</label><input type="number" id="input-bobot-sts" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs font-bold text-slate-100 outline-none focus:border-emerald-500"></div><div><label class="block text-[11px] text-slate-400 mb-1">Sumatif Akhir Semester (SAS)</label><input type="number" id="input-bobot-sas" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs font-bold text-slate-100 outline-none focus:border-emerald-500"></div><button onclick="saveBobotNilai()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2 rounded-lg transition">Simpan Persentase</button></div></div><div class="lg:col-span-2 bg-slate-900 rounded-xl border border-slate-800 overflow-hidden flex flex-col"><div class="p-4 border-b border-slate-800 flex justify-between items-center"><h3 class="text-sm font-bold text-slate-100">Daftar Mata Pelajaran & KKM</h3><button onclick="openModalMapel()" class="bg-emerald-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg hover:bg-emerald-500"><i class="fas fa-plus"></i> Tambah Mapel</button></div><div class="overflow-x-auto flex-1"><table class="w-full text-left min-w-[400px]"><thead><tr class="bg-slate-950 border-b border-slate-800 text-xs font-bold text-slate-400 uppercase"><th class="p-3 text-center w-12">No</th><th class="p-3">Nama Mapel</th><th class="p-3 text-center w-24">KKM</th><th class="p-3 text-center w-24">Aksi</th></tr></thead><tbody id="table-mapel-body" class="divide-y divide-slate-800 text-xs text-slate-300"></tbody></table></div></div></div></section>
-                <section id="tab-nilai-view" class="tab-content hidden space-y-4"><div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col gap-3"><div class="flex flex-col md:flex-row gap-3 items-center justify-between"><select id="select-nilai-mapel" onchange="loadInputNilaiSiswa()" class="w-full md:w-72 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-bold text-slate-100 outline-none focus:border-emerald-500"></select><div class="flex gap-2 w-full md:w-auto flex-wrap"><label class="bg-blue-600/20 text-blue-400 border border-blue-600/50 hover:bg-blue-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg cursor-pointer flex-1 text-center whitespace-nowrap"><i class="fas fa-file-excel mr-1"></i> Import Excel <input type="file" id="import-excel-nilai" accept=".xlsx, .xls" onchange="importNilaiExcel(event)" class="hidden"></label><button onclick="exportFormatNilaiExcel()" class="bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition font-bold text-xs px-3 py-2 rounded-lg flex-1 whitespace-nowrap"><i class="fas fa-download mr-1"></i> Unduh Format</button></div></div><div class="bg-emerald-900/20 border border-emerald-800/30 rounded-lg px-3 py-2 text-[10px] text-emerald-300 flex items-start gap-2"><i class="fas fa-info-circle mt-0.5 shrink-0"></i><span><b>Alur nilai otomatis:</b> Agenda Formatif → Nilai TP (per TP) → Rata-rata TP × Bobot% = <b>Nilai Formatif</b> (terkunci). Input STS & SAS secara manual. Nilai Akhir = Formatif berbobot + STS berbobot + SAS berbobot.</span></div><div class="border-t border-slate-800 pt-3 flex flex-col sm:flex-row gap-2"><button onclick="hapusNilaiMapelIni()" class="flex-1 bg-red-900/30 text-red-400 border border-red-900/50 hover:bg-red-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-eraser mr-1"></i> Hapus Nilai Mapel Ini (Semua Siswa)</button><button onclick="hapusSemuaNilai()" class="flex-1 bg-red-950/50 text-red-500 border border-red-900/30 hover:bg-red-700 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-trash-alt mr-1"></i> Hapus SEMUA Nilai (Seluruh Mapel)</button></div></div><div class="bg-slate-900 rounded-xl border border-slate-800 overflow-x-auto shadow-sm"><table class="w-full text-left min-w-[800px]"><thead class="sticky top-0 bg-slate-950"><tr class="border-b border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider"><th class="p-3 w-12 text-center">Abs</th><th class="p-3">Nama</th><th class="p-3 text-center text-emerald-400 w-36">Formatif<br><span class="text-[9px] font-normal text-slate-500 normal-case">(dari TP × bobot) 🔒</span></th><th class="p-3 text-center text-blue-400 w-28">STS</th><th class="p-3 text-center text-indigo-400 w-28">SAS</th><th class="p-3 text-center text-amber-400 w-24">Nilai Akhir</th><th class="p-3 text-center text-red-400 w-20">Hapus</th></tr></thead><tbody id="table-nilai-body" class="divide-y divide-slate-800 text-xs text-slate-300"></tbody></table></div></section>
+                <section id="tab-nilai-view" class="tab-content hidden space-y-4"><div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col gap-3"><div class="flex flex-col md:flex-row gap-3 items-center justify-between"><select id="select-nilai-mapel" onchange="loadInputNilaiSiswa()" class="w-full md:w-72 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-bold text-slate-100 outline-none focus:border-emerald-500"></select><div class="flex gap-2 w-full md:w-auto flex-wrap"><label class="bg-blue-600/20 text-blue-400 border border-blue-600/50 hover:bg-blue-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg cursor-pointer flex-1 text-center whitespace-nowrap"><i class="fas fa-file-excel mr-1"></i> Import Excel <input type="file" id="import-excel-nilai" accept=".xlsx, .xls" onchange="importNilaiExcel(event)" class="hidden"></label><button onclick="exportFormatNilaiExcel()" class="bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition font-bold text-xs px-3 py-2 rounded-lg flex-1 whitespace-nowrap"><i class="fas fa-download mr-1"></i> Unduh Format</button></div></div><div class="bg-emerald-900/20 border border-emerald-800/30 rounded-lg px-3 py-2 text-[10px] text-emerald-300 flex items-start gap-2"><i class="fas fa-info-circle mt-0.5 shrink-0"></i><span><b>Alur nilai otomatis:</b> Agenda Formatif → Nilai TP (per TP) → Rata-rata TP × Bobot% = <b>Nilai Formatif</b> (terkunci). Input STS & SAS secara manual. Nilai Akhir = Formatif berbobot + STS berbobot + SAS berbobot.</span></div><div class="border-t border-slate-800 pt-3 flex flex-col sm:flex-row gap-2"><button onclick="hapusNilaiMapelIni()" class="flex-1 bg-red-900/30 text-red-400 border border-red-900/50 hover:bg-red-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-eraser mr-1"></i> Hapus Nilai Mapel Ini (Semua Siswa)</button><button onclick="hapusSemuaNilai()" class="flex-1 bg-red-950/50 text-red-500 border border-red-900/30 hover:bg-red-700 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-trash-alt mr-1"></i> Hapus SEMUA Nilai (Seluruh Mapel)</button><button onclick="bersihkanDataRemedial()" class="flex-1 bg-orange-900/30 text-orange-400 border border-orange-800/50 hover:bg-orange-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-broom mr-1"></i> Bersihkan Badge RMD</button><button onclick="restoreNilaiDariBackup()" class="flex-1 bg-emerald-900/30 text-emerald-400 border border-emerald-800/50 hover:bg-emerald-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-history mr-1"></i> Pulihkan dari Backup</button></div><div class="bg-emerald-950/30 border border-emerald-800/30 rounded-lg px-3 py-2 text-[10px] text-emerald-400 flex items-center gap-2 mt-1"><i class="fas fa-shield-alt shrink-0"></i><span><b>🔒 Nilai terlindungi:</b> Nilai hanya bisa dihapus manual. Sistem auto-backup setiap ada perubahan &amp; bisa dipulihkan kapan saja.</span></div></div><div class="bg-slate-900 rounded-xl border border-slate-800 overflow-x-auto shadow-sm"><table class="w-full text-left min-w-[800px]"><thead class="sticky top-0 bg-slate-950"><tr class="border-b border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider"><th class="p-3 w-12 text-center">Abs</th><th class="p-3">Nama</th><th class="p-3 text-center text-emerald-400 w-36">Formatif<br><span class="text-[9px] font-normal text-slate-500 normal-case">(dari TP × bobot) 🔒</span></th><th class="p-3 text-center text-blue-400 w-28">STS</th><th class="p-3 text-center text-indigo-400 w-28">SAS</th><th class="p-3 text-center text-amber-400 w-24">Nilai Akhir</th><th class="p-3 text-center text-red-400 w-20">Hapus</th></tr></thead><tbody id="table-nilai-body" class="divide-y divide-slate-800 text-xs text-slate-300"></tbody></table></div></section>
                 <section id="tab-tugas-view" class="tab-content hidden space-y-4">
                     <div class="bg-gradient-to-r from-emerald-900/30 to-slate-900 p-4 rounded-xl border border-emerald-800/30 flex flex-col md:flex-row md:items-center gap-3 justify-between">
                         <div>
@@ -4260,9 +4260,118 @@
             return s; 
         });
 
+        // ============================================================
+        // 🔒 PROTEKSI NILAI — Auto-backup & Guard System
+        // Nilai di db.nilai HANYA bisa dihapus via hapusNilaiSiswaMapel,
+        // hapusNilaiMapelIni, atau hapusSemuaNilai. Tidak bisa hilang sendiri.
+        // ============================================================
+
+        const NILAI_BACKUP_KEY = 'erabot_nilai_backup_v6_1';
+        const NILAI_BACKUP_LIMIT = 5; // simpan 5 snapshot terakhir
+
+        // Simpan snapshot db.nilai ke backup terpisah
+        function backupNilaiSnapshot() {
+            try {
+                const raw = localStorage.getItem(NILAI_BACKUP_KEY);
+                const snapshots = raw ? JSON.parse(raw) : [];
+                // Hanya backup jika ada data nilai
+                if (!db.nilai || Object.keys(db.nilai).length === 0) return;
+                snapshots.unshift({
+                    ts: Date.now(),
+                    nilai: JSON.parse(JSON.stringify(db.nilai)),
+                    remedial: JSON.parse(JSON.stringify(db.remedial || {})),
+                    nilaiTP: JSON.parse(JSON.stringify(db.nilaiTP || {}))
+                });
+                // Batasi jumlah snapshot
+                if (snapshots.length > NILAI_BACKUP_LIMIT) snapshots.length = NILAI_BACKUP_LIMIT;
+                localStorage.setItem(NILAI_BACKUP_KEY, JSON.stringify(snapshots));
+            } catch(e) {
+                // Backup gagal (storage penuh) — tidak masalah, data utama tetap aman
+                console.warn('[Proteksi Nilai] Backup snapshot gagal:', e.message);
+            }
+        }
+
+        // Cek & pulihkan nilai jika tiba-tiba kosong padahal backup ada
+        function guardNilaiIntegrity() {
+            const currentCount = Object.keys(db.nilai || {}).length;
+            if (currentCount > 0) return; // aman
+            try {
+                const raw = localStorage.getItem(NILAI_BACKUP_KEY);
+                if (!raw) return;
+                const snapshots = JSON.parse(raw);
+                if (!snapshots || snapshots.length === 0) return;
+                const latest = snapshots[0];
+                if (!latest.nilai || Object.keys(latest.nilai).length === 0) return;
+                // Ada backup! Pulihkan otomatis
+                db.nilai   = latest.nilai;
+                db.remedial = latest.remedial || db.remedial || {};
+                db.nilaiTP  = latest.nilaiTP  || db.nilaiTP  || {};
+                console.warn('[Proteksi Nilai] db.nilai kosong terdeteksi — dipulihkan dari backup otomatis.');
+                Swal.fire({
+                    icon: 'warning',
+                    title: '⚠️ Nilai Dipulihkan Otomatis',
+                    html: `<p style="font-size:13px;color:#94a3b8;line-height:1.7">
+                        Sistem mendeteksi nilai tiba-tiba kosong dan telah <b style="color:#34d399">memulihkan otomatis</b> dari backup terakhir.<br><br>
+                        <span style="font-size:11px;color:#64748b">Backup: ${new Date(latest.ts).toLocaleString('id-ID')}</span>
+                    </p>`,
+                    background: '#1e293b', color: '#f8fafc'
+                });
+            } catch(e) {
+                console.warn('[Proteksi Nilai] Guard integrity error:', e.message);
+            }
+        }
+
+        // Expose fungsi restore manual untuk keadaan darurat
+        function restoreNilaiDariBackup() {
+            try {
+                const raw = localStorage.getItem(NILAI_BACKUP_KEY);
+                if (!raw) return Swal.fire('Info', 'Tidak ada backup nilai yang tersedia.', 'info');
+                const snapshots = JSON.parse(raw);
+                if (!snapshots || snapshots.length === 0) return Swal.fire('Info', 'Tidak ada backup nilai yang tersedia.', 'info');
+
+                const opsiHtml = snapshots.map((s, i) => {
+                    const tgl = new Date(s.ts).toLocaleString('id-ID');
+                    const jml = Object.keys(s.nilai || {}).length;
+                    return `<option value="${i}">${tgl} — ${jml} data nilai</option>`;
+                }).join('');
+
+                Swal.fire({
+                    title: '🔄 Pulihkan Nilai dari Backup',
+                    html: `<p style="font-size:12px;color:#94a3b8;margin-bottom:10px">Pilih snapshot backup yang ingin dipulihkan:</p>
+                           <select id="swal-backup-select" style="width:100%;background:#0f172a;color:#f8fafc;border:1px solid #334155;border-radius:8px;padding:8px;font-size:12px">${opsiHtml}</select>
+                           <p style="font-size:11px;color:#f87171;margin-top:10px">⚠️ Nilai saat ini akan ditimpa oleh backup yang dipilih.</p>`,
+                    showCancelButton: true,
+                    confirmButtonText: 'Pulihkan',
+                    cancelButtonText: 'Batal',
+                    confirmButtonColor: '#059669',
+                    background: '#1e293b', color: '#f8fafc',
+                    preConfirm: () => {
+                        const idx = parseInt(document.getElementById('swal-backup-select').value);
+                        return snapshots[idx];
+                    }
+                }).then(r => {
+                    if (!r.isConfirmed || !r.value) return;
+                    const snap = r.value;
+                    db.nilai    = snap.nilai;
+                    db.remedial = snap.remedial || db.remedial || {};
+                    db.nilaiTP  = snap.nilaiTP  || db.nilaiTP  || {};
+                    saveDB();
+                    loadInputNilaiSiswa && loadInputNilaiSiswa();
+                    renderRekapitulasi && renderRekapitulasi();
+                    Swal.fire({ icon: 'success', title: 'Nilai Berhasil Dipulihkan!',
+                        html: `<b>${Object.keys(db.nilai).length}</b> data nilai telah dipulihkan dari backup.`,
+                        background: '#1e293b', color: '#f8fafc' });
+                });
+            } catch(e) {
+                Swal.fire('Error', 'Gagal membaca backup: ' + e.message, 'error');
+            }
+        }
+
         function saveDB() { 
             _rankCache = null;
             _absensiCache = null;
+            // 🔒 PROTEKSI: Backup nilai sebelum menyimpan
+            backupNilaiSnapshot();
             // Invalidasi cache analisis AI dashboard agar terupdate saat data berubah
             const kC = document.getElementById('dash-ai-notif');
             if(kC) kC.innerHTML = '';
@@ -4291,6 +4400,8 @@
             _absensiCache = null;
             clearTimeout(_saveTimer);
             _saveTimer = setTimeout(() => {
+                // 🔒 PROTEKSI: Backup nilai sebelum menyimpan
+                backupNilaiSnapshot();
                 try {
                     localStorage.setItem('erabot_db_v6_1', JSON.stringify(db));
                 } catch(e) {
@@ -4301,6 +4412,9 @@
                 updateNotificationBadge();
             }, 400);
         }
+
+        // 🔒 PROTEKSI: Jalankan guard integrity saat pertama kali load
+        guardNilaiIntegrity();
 
         let _rankCache = null;
         let _absensiCache = null; // Cache rekap absensi per siswa
@@ -5501,6 +5615,78 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                         }
                     });
                 }
+            });
+        }
+
+        // 🔒 Bersihkan data remedial yang tidak valid (nilai 0 / kosong)
+        function bersihkanDataRemedial() {
+            if (!db.remedial) return Swal.fire('Info', 'Tidak ada data remedial.', 'info');
+            const sebelum = Object.keys(db.remedial).length;
+            if (sebelum === 0) return Swal.fire('Info', 'Data remedial sudah bersih.', 'info');
+
+            let hapusCount = 0, simpanCount = 0;
+            const previewHapus = [], previewSimpan = [];
+
+            Object.entries(db.remedial).forEach(([key, val]) => {
+                const parts = key.split('_');
+                const jenis = parts[parts.length - 1];
+                const mId   = parts[parts.length - 2];
+                const sId   = parts.slice(0, parts.length - 2).join('_');
+                const siswa = db.siswa.find(s => s.id === sId);
+                const mapel = db.mapel.find(m => m.id === mId);
+                const numVal = parseFloat(val);
+                const invalid = val === '' || val === null || val === undefined || isNaN(numVal) || numVal === 0;
+                if (invalid) { hapusCount++; previewHapus.push({ key, nama: siswa?.nama || sId, mapel: mapel?.nama || mId, jenis, val }); }
+                else { simpanCount++; }
+            });
+
+            const previewRows = previewHapus.slice(0, 10).map(r =>
+                `<tr style="border-bottom:1px solid #1e293b">
+                    <td style="padding:3px 6px;color:#f8fafc">${r.nama}</td>
+                    <td style="padding:3px 6px;color:#94a3b8">${r.mapel}</td>
+                    <td style="padding:3px 6px;color:#fcd34d;text-align:center">${r.jenis}</td>
+                    <td style="padding:3px 6px;color:#f87171;text-align:center">${r.val ?? '—'}</td>
+                </tr>`).join('');
+            const lebihBanyak = previewHapus.length > 10
+                ? `<p style="color:#64748b;font-size:10px;margin-top:4px">...dan ${previewHapus.length - 10} lainnya</p>` : '';
+
+            Swal.fire({
+                title: 'Bersihkan Data Remedial?',
+                html: `<div style="font-size:12px;text-align:left">
+                    <p style="color:#94a3b8;margin-bottom:8px">
+                        Ditemukan <b style="color:#f87171">${hapusCount} data remedial tidak valid</b> (nilai 0 atau kosong).<br>
+                        <b style="color:#34d399">${simpanCount} data valid</b> (nilai > 0) akan tetap disimpan.
+                    </p>
+                    ${hapusCount > 0 ? `<div style="max-height:200px;overflow-y:auto">
+                        <table style="width:100%;border-collapse:collapse;font-size:11px">
+                            <thead><tr style="background:#1e3a5f;color:#94a3b8">
+                                <th style="padding:4px 6px;text-align:left">Siswa</th>
+                                <th style="padding:4px 6px;text-align:left">Mapel</th>
+                                <th style="padding:4px 6px;text-align:center">Jenis</th>
+                                <th style="padding:4px 6px;text-align:center">Nilai</th>
+                            </tr></thead>
+                            <tbody>${previewRows}</tbody>
+                        </table>${lebihBanyak}
+                    </div>` : '<p style="color:#34d399">Tidak ada data tidak valid.</p>'}
+                </div>`,
+                icon: hapusCount > 0 ? 'warning' : 'success',
+                showCancelButton: hapusCount > 0,
+                confirmButtonText: hapusCount > 0 ? `Hapus ${hapusCount} Data Tidak Valid` : 'OK',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#dc2626',
+                background: '#1e293b', color: '#f8fafc', width: '520px'
+            }).then(r => {
+                if (!r.isConfirmed || hapusCount === 0) return;
+                Object.entries(db.remedial).forEach(([key, val]) => {
+                    const numVal = parseFloat(val);
+                    if (val === '' || val === null || val === undefined || isNaN(numVal) || numVal === 0) delete db.remedial[key];
+                });
+                saveDB();
+                if (typeof loadInputNilaiSiswa === 'function') loadInputNilaiSiswa();
+                if (typeof renderRemedialTab === 'function') renderRemedialTab();
+                Swal.fire({ icon: 'success', title: 'Data Remedial Dibersihkan!',
+                    html: `<b>${hapusCount}</b> data tidak valid dihapus. <b>${simpanCount}</b> data valid tetap tersimpan.`,
+                    background: '#1e293b', color: '#f8fafc' });
             });
         }
 
@@ -13961,9 +14147,14 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             const remedialList = [];
             const lulusList    = [];
             const tidakCocok   = [];
+            const belumAdaNilai = []; // siswa nilai 0 / belum ujian — tidak dimasukkan remedial
 
             kalkorState.hasil.forEach(h => {
                 const nilai100 = Math.round(h.nilaiAkhir * 100 / skala);
+
+                // Nilai 0 = belum ujian / belum ada data, jangan dimasukkan ke remedial
+                if (nilai100 === 0) { belumAdaNilai.push(h.nama); return; }
+
                 if (nilai100 >= kkm) { lulusList.push(h.nama); return; }
 
                 const siswaObj = h.siswaId
@@ -13994,6 +14185,10 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
                 ? `<p style="color:#fbbf24;font-size:11px;margin-top:8px">⚠️ ${tidakCocok.length} siswa tidak ditemukan di database (nama tidak cocok): ${tidakCocok.join(', ')}</p>`
                 : '';
 
+            const infoBelumNilai = belumAdaNilai.length
+                ? `<p style="color:#64748b;font-size:11px;margin-top:6px">⏭️ ${belumAdaNilai.length} siswa dilewati karena nilai 0 (belum ujian): ${belumAdaNilai.join(', ')}</p>`
+                : '';
+
             Swal.fire({
                 icon: 'question',
                 title: `Kirim ${remedialList.length} Siswa ke Remedial?`,
@@ -14010,6 +14205,7 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
                         <tbody>${previewRows}</tbody>
                     </table>
                     ${warningTidakCocok}
+                    ${infoBelumNilai}
                 </div>
                 <p style="font-size:11px;color:#64748b;margin-top:10px;text-align:left">Siswa akan langsung muncul di menu Remedial. Guru tinggal mengisi nilai remedialnya — nilai akhir otomatis diambil yang lebih tinggi.</p>`,
                 showConfirmButton: true,
@@ -14025,6 +14221,7 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
                 // Pastikan nilai asli tersimpan di db.nilai agar muncul di tabel remedial
                 // (Jika belum disimpan sebelumnya, simpan dulu nilai aslinya)
                 remedialList.forEach(r => {
+                    if (!r.nilaiAsli || r.nilaiAsli === 0) return; // skip — belum ada nilai asli
                     const nilaiKey = `${r.siswaId}_${mapelId}`;
                     if (!db.nilai[nilaiKey]) db.nilai[nilaiKey] = { formatif: 0, sts: 0, sas: 0 };
                     // Hanya update jika nilai masih 0 (belum pernah disimpan)
