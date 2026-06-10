@@ -739,6 +739,9 @@
                                 <button onclick="resetKalkorForm()" class="bg-slate-700/60 hover:bg-slate-600 text-slate-300 hover:text-white border border-slate-600/50 font-bold text-xs px-3 py-2 rounded-lg transition flex items-center gap-1.5">
                                     <i class="fas fa-undo"></i> Reset
                                 </button>
+                                <button onclick="openModalTapInput()" class="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold text-xs px-3 py-2 rounded-lg shadow transition flex items-center gap-1.5">
+                                    <i class="fas fa-hand-pointer"></i> Input 1 Tap
+                                </button>
                                 <button onclick="cetakHasilKoreksi()" class="bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold text-xs px-3 py-2 rounded-lg shadow transition flex items-center gap-1.5">
                                     <i class="fas fa-print"></i> Cetak Hasil
                                 </button>
@@ -1427,6 +1430,9 @@
                                 </button>
                                 <button onclick="cetakRekapAbsensiPDF()" class="bg-green-900/30 text-green-400 border border-green-900/50 hover:bg-green-600 hover:text-white transition font-bold text-xs px-4 py-1.5 rounded-lg flex items-center gap-1.5">
                                     <i class="fas fa-file-pdf"></i> Cetak PDF
+                                </button>
+                                <button onclick="cetakRekapAbsensiHarianPDF()" class="bg-blue-900/30 text-blue-300 border border-blue-800/50 hover:bg-blue-600 hover:text-white transition font-bold text-xs px-4 py-1.5 rounded-lg flex items-center gap-1.5">
+                                    <i class="fas fa-calendar-alt"></i> PDF Harian
                                 </button>
                             </div>
                         </div>
@@ -3066,7 +3072,7 @@
                     <div class="bg-gradient-to-r from-red-950/60 via-slate-900 to-slate-900 rounded-2xl p-6 border border-red-900/30 shadow-xl relative overflow-hidden">
                         <div class="z-10 relative">
                             <h3 class="text-xl font-black text-white flex items-center gap-2"><i class="fas fa-redo-alt text-red-400"></i> Remedial Siswa</h3>
-                            <p class="text-red-100/60 text-xs mt-1 max-w-2xl">Kelola nilai remedial untuk Formatif, STS, dan SAS. Nilai remedial otomatis menggantikan nilai asli jika lebih tinggi (sinkron dengan sistem penilaian).</p>
+                            <p class="text-red-100/60 text-xs mt-1 max-w-2xl">Kelola nilai remedial untuk Formatif, STS, dan SAS. Pilih formula: <b class="text-red-300">Nilai Tertinggi</b> atau <b class="text-amber-300">Rata-rata</b> antara nilai asli dan remedial — otomatis tersinkron ke Rekap & Rapor.</p>
                         </div>
                         <i class="fas fa-clipboard-check absolute right-[-10px] bottom-[-20px] text-8xl text-red-500/10"></i>
                     </div>
@@ -3086,6 +3092,19 @@
                                 <option value="sts">Nilai STS</option>
                                 <option value="sas">Nilai SAS</option>
                             </select>
+                        </div>
+                        <div class="flex-1 space-y-1">
+                            <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Formula Nilai Akhir</label>
+                            <div class="flex gap-2">
+                                <button id="btn-formula-tertinggi" onclick="setFormulaRemedial('tertinggi')"
+                                    class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border transition bg-emerald-700 text-white border-emerald-600 shadow">
+                                    <i class="fas fa-arrow-up"></i> Nilai Tertinggi
+                                </button>
+                                <button id="btn-formula-ratarata" onclick="setFormulaRemedial('ratarata')"
+                                    class="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border transition bg-slate-800 text-slate-400 border-slate-700">
+                                    <i class="fas fa-equals"></i> Rata-rata
+                                </button>
+                            </div>
                         </div>
                         <button onclick="simpanSemuaRemedial()" class="bg-red-600 hover:bg-red-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition shadow-lg flex items-center gap-2 whitespace-nowrap">
                             <i class="fas fa-save"></i> Simpan Semua
@@ -3165,7 +3184,7 @@
                         </div>
                         <div class="p-3 border-t border-slate-800 text-[10px] text-slate-500 flex items-center gap-2">
                             <i class="fas fa-info-circle text-sky-400"></i>
-                            Nilai akhir = nilai remedial jika lebih tinggi dari nilai asli, jika tidak maka tetap nilai asli. Perubahan langsung tersinkron ke Rekap & Rapor.
+                            <span id="remedial-formula-info">Nilai akhir = nilai tertinggi antara nilai asli dan nilai remedial. Perubahan langsung tersinkron ke Rekap & Rapor.</span>
                         </div>
                     </div>
                 </section>
@@ -5782,7 +5801,38 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             if (rem === undefined || rem === null || rem === '') return asli;
             const remNum = parseFloat(rem);
             if (asli === null) return remNum;
+            // Gunakan formula yang dipilih user
+            const formula = window._remedialFormula || 'tertinggi';
+            if (formula === 'ratarata') {
+                return parseFloat(((asli + remNum) / 2).toFixed(2));
+            }
             return Math.max(asli, remNum);
+        }
+
+        // Formula remedial default
+        window._remedialFormula = 'tertinggi';
+
+        function setFormulaRemedial(formula) {
+            window._remedialFormula = formula;
+            // Update tampilan tombol
+            const btnT = document.getElementById('btn-formula-tertinggi');
+            const btnR = document.getElementById('btn-formula-ratarata');
+            if (formula === 'tertinggi') {
+                btnT.className = 'flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border transition bg-emerald-700 text-white border-emerald-600 shadow';
+                btnR.className = 'flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border transition bg-slate-800 text-slate-400 border-slate-700';
+            } else {
+                btnR.className = 'flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border transition bg-amber-600 text-white border-amber-500 shadow';
+                btnT.className = 'flex-1 flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold border transition bg-slate-800 text-slate-400 border-slate-700';
+            }
+            // Update keterangan footer
+            const infoEl = document.getElementById('remedial-formula-info');
+            if (infoEl) {
+                infoEl.textContent = formula === 'ratarata'
+                    ? 'Nilai akhir = rata-rata antara nilai asli dan nilai remedial ÷ 2. Cocok untuk ujian open book. Perubahan langsung tersinkron ke Rekap & Rapor.'
+                    : 'Nilai akhir = nilai tertinggi antara nilai asli dan nilai remedial. Perubahan langsung tersinkron ke Rekap & Rapor.';
+            }
+            // Re-render tabel agar kolom Nilai Akhir ikut diupdate
+            renderRemedialTab();
         }
 
         function renderRemedialTab() {
@@ -5820,10 +5870,13 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             // Show sync info bar
             infoBar.classList.remove('hidden');
             document.getElementById('remedial-info-title').textContent = `Sinkron aktif — ${jenisLabel}`;
+            const formulaAktif = window._remedialFormula || 'tertinggi';
             document.getElementById('remedial-info-desc').textContent = 
-                jenis === 'formatif'
+                formulaAktif === 'ratarata'
+                ? `Formula: Rata-rata (Nilai Asli + Nilai Remedial) ÷ 2. Cocok untuk ujian open book.`
+                : jenis === 'formatif'
                 ? 'Nilai formatif remedial menggantikan rata-rata TP jika lebih tinggi, dan langsung berdampak ke nilai akhir mapel.'
-                : `Nilai ${jenis.toUpperCase()} remedial menggantikan nilai asli jika lebih tinggi, langsung tersinkron ke Rekap & Rapor.`;
+                : `Formula: Nilai Tertinggi — nilai ${jenis.toUpperCase()} remedial menggantikan nilai asli jika lebih tinggi, langsung tersinkron ke Rekap & Rapor.`;
             
             setTimeout(() => { if(syncIcon) syncIcon.classList.remove('animate-spin'); }, 1000);
 
@@ -5942,7 +5995,14 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             // FIX 6: Tampilkan warning jika nilai remedial lebih rendah dari nilai asli
             if (elWarn && val !== '' && !isNaN(Number(val)) && asliVal !== null) {
                 const remNum = parseFloat(val);
-                elWarn.classList.toggle('hidden', remNum >= asliVal);
+                const formula = window._remedialFormula || 'tertinggi';
+                if (formula === 'ratarata') {
+                    elWarn.textContent = remNum < asliVal ? '⚠ Nilai lebih rendah dari nilai asli' : '';
+                    elWarn.classList.toggle('hidden', remNum >= asliVal);
+                } else {
+                    elWarn.textContent = '⚠ Nilai lebih rendah, tidak berpengaruh';
+                    elWarn.classList.toggle('hidden', remNum >= asliVal);
+                }
             } else if (elWarn) {
                 elWarn.classList.add('hidden');
             }
@@ -12805,6 +12865,217 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             printWin.document.close();
         }
 
+        // ============================================================
+        // CETAK PDF HARIAN — Tabel per tanggal (kolom = tanggal 1-31)
+        // H = Hadir, S = Sakit, I = Izin, A = Alfa, · = tidak ada data
+        // ============================================================
+        function cetakRekapAbsensiHarianPDF() {
+            const range = getRkAbsDateRange();
+            if (!range) return Swal.fire('Peringatan', 'Pilih periode rekap terlebih dahulu!', 'warning');
+
+            const { startStr, endStr, label } = range;
+            const namaSekolah = db.profil.sekolah || 'SEKOLAH';
+            const wali        = db.profil.wali    || '-';
+            const kelas       = db.profil.kelas   || '-';
+            const nipWali     = (db.raporSettings && db.raporSettings.nipWali) || '';
+            const ttdWali     = db.profil.ttdWali || '';
+
+            // Kumpulkan semua tanggal dalam range
+            const tglList = [];
+            const cur = new Date(startStr + 'T00:00:00');
+            const end = new Date(endStr   + 'T00:00:00');
+            while (cur <= end) {
+                tglList.push(cur.toISOString().slice(0, 10));
+                cur.setDate(cur.getDate() + 1);
+            }
+
+            if (tglList.length === 0) return Swal.fire('Info', 'Tidak ada tanggal dalam range yang dipilih.', 'info');
+
+            // Siswa urut absensi
+            const siswaList = [...db.siswa].sort((a, b) => (parseInt(a.absen) || 0) - (parseInt(b.absen) || 0));
+            if (siswaList.length === 0) return Swal.fire('Info', 'Belum ada data siswa.', 'info');
+
+            // Cek apakah ada absensi sama sekali
+            const adaData = tglList.some(t => db.absensi[t] && Object.keys(db.absensi[t]).length > 0);
+
+            // Mode: jika bulan tunggal → tampilkan kolom tanggal saja (1..31)
+            // Jika range panjang (semester/minggu multi-bulan) → tetap tampilkan tanggal lengkap
+            const isBulanTunggal = (function() {
+                const s = new Date(startStr + 'T00:00:00');
+                const e = new Date(endStr   + 'T00:00:00');
+                return s.getFullYear() === e.getFullYear() && s.getMonth() === e.getMonth();
+            })();
+
+            // Untuk mode bulan: kolom header = nomor tanggal saja
+            // Untuk range panjang: kolom header = dd/mm
+            const BULAN_ID = ['Januari','Februari','Maret','April','Mei','Juni',
+                              'Juli','Agustus','September','Oktober','November','Desember'];
+            const HARI_MINI = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+
+            // Warna tiap status (untuk HTML cetak)
+            function statusStyle(kode) {
+                if (kode === 'H') return 'color:#15803d;font-weight:900;';
+                if (kode === 'S') return 'color:#b45309;font-weight:900;';
+                if (kode === 'I') return 'color:#1d4ed8;font-weight:900;';
+                if (kode === 'A') return 'color:#dc2626;font-weight:900;';
+                return 'color:#94a3b8;';
+            }
+
+            // Buat header kolom tanggal
+            let thDates = '';
+            tglList.forEach(tgl => {
+                const d  = new Date(tgl + 'T00:00:00');
+                const dd = d.getDate();
+                const hr = HARI_MINI[d.getDay()];
+                const isMggu = d.getDay() === 0;
+                const bgH = isMggu ? 'background:#fee2e2;' : 'background:#f0fdf4;';
+                const clH = isMggu ? 'color:#dc2626;' : 'color:#047857;';
+                if (isBulanTunggal) {
+                    thDates += `<th style="padding:3px 2px;border:1px solid #d1d5db;text-align:center;width:22px;font-size:9px;${bgH}${clH}">${dd}<br><span style="font-size:7px;font-weight:400;">${hr}</span></th>`;
+                } else {
+                    const mm = String(d.getMonth()+1).padStart(2,'0');
+                    thDates += `<th style="padding:3px 2px;border:1px solid #d1d5db;text-align:center;width:26px;font-size:8px;${bgH}${clH}">${dd}/${mm}<br><span style="font-size:7px;font-weight:400;">${hr}</span></th>`;
+                }
+            });
+
+            // Buat baris siswa
+            let rows = '';
+            let totH = 0, totS = 0, totI = 0, totA = 0;
+            siswaList.forEach((s, idx) => {
+                let H = 0, S = 0, I = 0, A = 0;
+                let cells = '';
+                tglList.forEach(tgl => {
+                    const rec = db.absensi[tgl] && db.absensi[tgl][s.id];
+                    const d   = new Date(tgl + 'T00:00:00');
+                    const isMggu = d.getDay() === 0;
+                    let kode = '·';
+                    let st = '';
+                    if (rec) {
+                        st = rec.status || 'Hadir';
+                        if (st === 'Hadir') { kode = 'H'; H++; }
+                        else if (st === 'Sakit') { kode = 'S'; S++; }
+                        else if (st === 'Izin')  { kode = 'I'; I++; }
+                        else if (st === 'Alfa')  { kode = 'A'; A++; }
+                    }
+                    const bgCell = isMggu ? 'background:#fff1f2;' : (idx % 2 === 0 ? '' : 'background:#f9fafb;');
+                    cells += `<td style="padding:2px;border:1px solid #e5e7eb;text-align:center;font-size:10px;${bgCell}${statusStyle(kode)}">${kode}</td>`;
+                });
+                totH += H; totS += S; totI += I; totA += A;
+                const total  = H + S + I + A;
+                const pct    = total > 0 ? Math.round((H / total) * 100) : 0;
+                const pctClr = pct >= 80 ? '#15803d' : pct >= 60 ? '#b45309' : '#dc2626';
+                const bgRow  = idx % 2 === 0 ? '#ffffff' : '#f9fafb';
+                rows += `<tr style="background:${bgRow};">
+                    <td style="padding:3px 5px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:700;">${s.absen || (idx+1)}</td>
+                    <td style="padding:3px 6px;border:1px solid #d1d5db;font-size:10px;font-weight:600;white-space:nowrap;">${s.nama}</td>
+                    ${cells}
+                    <td style="padding:3px 4px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#15803d;">${H}</td>
+                    <td style="padding:3px 4px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#b45309;">${S}</td>
+                    <td style="padding:3px 4px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#1d4ed8;">${I}</td>
+                    <td style="padding:3px 4px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#dc2626;">${A}</td>
+                    <td style="padding:3px 4px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:${pctClr};">${pct}%</td>
+                </tr>`;
+            });
+
+            // Baris total bawah
+            rows += `<tr style="background:#f0fdf4;border-top:2px solid #16a34a;">
+                <td colspan="2" style="padding:4px 6px;border:1px solid #d1d5db;font-size:10px;font-weight:900;text-align:center;">TOTAL</td>
+                ${tglList.map(() => `<td style="padding:3px 2px;border:1px solid #e5e7eb;"></td>`).join('')}
+                <td style="padding:3px 4px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#15803d;">${totH}</td>
+                <td style="padding:3px 4px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#b45309;">${totS}</td>
+                <td style="padding:3px 4px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#1d4ed8;">${totI}</td>
+                <td style="padding:3px 4px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#dc2626;">${totA}</td>
+                <td style="padding:3px 4px;border:1px solid #d1d5db;"></td>
+            </tr>`;
+
+            const now      = new Date();
+            const tglCetak = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+            const isLandscape = tglList.length > 20;
+
+            const htmlContent = `
+            <div style="font-family:'Times New Roman',Georgia,serif;font-size:11px;color:#111;">
+                <!-- KOP -->
+                <div style="text-align:center;border-bottom:3px double #15803d;padding-bottom:10px;margin-bottom:14px;">
+                    <h2 style="font-size:15px;font-weight:900;text-transform:uppercase;margin:0 0 2px;">${namaSekolah}</h2>
+                    <h3 style="font-size:14px;font-weight:700;margin:0 0 2px;">REKAPITULASI ABSENSI SISWA</h3>
+                    <p style="font-size:11px;margin:2px 0;"><strong>${label}</strong></p>
+                    <p style="font-size:11px;margin:2px 0;">Kelas: <strong>${kelas}</strong> &nbsp;|&nbsp; Wali Kelas: <strong>${wali}</strong></p>
+                    <p style="font-size:10px;color:#555;margin-top:3px;">Dicetak: ${tglCetak}</p>
+                </div>
+
+                <!-- TABEL HARIAN -->
+                <div style="overflow-x:auto;">
+                <table style="border-collapse:collapse;width:100%;font-size:10px;">
+                    <thead>
+                        <tr style="background:#dcfce7;border-bottom:2px solid #16a34a;">
+                            <th style="padding:4px 5px;border:1px solid #d1d5db;text-align:center;width:28px;font-size:10px;">No</th>
+                            <th style="padding:4px 6px;border:1px solid #d1d5db;text-align:left;font-size:10px;">Nama Siswa</th>
+                            ${thDates}
+                            <th style="padding:4px 3px;border:1px solid #d1d5db;text-align:center;width:24px;font-size:9px;color:#15803d;">H</th>
+                            <th style="padding:4px 3px;border:1px solid #d1d5db;text-align:center;width:24px;font-size:9px;color:#b45309;">S</th>
+                            <th style="padding:4px 3px;border:1px solid #d1d5db;text-align:center;width:24px;font-size:9px;color:#1d4ed8;">I</th>
+                            <th style="padding:4px 3px;border:1px solid #d1d5db;text-align:center;width:24px;font-size:9px;color:#dc2626;">A</th>
+                            <th style="padding:4px 3px;border:1px solid #d1d5db;text-align:center;width:32px;font-size:9px;">%</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows}</tbody>
+                </table>
+                </div>
+
+                <!-- KETERANGAN + TTD -->
+                <div style="margin-top:20px;display:flex;justify-content:space-between;align-items:flex-end;font-size:10px;flex-wrap:wrap;gap:12px;">
+                    <div>
+                        <p style="margin:0 0 4px;font-weight:700;">Keterangan:</p>
+                        <table style="border:none;font-size:10px;">
+                            <tr><td style="border:none;padding:1px 8px 1px 0;font-weight:900;color:#15803d;">H</td><td style="border:none;padding:1px 0;">=&nbsp;Hadir</td></tr>
+                            <tr><td style="border:none;padding:1px 8px 1px 0;font-weight:900;color:#b45309;">S</td><td style="border:none;padding:1px 0;">=&nbsp;Sakit</td></tr>
+                            <tr><td style="border:none;padding:1px 8px 1px 0;font-weight:900;color:#1d4ed8;">I</td><td style="border:none;padding:1px 0;">=&nbsp;Izin</td></tr>
+                            <tr><td style="border:none;padding:1px 8px 1px 0;font-weight:900;color:#dc2626;">A</td><td style="border:none;padding:1px 0;">=&nbsp;Alfa (Tanpa Keterangan)</td></tr>
+                            <tr><td style="border:none;padding:1px 8px 1px 0;color:#94a3b8;">·</td><td style="border:none;padding:1px 0;">=&nbsp;Tidak ada data / Libur</td></tr>
+                        </table>
+                    </div>
+                    <div style="text-align:center;">
+                        <p style="margin:0 0 2px;">Mengetahui,</p>
+                        <p style="margin:0 0 4px;">Wali Kelas</p>
+                        <div style="width:160px;height:70px;margin:0 auto 2px;">
+                            ${ttdWali
+                                ? `<img src="${ttdWali}" style="max-width:160px;max-height:70px;object-fit:contain;display:block;margin:0 auto;" />`
+                                : `<div style="width:160px;height:70px;"></div>`}
+                        </div>
+                        <div style="border-top:1.5px solid #374151;width:160px;margin:0 auto 3px;"></div>
+                        <p style="margin:0;font-weight:700;text-decoration:underline;">${wali}</p>
+                        ${nipWali ? `<p style="margin:2px 0 0;font-size:9px;color:#555;">NIP. ${nipWali}</p>` : ''}
+                    </div>
+                </div>
+            </div>`;
+
+            const printWin = window.open('', '_blank', 'width=1100,height=750');
+            if (!printWin) return Swal.fire('Peringatan', 'Popup diblokir browser. Izinkan popup untuk mencetak.', 'warning');
+            printWin.document.write(`<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Rekap Absensi Harian - ${label}</title>
+<style>
+  @page { size: ${isLandscape ? 'A4 landscape' : 'A4 portrait'}; margin: 10mm 8mm 12mm 12mm; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Times New Roman', Georgia, serif; font-size: 10px; color: #111; background: #fff; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  table { border-collapse: collapse; }
+  @media print { body { margin: 0; } }
+</style>
+</head>
+<body>${htmlContent}
+<script>
+document.fonts.ready.then(function() { setTimeout(function() { window.print(); }, 400); });
+<\/script>
+</body>
+</html>`);
+            printWin.document.close();
+        }
+        // ============================================================
+        // END CETAK PDF HARIAN
+        // ============================================================
+
         function exportRekapAbsensiCSV() {
             const range = getRkAbsDateRange();
             if (!range) return Swal.fire('Peringatan', 'Pilih periode rekap terlebih dahulu!', 'warning');
@@ -13847,6 +14118,526 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
         // END BACK BUTTON WARNING
         // ============================================================
 
+    </script>
+
+    <!-- ============================================================
+         MODAL INPUT 1 TAP — PG + ESAI
+         ============================================================ -->
+    <div id="modal-tap-input" class="fixed inset-0 z-[200] hidden flex items-center justify-center p-2">
+        <div class="absolute inset-0 bg-slate-950/90 backdrop-blur-sm" onclick="closeTapInputModal()"></div>
+        <div class="relative bg-[#0f172a] border border-slate-700 rounded-2xl shadow-2xl w-full max-w-lg flex flex-col max-h-[96vh] overflow-hidden">
+
+            <!-- Header Modal -->
+            <div class="flex items-center justify-between px-5 py-4 border-b border-slate-800 bg-gradient-to-r from-amber-900/30 to-orange-900/20 shrink-0">
+                <div>
+                    <h3 class="font-black text-white text-base flex items-center gap-2">
+                        <i class="fas fa-hand-pointer text-amber-400"></i> Input 1 Tap
+                    </h3>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Tap jawaban PG & nilai esai — otomatis sinkron ke kalkulator</p>
+                </div>
+                <button onclick="closeTapInputModal()" class="text-slate-400 hover:text-red-400 text-xl transition"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- STEP 1: Setup -->
+            <div id="tap-step-setup" class="flex-1 overflow-y-auto p-5 space-y-4">
+                <p class="text-xs font-bold text-amber-400 uppercase tracking-wider"><i class="fas fa-cog mr-1"></i> Langkah 1 — Konfigurasi Soal</p>
+
+                <!-- Jumlah PG -->
+                <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 space-y-3">
+                    <p class="text-xs font-black text-blue-300"><i class="fas fa-list-ol mr-1"></i> Pilihan Ganda (PG)</p>
+                    <div class="flex items-center gap-3">
+                        <label class="text-[11px] text-slate-400 w-32 shrink-0">Jumlah Soal PG</label>
+                        <input type="number" id="tap-pg-jumlah" value="20" min="0" max="200"
+                            class="flex-1 bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-blue-500 transition"
+                            oninput="tapRenderKunciJawaban()">
+                    </div>
+                    <!-- Input kunci jawaban per soal -->
+                    <div>
+                        <p class="text-[10px] text-slate-400 mb-2 font-bold">Kunci Jawaban (tap untuk pilih):</p>
+                        <div id="tap-kunci-container" class="flex flex-wrap gap-1.5 max-h-48 overflow-y-auto pr-1"></div>
+                    </div>
+                </div>
+
+                <!-- Jumlah Esai -->
+                <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 space-y-3">
+                    <p class="text-xs font-black text-emerald-300"><i class="fas fa-pen mr-1"></i> Esai / Uraian</p>
+                    <div class="flex items-center gap-3">
+                        <label class="text-[11px] text-slate-400 w-32 shrink-0">Jumlah Soal Esai</label>
+                        <input type="number" id="tap-esai-jumlah" value="0" min="0" max="50"
+                            class="flex-1 bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-emerald-500 transition"
+                            oninput="tapUpdateEsaiConfig()">
+                    </div>
+                    <div id="tap-esai-skor-wrap" class="hidden space-y-2">
+                        <p class="text-[10px] text-slate-400 font-bold">Skor maks tiap soal esai:</p>
+                        <div id="tap-esai-skor-list" class="space-y-1.5 max-h-32 overflow-y-auto pr-1"></div>
+                    </div>
+                </div>
+
+                <button onclick="tapMulaiInput()"
+                    class="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-black text-sm py-3 rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+                    <i class="fas fa-play"></i> Mulai Input Siswa
+                </button>
+            </div>
+
+            <!-- STEP 2: Input per siswa -->
+            <div id="tap-step-input" class="hidden flex-1 flex flex-col overflow-hidden">
+
+                <!-- Navigasi siswa -->
+                <div class="px-5 py-3 border-b border-slate-800 bg-slate-900/60 shrink-0">
+                    <div class="flex items-center justify-between gap-2 mb-2">
+                        <button onclick="tapSiswaPrev()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+                            <i class="fas fa-chevron-left"></i> Prev
+                        </button>
+                        <div class="text-center flex-1">
+                            <p id="tap-siswa-label" class="font-black text-white text-sm truncate">-</p>
+                            <p id="tap-siswa-progress" class="text-[10px] text-slate-400">Siswa 1 / 17</p>
+                        </div>
+                        <button onclick="tapSiswaNext()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition flex items-center gap-1">
+                            Next <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                    <!-- Progress bar -->
+                    <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                        <div id="tap-progress-bar" class="h-full bg-gradient-to-r from-amber-500 to-orange-400 rounded-full transition-all duration-300" style="width:0%"></div>
+                    </div>
+                </div>
+
+                <!-- Scrollable content -->
+                <div class="flex-1 overflow-y-auto p-4 space-y-4">
+
+                    <!-- SECTION PG -->
+                    <div id="tap-pg-section" class="space-y-2">
+                        <p class="text-[10px] font-black text-blue-300 uppercase tracking-wider"><i class="fas fa-list-ol mr-1"></i> Pilihan Ganda</p>
+                        <div id="tap-pg-soal-container" class="space-y-1.5"></div>
+                        <div class="flex justify-between items-center bg-slate-900 rounded-lg px-3 py-2 border border-slate-800 mt-1">
+                            <span class="text-[11px] text-slate-400">Benar: <span id="tap-pg-benar-count" class="font-black text-blue-300">0</span> / <span id="tap-pg-total-label">0</span></span>
+                            <span class="text-[11px] text-slate-400">Skor PG: <span id="tap-pg-skor-live" class="font-black text-blue-300">0</span></span>
+                        </div>
+                    </div>
+
+                    <!-- SECTION ESAI -->
+                    <div id="tap-esai-section" class="hidden space-y-2">
+                        <p class="text-[10px] font-black text-emerald-300 uppercase tracking-wider"><i class="fas fa-pen mr-1"></i> Esai / Uraian</p>
+                        <div id="tap-esai-soal-container" class="space-y-2"></div>
+                        <div class="flex justify-between items-center bg-slate-900 rounded-lg px-3 py-2 border border-slate-800 mt-1">
+                            <span class="text-[11px] text-slate-400">Poin Esai: <span id="tap-esai-poin-count" class="font-black text-emerald-300">0</span></span>
+                            <span class="text-[11px] text-slate-400">Skor Esai: <span id="tap-esai-skor-live" class="font-black text-emerald-300">0</span></span>
+                        </div>
+                    </div>
+
+                    <!-- Nilai akhir live -->
+                    <div class="bg-gradient-to-r from-fuchsia-900/40 to-purple-900/30 rounded-xl border border-fuchsia-800/40 p-3 flex justify-between items-center">
+                        <span class="text-xs font-bold text-fuchsia-300">Nilai Akhir Sementara</span>
+                        <span id="tap-nilai-akhir-live" class="text-2xl font-black text-white">0</span>
+                    </div>
+                </div>
+
+                <!-- Footer aksi -->
+                <div class="px-5 py-3 border-t border-slate-800 bg-slate-900/60 shrink-0 space-y-2">
+                    <button onclick="tapSimpanSiswaDanLanjut()"
+                        class="w-full bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black text-sm py-2.5 rounded-xl shadow transition flex items-center justify-center gap-2">
+                        <i class="fas fa-check"></i> Simpan & Lanjut ke Siswa Berikutnya
+                    </button>
+                    <div class="flex gap-2">
+                        <button onclick="tapKembaliSetup()"
+                            class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs py-2 rounded-lg transition">
+                            <i class="fas fa-arrow-left mr-1"></i> Konfigurasi
+                        </button>
+                        <button onclick="tapSelesaiSemua()"
+                            class="flex-1 bg-gradient-to-r from-fuchsia-600 to-purple-600 hover:from-fuchsia-500 hover:to-purple-500 text-white font-bold text-xs py-2 rounded-lg shadow transition">
+                            <i class="fas fa-flag-checkered mr-1"></i> Selesai & Sync
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!-- END MODAL INPUT 1 TAP -->
+
+    <script>
+    // ============================================================
+    // INPUT 1 TAP — STATE & FUNGSI
+    // ============================================================
+    const tapState = {
+        siswaList:   [],   // dari db.siswa urut absen
+        currentIdx:  0,
+        kunci:       [],   // ['A','B','C','D',...] length = jumlah PG
+        esaiMaks:    [],   // [10, 20, ...] skor maks tiap soal esai
+        // jawaban per siswa: [{pg:['A','B',...], esai:[5,10,...]}]
+        jawaban:     [],
+    };
+
+    function openModalTapInput() {
+        document.getElementById('modal-tap-input').classList.remove('hidden');
+        tapRenderKunciJawaban();
+        tapUpdateEsaiConfig();
+        // sync jumlah soal dari kalkulator jika sudah diset
+        const pgJml = parseInt(document.getElementById('kalkor-pg-jumlah')?.value) || 20;
+        const esaiJml = parseInt(document.getElementById('kalkor-esai-jumlah')?.value) || 0;
+        document.getElementById('tap-pg-jumlah').value = pgJml;
+        document.getElementById('tap-esai-jumlah').value = esaiJml;
+        tapRenderKunciJawaban();
+        tapUpdateEsaiConfig();
+        // Tampilkan step setup
+        document.getElementById('tap-step-setup').classList.remove('hidden');
+        document.getElementById('tap-step-input').classList.add('hidden');
+    }
+
+    function closeTapInputModal() {
+        document.getElementById('modal-tap-input').classList.add('hidden');
+    }
+
+    function tapRenderKunciJawaban() {
+        const jml = parseInt(document.getElementById('tap-pg-jumlah').value) || 0;
+        const container = document.getElementById('tap-kunci-container');
+        // Pertahankan nilai lama jika ada
+        const oldKunci = tapState.kunci.slice();
+        container.innerHTML = '';
+        for (let i = 0; i < jml; i++) {
+            const kunciSekarang = oldKunci[i] || '';
+            const soalDiv = document.createElement('div');
+            soalDiv.className = 'flex items-center gap-1 bg-slate-800 rounded-lg px-2 py-1.5 border border-slate-700';
+            soalDiv.innerHTML = `<span class="text-[9px] text-slate-500 font-bold w-5 text-center shrink-0">${i+1}</span>` +
+                ['A','B','C','D'].map(opt => {
+                    const isActive = kunciSekarang === opt;
+                    return `<button onclick="tapSetKunci(${i},'${opt}',this)"
+                        class="tap-kunci-btn w-7 h-7 rounded-md text-[11px] font-black transition ${isActive ? 'bg-amber-500 text-white shadow' : 'bg-slate-700 text-slate-400 hover:bg-slate-600'}"
+                        data-soal="${i}" data-opt="${opt}">${opt}</button>`;
+                }).join('');
+            container.appendChild(soalDiv);
+        }
+        // Update state kunci size
+        tapState.kunci = Array.from({length: jml}, (_, i) => oldKunci[i] || '');
+    }
+
+    function tapSetKunci(soalIdx, opt, btn) {
+        tapState.kunci[soalIdx] = opt;
+        // Update UI: deactivate siblings, activate this
+        const soalDiv = btn.closest('div');
+        soalDiv.querySelectorAll('.tap-kunci-btn').forEach(b => {
+            b.className = b.className.replace('bg-amber-500 text-white shadow', 'bg-slate-700 text-slate-400 hover:bg-slate-600');
+        });
+        btn.className = btn.className.replace('bg-slate-700 text-slate-400 hover:bg-slate-600', 'bg-amber-500 text-white shadow');
+    }
+
+    function tapUpdateEsaiConfig() {
+        const jml = parseInt(document.getElementById('tap-esai-jumlah').value) || 0;
+        const wrap = document.getElementById('tap-esai-skor-wrap');
+        const list = document.getElementById('tap-esai-skor-list');
+        wrap.classList.toggle('hidden', jml === 0);
+        // Pertahankan nilai lama
+        const oldMaks = tapState.esaiMaks.slice();
+        list.innerHTML = '';
+        for (let i = 0; i < jml; i++) {
+            list.innerHTML += `<div class="flex items-center gap-2">
+                <span class="text-[10px] text-slate-400 w-20 shrink-0">Soal E-${i+1}</span>
+                <input type="number" id="tap-esai-maks-${i}" value="${oldMaks[i] || 10}" min="1" max="100"
+                    class="flex-1 bg-slate-800 border border-slate-700 text-white rounded-lg px-2 py-1.5 text-xs font-bold focus:outline-none focus:border-emerald-500 transition"
+                    oninput="tapState.esaiMaks[${i}]=parseInt(this.value)||10">
+                <span class="text-[10px] text-slate-500">poin</span>
+            </div>`;
+        }
+        tapState.esaiMaks = Array.from({length: jml}, (_, i) => oldMaks[i] || 10);
+    }
+
+    function tapMulaiInput() {
+        const pgJml = parseInt(document.getElementById('tap-pg-jumlah').value) || 0;
+        const esaiJml = parseInt(document.getElementById('tap-esai-jumlah').value) || 0;
+
+        // Validasi kunci jawaban
+        const kunciKosong = tapState.kunci.slice(0, pgJml).filter(k => !k).length;
+        if (pgJml > 0 && kunciKosong > 0) {
+            return Swal.fire({ icon: 'warning', title: 'Kunci Belum Lengkap',
+                html: `Masih ada <b>${kunciKosong} soal</b> yang belum ada kunci jawabannya.`,
+                background: '#1e293b', color: '#f8fafc' });
+        }
+
+        // Baca esai maks dari input
+        tapState.esaiMaks = Array.from({length: esaiJml}, (_, i) =>
+            parseInt(document.getElementById(`tap-esai-maks-${i}`)?.value) || 10);
+
+        // Ambil daftar siswa urut absen
+        tapState.siswaList = [...(db.siswa || [])].sort((a,b) => (parseInt(a.absen)||0) - (parseInt(b.absen)||0));
+        if (tapState.siswaList.length === 0) {
+            return Swal.fire({ icon: 'info', title: 'Data Siswa Kosong', text: 'Tambahkan data siswa terlebih dahulu.', background: '#1e293b', color: '#f8fafc' });
+        }
+
+        // Init jawaban array (kosong semua)
+        tapState.jawaban = tapState.siswaList.map(() => ({
+            pg: Array(pgJml).fill(''),
+            esai: Array(esaiJml).fill(null), // null = belum diisi, angka = poin
+        }));
+        tapState.currentIdx = 0;
+
+        // Tampilkan step input
+        document.getElementById('tap-step-setup').classList.add('hidden');
+        document.getElementById('tap-step-input').classList.remove('hidden');
+
+        tapRenderSiswaInput();
+    }
+
+    function tapRenderSiswaInput() {
+        const idx = tapState.currentIdx;
+        const siswa = tapState.siswaList[idx];
+        const jawaban = tapState.jawaban[idx];
+        const pgJml = tapState.kunci.length;
+        const esaiJml = tapState.esaiMaks.length;
+        const total = tapState.siswaList.length;
+
+        // Label & progress
+        document.getElementById('tap-siswa-label').textContent = `${siswa.absen ? siswa.absen + '. ' : ''}${siswa.nama}`;
+        document.getElementById('tap-siswa-progress').textContent = `Siswa ${idx+1} / ${total}`;
+        document.getElementById('tap-progress-bar').style.width = `${Math.round(((idx) / total) * 100)}%`;
+
+        // ---- RENDER PG ----
+        const pgSection = document.getElementById('tap-pg-section');
+        const pgContainer = document.getElementById('tap-pg-soal-container');
+        pgSection.classList.toggle('hidden', pgJml === 0);
+        document.getElementById('tap-pg-total-label').textContent = pgJml;
+
+        if (pgJml > 0) {
+            pgContainer.innerHTML = '';
+            for (let i = 0; i < pgJml; i++) {
+                const jawabanSiswa = jawaban.pg[i];
+                const kunci = tapState.kunci[i];
+                const sudahDijawab = jawabanSiswa !== '';
+                const benar = sudahDijawab && jawabanSiswa === kunci;
+
+                const soalDiv = document.createElement('div');
+                soalDiv.className = 'flex items-center gap-1.5 rounded-lg px-2 py-1.5 border transition ' +
+                    (sudahDijawab
+                        ? (benar ? 'bg-emerald-900/20 border-emerald-800/40' : 'bg-red-900/20 border-red-800/40')
+                        : 'bg-slate-900 border-slate-800');
+
+                soalDiv.innerHTML =
+                    `<span class="text-[10px] text-slate-500 font-bold w-5 text-right shrink-0">${i+1}.</span>` +
+                    ['A','B','C','D'].map(opt => {
+                        const isKunci = opt === kunci;
+                        const isPilihan = jawabanSiswa === opt;
+                        let cls = 'w-8 h-8 rounded-lg text-xs font-black transition border ';
+                        if (isPilihan && benar)        cls += 'bg-emerald-500 text-white border-emerald-400 shadow';
+                        else if (isPilihan && !benar)  cls += 'bg-red-500 text-white border-red-400 shadow';
+                        else if (!isPilihan && isKunci && sudahDijawab) cls += 'bg-emerald-900/50 text-emerald-300 border-emerald-700';
+                        else cls += 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-600 hover:text-white active:scale-95';
+                        return `<button onclick="tapInputPG(${i},'${opt}')" class="${cls}">${opt}</button>`;
+                    }).join('') +
+                    (sudahDijawab
+                        ? `<span class="ml-auto text-[10px] font-black ${benar ? 'text-emerald-400' : 'text-red-400'}">${benar ? '✓' : '✗'}</span>`
+                        : '');
+
+                pgContainer.appendChild(soalDiv);
+            }
+        }
+        tapUpdateLivePGScore();
+
+        // ---- RENDER ESAI ----
+        const esaiSection = document.getElementById('tap-esai-section');
+        const esaiContainer = document.getElementById('tap-esai-soal-container');
+        esaiSection.classList.toggle('hidden', esaiJml === 0);
+
+        if (esaiJml > 0) {
+            esaiContainer.innerHTML = '';
+            for (let i = 0; i < esaiJml; i++) {
+                const maks = tapState.esaiMaks[i];
+                const poinSekarang = jawaban.esai[i];
+                const sudah = poinSekarang !== null;
+
+                const soalDiv = document.createElement('div');
+                soalDiv.className = 'bg-slate-900 rounded-xl border border-slate-800 p-3 space-y-2';
+                soalDiv.innerHTML = `<div class="flex justify-between items-center">
+                    <span class="text-[11px] font-bold text-slate-300">Soal Esai ${i+1}</span>
+                    <span class="text-[10px] text-slate-500">Maks: <b class="text-slate-300">${maks}</b> poin</span>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="tapInputEsai(${i}, ${maks})" class="flex-1 py-2.5 rounded-xl text-sm font-black transition border ${sudah && poinSekarang===maks ? 'bg-emerald-600 text-white border-emerald-500 shadow' : 'bg-slate-800 text-emerald-400 border-emerald-900/50 hover:bg-emerald-900/40 active:scale-95'}">
+                        ✓ Benar<br><span class="text-[9px] font-normal">(${maks} poin)</span>
+                    </button>
+                    <button onclick="tapInputEsai(${i}, ${maks/2})" class="flex-1 py-2.5 rounded-xl text-sm font-black transition border ${sudah && poinSekarang===maks/2 ? 'bg-amber-600 text-white border-amber-500 shadow' : 'bg-slate-800 text-amber-400 border-amber-900/50 hover:bg-amber-900/40 active:scale-95'}">
+                        ½ Benar<br><span class="text-[9px] font-normal">(${maks/2} poin)</span>
+                    </button>
+                    <button onclick="tapInputEsai(${i}, 0)" class="flex-1 py-2.5 rounded-xl text-sm font-black transition border ${sudah && poinSekarang===0 ? 'bg-red-600 text-white border-red-500 shadow' : 'bg-slate-800 text-red-400 border-red-900/50 hover:bg-red-900/40 active:scale-95'}">
+                        ✗ Salah<br><span class="text-[9px] font-normal">(0 poin)</span>
+                    </button>
+                </div>
+                ${sudah ? `<p class="text-[10px] text-center font-black ${poinSekarang===maks?'text-emerald-400':poinSekarang===0?'text-red-400':'text-amber-400'}">
+                    Poin: ${poinSekarang} / ${maks}</p>` : ''}`;
+                esaiContainer.appendChild(soalDiv);
+            }
+        }
+        tapUpdateLiveEsaiScore();
+        tapUpdateNilaiAkhirLive();
+    }
+
+    function tapInputPG(soalIdx, opt) {
+        const jawaban = tapState.jawaban[tapState.currentIdx];
+        // Toggle: tap lagi jawaban yang sama = batalkan
+        jawaban.pg[soalIdx] = jawaban.pg[soalIdx] === opt ? '' : opt;
+        tapRenderSiswaInput();
+    }
+
+    function tapInputEsai(soalIdx, poin) {
+        const jawaban = tapState.jawaban[tapState.currentIdx];
+        // Toggle: tap lagi nilai yang sama = batalkan
+        jawaban.esai[soalIdx] = jawaban.esai[soalIdx] === poin ? null : poin;
+        tapRenderSiswaInput();
+    }
+
+    function tapUpdateLivePGScore() {
+        const idx = tapState.currentIdx;
+        const pgJml = tapState.kunci.length;
+        const jawaban = tapState.jawaban[idx];
+        const pgSystem = document.getElementById('kalkor-pg-sistem')?.value || 'auto';
+        let benar = 0;
+        jawaban.pg.forEach((j, i) => { if (j && j === tapState.kunci[i]) benar++; });
+        document.getElementById('tap-pg-benar-count').textContent = benar;
+        // Hitung skor PG sesuai sistem kalkor
+        let poinPerSoal = pgJml > 0 ? 100 / pgJml : 0;
+        if (pgSystem === 'fixed1') poinPerSoal = 1;
+        else if (pgSystem === 'fixed2') poinPerSoal = 2;
+        else if (pgSystem === 'fixed4') poinPerSoal = 4;
+        else if (pgSystem === 'custom') poinPerSoal = parseFloat(document.getElementById('kalkor-pg-poin')?.value) || 1;
+        const maksPG = pgJml * poinPerSoal;
+        const skorPG = maksPG > 0 ? Math.round((benar * poinPerSoal / maksPG) * 100) : 0;
+        document.getElementById('tap-pg-skor-live').textContent = skorPG;
+        return { benar, skorPG };
+    }
+
+    function tapUpdateLiveEsaiScore() {
+        const idx = tapState.currentIdx;
+        const jawaban = tapState.jawaban[idx];
+        const esaiJml = tapState.esaiMaks.length;
+        let totalPoin = 0;
+        let totalMaks = 0;
+        jawaban.esai.forEach((p, i) => {
+            if (p !== null) totalPoin += p;
+            totalMaks += tapState.esaiMaks[i] || 0;
+        });
+        document.getElementById('tap-esai-poin-count').textContent = totalPoin;
+        const skorEsai = totalMaks > 0 ? Math.round((totalPoin / totalMaks) * 100) : 0;
+        document.getElementById('tap-esai-skor-live').textContent = skorEsai;
+        return { totalPoin, totalMaks, skorEsai };
+    }
+
+    function tapUpdateNilaiAkhirLive() {
+        const { skorPG } = tapUpdateLivePGScore();
+        const { skorEsai } = tapUpdateLiveEsaiScore();
+        const bobotPG   = parseFloat(document.getElementById('kalkor-pg-bobot')?.value) || 60;
+        const bobotEsai = parseFloat(document.getElementById('kalkor-esai-bobot')?.value) || 40;
+        const pgJml     = tapState.kunci.length;
+        const esaiJml   = tapState.esaiMaks.length;
+        let nilaiAkhir;
+        if (pgJml > 0 && esaiJml > 0) {
+            nilaiAkhir = ((skorPG * bobotPG) + (skorEsai * bobotEsai)) / (bobotPG + bobotEsai);
+        } else if (pgJml > 0) {
+            nilaiAkhir = skorPG;
+        } else {
+            nilaiAkhir = skorEsai;
+        }
+        const skala = parseFloat(document.getElementById('kalkor-skala')?.value || '100');
+        nilaiAkhir = nilaiAkhir * skala / 100;
+        document.getElementById('tap-nilai-akhir-live').textContent = nilaiAkhir.toFixed(1);
+    }
+
+    function tapSiswaNext() {
+        if (tapState.currentIdx < tapState.siswaList.length - 1) {
+            tapState.currentIdx++;
+            tapRenderSiswaInput();
+        }
+    }
+
+    function tapSiswaPrev() {
+        if (tapState.currentIdx > 0) {
+            tapState.currentIdx--;
+            tapRenderSiswaInput();
+        }
+    }
+
+    function tapSimpanSiswaDanLanjut() {
+        // Simpan otomatis (data sudah di tapState.jawaban), langsung next
+        if (tapState.currentIdx < tapState.siswaList.length - 1) {
+            tapState.currentIdx++;
+            tapRenderSiswaInput();
+            // Smooth scroll to top
+            document.querySelector('#tap-step-input .overflow-y-auto').scrollTop = 0;
+        } else {
+            // Sudah siswa terakhir
+            Swal.fire({
+                icon: 'question',
+                title: 'Siswa Terakhir',
+                html: 'Semua siswa sudah diinput.<br>Sync ke Kalkulator sekarang?',
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-sync mr-1"></i> Ya, Sync',
+                cancelButtonText: 'Nanti',
+                background: '#1e293b', color: '#f8fafc',
+                confirmButtonColor: '#7c3aed',
+            }).then(r => { if (r.isConfirmed) tapSelesaiSemua(); });
+        }
+    }
+
+    function tapSelesaiSemua() {
+        // Sync semua jawaban ke kalkorState.siswaList
+        const pgJml = tapState.kunci.length;
+        const esaiJml = tapState.esaiMaks.length;
+
+        // Hitung total maks esai
+        const totalMaksEsai = tapState.esaiMaks.reduce((a, b) => a + b, 0);
+
+        kalkorState.siswaList = tapState.siswaList.map((s, i) => {
+            const jawaban = tapState.jawaban[i];
+            // Hitung PG benar
+            let pgBenar = 0;
+            jawaban.pg.forEach((j, k) => { if (j && j === tapState.kunci[k]) pgBenar++; });
+            // Hitung esai poin total (dikonversi ke skala jumlah soal esai agar cocok dengan kalkorHitungSatu)
+            let esaiPoin = 0;
+            if (esaiJml > 0 && totalMaksEsai > 0) {
+                let rawPoin = jawaban.esai.reduce((a, p) => a + (p !== null ? p : 0), 0);
+                // Konversi ke skala 0–esaiJml (agar kalkorHitungSatu bisa proses)
+                esaiPoin = (rawPoin / totalMaksEsai) * esaiJml;
+            }
+            const r = kalkorHitungSatu(pgBenar, 0, esaiPoin);
+            return {
+                no: parseInt(s.absen) || (i + 1),
+                nama: s.nama,
+                siswaId: s.id,
+                pgBenar,
+                pgSalah: 0,
+                esaiPoin,
+                ...r
+            };
+        });
+
+        // Sync jumlah soal ke kalkulator
+        document.getElementById('kalkor-pg-jumlah').value = pgJml;
+        document.getElementById('kalkor-esai-jumlah').value = esaiJml;
+        kalkorUpdateSetup();
+        kalkorUpdateEsai();
+        kalkorRenderInputTable();
+        kalkorUpdateSimpanInfo();
+
+        closeTapInputModal();
+
+        // Pindah ke tab kalkulator → subtab hasil
+        switchTab('kalkulator_koreksi');
+        kalkorHitungSemua();
+        switchKalkorTab('hasil');
+
+        Swal.fire({
+            icon: 'success',
+            title: `${tapState.siswaList.length} Siswa Tersinkronkan!`,
+            html: `Data jawaban dari Input 1 Tap telah masuk ke Kalkulator Koreksi.<br><small style="color:#a78bfa">Tab "Hasil" sudah terbuka untuk dilihat.</small>`,
+            background: '#1e293b', color: '#f8fafc',
+            timer: 3000, showConfirmButton: false
+        });
+    }
+
+    function tapKembaliSetup() {
+        document.getElementById('tap-step-input').classList.add('hidden');
+        document.getElementById('tap-step-setup').classList.remove('hidden');
+    }
+    // ============================================================
+    // END INPUT 1 TAP
+    // ============================================================
     </script>
 </body>
 </html>
