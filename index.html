@@ -5273,47 +5273,103 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
         function loadInputNilaiSiswa() {
             const mId = document.getElementById('select-nilai-mapel').value, b = document.getElementById('table-nilai-body'); b.innerHTML = ''; if(!mId) return;
             const hasAgendaOrTP = db.tugas.filter(t => t.mapelId === mId).length > 0 || getTPByMapel(mId).length > 0;
+            const mapel = db.mapel.find(m => m.id === mId);
+            const kkm = mapel ? (parseFloat(mapel.kkm)||75) : 75;
 
             b.innerHTML = db.siswa.map(s => {
                 const n = db.nilai[`${s.id}_${mId}`] || { formatif: '', sts: '', sas: '' };
-                
-                // Nilai formatif = rata-rata TP (sebelum berbobot)
+
+                // ── FORMATIF ──────────────────────────────────────────────
+                // getNilaiFormatifAuto sudah include remedial formatif (ambil max)
                 const rataTP = getNilaiFormatifAuto(s.id, mId);
-                // Nilai formatif berbobot = rataTP × bobot%
                 const fmtBerbobot = (rataTP * db.bobot.formatif / 100).toFixed(1);
                 const fmtRaw = rataTP.toFixed(1);
 
-                // Tampilan kolom formatif: selalu terkunci, tapi beda tampilan tergantung sumber
+                // Cek apakah ada remedial formatif
+                const remFmtRaw = db.remedial && db.remedial[`${s.id}_${mId}_formatif`];
+                const hasRemFmt = remFmtRaw !== undefined && remFmtRaw !== null && remFmtRaw !== '';
+                // Nilai asli formatif (tanpa remedial), untuk keterangan
+                let fmtAsli = null;
+                if (hasRemFmt) {
+                    if (hasAgendaOrTP) {
+                        const tps = getTPByMapel(mId);
+                        if (tps.length > 0) {
+                            const { rata } = hitungRataTP(s.id, mId);
+                            fmtAsli = rata;
+                        } else {
+                            const tMapel = db.tugas.filter(t => t.mapelId === mId);
+                            let sum = 0;
+                            tMapel.forEach(tg => { const nt = db.nilaiTugas[`${s.id}_${tg.id}`]; sum += (nt && nt.status==='Sudah') ? (parseFloat(nt.nilai)||0) : 0; });
+                            fmtAsli = tMapel.length > 0 ? sum / tMapel.length : 0;
+                        }
+                    } else {
+                        fmtAsli = parseFloat((db.nilai[`${s.id}_${mId}`]||{}).formatif) || 0;
+                    }
+                }
+
                 let formatifCell;
                 if (hasAgendaOrTP) {
-                    // Ada TP/Agenda: nilai otomatis, terkunci, tampilkan info
                     formatifCell = `<td class="p-2">
-                        <div class="flex flex-col items-center bg-slate-900 border border-slate-700 rounded p-1.5 gap-0.5">
-                            <span class="font-black text-sm text-emerald-400">${fmtBerbobot}</span>
+                        <div class="flex flex-col items-center bg-slate-900 border ${hasRemFmt ? 'border-amber-600/60' : 'border-slate-700'} rounded p-1.5 gap-0.5">
+                            <span class="font-black text-sm ${hasRemFmt ? 'text-amber-400' : 'text-emerald-400'}">${fmtBerbobot}</span>
                             <span class="text-[9px] text-slate-500">${fmtRaw} × ${db.bobot.formatif}%</span>
-                            <span class="text-[8px] text-slate-600 flex items-center gap-0.5"><i class="fas fa-lock text-[7px]"></i> otomatis</span>
+                            ${hasRemFmt ? `<span class="text-[8px] text-amber-500 flex items-center gap-0.5"><i class="fas fa-redo-alt text-[7px]"></i> remedial (asli: ${parseFloat(fmtAsli).toFixed(1)})</span>` : `<span class="text-[8px] text-slate-600 flex items-center gap-0.5"><i class="fas fa-lock text-[7px]"></i> otomatis</span>`}
                         </div>
                     </td>`;
                 } else {
-                    // Tidak ada TP/Agenda: bisa input manual
-                    formatifCell = `<td class="p-2"><input type="number" value="${n.formatif}" oninput="saveSemuaNilaiSilent(this)" data-siswa="${s.id}" data-type="formatif" class="input-nilai w-full bg-slate-950 border border-slate-700 rounded p-1 text-center text-emerald-400 outline-none focus:border-emerald-500"></td>`;
+                    formatifCell = `<td class="p-2">
+                        <div class="flex flex-col items-center gap-0.5">
+                            <input type="number" value="${n.formatif}" oninput="saveSemuaNilaiSilent(this)" data-siswa="${s.id}" data-type="formatif" class="input-nilai w-full bg-slate-950 border border-slate-700 rounded p-1 text-center text-emerald-400 outline-none focus:border-emerald-500">
+                            ${hasRemFmt ? `<span class="text-[8px] text-amber-500 flex items-center gap-0.5"><i class="fas fa-redo-alt text-[7px]"></i> efektif: ${parseFloat(rataTP).toFixed(1)}</span>` : ''}
+                        </div>
+                    </td>`;
                 }
 
+                // ── STS ───────────────────────────────────────────────────
+                const stsAsli = n.sts !== undefined && n.sts !== '' ? parseFloat(n.sts) : null;
+                const remStsRaw = db.remedial && db.remedial[`${s.id}_${mId}_sts`];
+                const hasRemSts = remStsRaw !== undefined && remStsRaw !== null && remStsRaw !== '';
+                const stsEfektif = hasRemSts && stsAsli !== null ? Math.max(stsAsli, parseFloat(remStsRaw)) : stsAsli;
+                const stsDisplayVal = stsEfektif !== null ? stsEfektif : (n.sts !== '' ? n.sts : '');
+
+                const stsCell = `<td class="p-2">
+                    <div class="flex flex-col items-center gap-0.5">
+                        <input type="number" value="${stsAsli !== null ? stsAsli : (n.sts || '')}" oninput="saveSemuaNilaiSilent(this)" data-siswa="${s.id}" data-type="sts"
+                            class="input-nilai w-full bg-slate-950 border ${hasRemSts ? 'border-amber-600/60' : 'border-slate-700'} rounded p-1 text-center ${hasRemSts ? 'text-amber-400' : 'text-blue-400'} outline-none focus:border-blue-500"
+                            title="${hasRemSts ? 'Nilai asli: ' + (stsAsli !== null ? stsAsli : '-') + ' | Remedial: ' + parseFloat(remStsRaw).toFixed(1) : ''}">
+                        ${hasRemSts ? `<span class="text-[8px] text-amber-500 flex items-center gap-0.5 whitespace-nowrap"><i class="fas fa-redo-alt text-[7px]"></i> efektif: ${parseFloat(stsEfektif).toFixed(1)} (R:${parseFloat(remStsRaw).toFixed(1)})</span>` : ''}
+                    </div>
+                </td>`;
+
+                // ── SAS ───────────────────────────────────────────────────
+                const sasAsli = n.sas !== undefined && n.sas !== '' ? parseFloat(n.sas) : null;
+                const remSasRaw = db.remedial && db.remedial[`${s.id}_${mId}_sas`];
+                const hasRemSas = remSasRaw !== undefined && remSasRaw !== null && remSasRaw !== '';
+                const sasEfektif = hasRemSas && sasAsli !== null ? Math.max(sasAsli, parseFloat(remSasRaw)) : sasAsli;
+
+                const sasCell = `<td class="p-2">
+                    <div class="flex flex-col items-center gap-0.5">
+                        <input type="number" value="${sasAsli !== null ? sasAsli : (n.sas || '')}" oninput="saveSemuaNilaiSilent(this)" data-siswa="${s.id}" data-type="sas"
+                            class="input-nilai w-full bg-slate-950 border ${hasRemSas ? 'border-amber-600/60' : 'border-slate-700'} rounded p-1 text-center ${hasRemSas ? 'text-amber-400' : 'text-indigo-400'} outline-none focus:border-indigo-500"
+                            title="${hasRemSas ? 'Nilai asli: ' + (sasAsli !== null ? sasAsli : '-') + ' | Remedial: ' + parseFloat(remSasRaw).toFixed(1) : ''}">
+                        ${hasRemSas ? `<span class="text-[8px] text-amber-500 flex items-center gap-0.5 whitespace-nowrap"><i class="fas fa-redo-alt text-[7px]"></i> efektif: ${parseFloat(sasEfektif).toFixed(1)} (R:${parseFloat(remSasRaw).toFixed(1)})</span>` : ''}
+                    </div>
+                </td>`;
+
+                // ── NILAI AKHIR ───────────────────────────────────────────
                 const hasNilai = db.nilai[`${s.id}_${mId}`];
                 const hapusBtn = `<button onclick="hapusNilaiSiswaMapel('${s.id}')" title="Hapus nilai ${s.nama}" class="w-8 h-8 flex items-center justify-center rounded-lg transition ${hasNilai ? 'text-red-400 hover:bg-red-900/30' : 'text-slate-700 cursor-not-allowed'}" ${hasNilai ? '' : 'disabled'}><i class="fas fa-times text-xs"></i></button>`;
 
-                // Hitung nilai akhir untuk preview
                 const nAkhir = hitungNilaiAkhirMapel(s.id, mId);
-                const mapel = db.mapel.find(m => m.id === mId);
-                const kkm = mapel ? (parseFloat(mapel.kkm)||75) : 75;
                 const nAkhirColor = nAkhir > 0 ? (nAkhir >= kkm ? 'text-emerald-400' : 'text-red-400') : 'text-slate-500';
+                const hasAnyRemedial = hasRemFmt || hasRemSts || hasRemSas;
 
-                return `<tr>
+                return `<tr class="${hasAnyRemedial ? 'bg-amber-950/10' : ''}">
                     <td class="p-2 text-center font-mono">${s.absen}</td>
-                    <td class="p-2 font-bold">${s.nama}</td>
+                    <td class="p-2 font-bold">${s.nama}${hasAnyRemedial ? ' <span class="text-[8px] font-black text-amber-500 bg-amber-900/30 px-1 py-0.5 rounded ml-1"><i class="fas fa-redo-alt mr-0.5"></i>RMD</span>' : ''}</td>
                     ${formatifCell}
-                    <td class="p-2"><input type="number" value="${n.sts}" oninput="saveSemuaNilaiSilent(this)" data-siswa="${s.id}" data-type="sts" class="input-nilai w-full bg-slate-950 border border-slate-700 rounded p-1 text-center text-blue-400 outline-none focus:border-blue-500"></td>
-                    <td class="p-2"><input type="number" value="${n.sas}" oninput="saveSemuaNilaiSilent(this)" data-siswa="${s.id}" data-type="sas" class="input-nilai w-full bg-slate-950 border border-slate-700 rounded p-1 text-center text-indigo-400 outline-none focus:border-indigo-500"></td>
+                    ${stsCell}
+                    ${sasCell}
                     <td id="nakhir-${s.id}" class="p-2 text-center font-black text-xs ${nAkhirColor}">${nAkhir > 0 ? Math.round(nAkhir) : '-'}</td>
                     <td class="p-2 text-center">${hapusBtn}</td>
                 </tr>`;
@@ -5914,10 +5970,6 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
 
                 const nilaiAkhirColor = nilaiAkhir === null ? 'text-slate-500' : nilaiAkhir >= kkm ? 'text-emerald-400 font-black' : 'text-amber-400 font-black';
 
-                const isTuntas = asli !== null && asli >= kkm;
-                const inputDisabled = isTuntas ? 'disabled title="Siswa sudah tuntas, tidak perlu remedial"' : '';
-                const inputOpacity = isTuntas ? 'opacity-40 cursor-not-allowed' : '';
-
                 rows.push(`<tr class="hover:bg-slate-800/30 transition ${perluRemedial ? 'bg-red-950/10' : ''}" id="rem-row-${s.id}">
                     <td class="p-3 text-center text-slate-500 text-xs">${tampilNo}</td>
                     <td class="p-3">
@@ -5935,8 +5987,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                             value="${sudahDiisi ? parseFloat(remVal).toFixed(1) : ''}"
                             oninput="onRemedialInput('${s.id}','${mId}','${jenis}',${kkm},${asli !== null ? asli : 'null'})"
                             placeholder="0–100"
-                            ${inputDisabled}
-                            class="w-24 bg-slate-950 border border-red-700/50 rounded-lg p-1.5 text-xs text-center text-slate-100 outline-none focus:border-red-400 transition font-mono ${inputOpacity}">
+                            class="w-24 bg-slate-950 border border-red-700/50 rounded-lg p-1.5 text-xs text-center text-slate-100 outline-none focus:border-red-400 transition font-mono">
                         ${sudahDiisi ? `<div class="text-[9px] text-red-400 mt-0.5">Terisi</div>` : ''}
                         <div class="text-[9px] text-amber-400 mt-0.5 hidden" id="rem-warn-${s.id}">⚠ Nilai lebih rendah, tidak berpengaruh</div>
                     </td>
