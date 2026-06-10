@@ -14200,7 +14200,7 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
                         <label class="text-[11px] text-slate-400 w-32 shrink-0">Jumlah Soal PG</label>
                         <input type="number" id="tap-pg-jumlah" value="20" min="0" max="200"
                             class="flex-1 bg-slate-800 border border-slate-700 text-white rounded-lg px-3 py-2 text-sm font-bold focus:outline-none focus:border-blue-500 transition"
-                            oninput="tapRenderKunciJawaban()">
+                            oninput="tapRenderKunciJawaban(); tapAutoNomorEsaiIfDefault();">
                     </div>
                     <!-- Input kunci jawaban per soal -->
                     <div>
@@ -14219,6 +14219,18 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
                             oninput="tapUpdateEsaiConfig()">
                     </div>
                     <div id="tap-esai-skor-wrap" class="hidden space-y-2">
+                        <!-- Nomor awal esai -->
+                        <div class="flex items-center gap-2 bg-slate-800/60 rounded-lg px-3 py-2 border border-slate-700">
+                            <i class="fas fa-sort-numeric-up text-emerald-400 text-[11px]"></i>
+                            <label class="text-[11px] text-slate-400 shrink-0">Nomor soal esai dimulai dari:</label>
+                            <input type="number" id="tap-esai-nomor-awal" value="1" min="1" max="999"
+                                class="w-16 bg-slate-900 border border-slate-600 text-white text-center rounded-lg px-2 py-1 text-sm font-black focus:outline-none focus:border-emerald-500 transition"
+                                oninput="tapRenderSiswaInputIfActive()">
+                            <button onclick="tapAutoNomorEsai()" title="Set otomatis = setelah PG"
+                                class="ml-auto text-[10px] font-bold text-amber-400 hover:text-amber-300 bg-amber-900/30 px-2 py-1 rounded-lg transition whitespace-nowrap">
+                                <i class="fas fa-magic mr-1"></i>Auto
+                            </button>
+                        </div>
                         <p class="text-[10px] text-slate-400 font-bold">Skor maks tiap soal esai:</p>
                         <div id="tap-esai-skor-list" class="space-y-1.5 max-h-32 overflow-y-auto pr-1"></div>
                     </div>
@@ -14311,13 +14323,128 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
     // INPUT 1 TAP — STATE & FUNGSI
     // ============================================================
     const tapState = {
-        siswaList:   [],   // dari db.siswa urut absen
-        currentIdx:  0,
-        kunci:       [],   // ['A','B','C','D',...] length = jumlah PG
-        esaiMaks:    [],   // [10, 20, ...] skor maks tiap soal esai
-        // jawaban per siswa: [{pg:['A','B',...], esai:[5,10,...]}]
-        jawaban:     [],
+        siswaList:    [],
+        currentIdx:   0,
+        kunci:        [],
+        esaiMaks:     [],
+        esaiNomorAwal: 1,   // nomor soal awal untuk esai (default 1, bisa diubah)
+        jawaban:      [],
     };
+
+    // ============================================================
+    // AUTO-SAVE & RESTORE — Mencegah data hilang saat keluar modal
+    // ============================================================
+    const TAP_STORAGE_KEY = 'erapot_tap_autosave';
+
+    function tapAutoSave() {
+        try {
+            const snapshot = {
+                siswaList:      tapState.siswaList,
+                currentIdx:     tapState.currentIdx,
+                kunci:          tapState.kunci,
+                esaiMaks:       tapState.esaiMaks,
+                esaiNomorAwal:  tapState.esaiNomorAwal,
+                jawaban:        tapState.jawaban,
+                pgJml:          parseInt(document.getElementById('tap-pg-jumlah')?.value) || 0,
+                esaiJml:        parseInt(document.getElementById('tap-esai-jumlah')?.value) || 0,
+                savedAt:        Date.now(),
+                stepInput:      !document.getElementById('tap-step-input')?.classList.contains('hidden'),
+            };
+            localStorage.setItem(TAP_STORAGE_KEY, JSON.stringify(snapshot));
+        } catch(e) { console.warn('tapAutoSave error:', e); }
+    }
+
+    function tapAutoRestore() {
+        try {
+            const raw = localStorage.getItem(TAP_STORAGE_KEY);
+            if (!raw) return false;
+            const snap = JSON.parse(raw);
+            // Cek umur: abaikan jika lebih dari 48 jam
+            if (!snap.savedAt || (Date.now() - snap.savedAt) > 48 * 3600 * 1000) {
+                localStorage.removeItem(TAP_STORAGE_KEY);
+                return false;
+            }
+            return snap;
+        } catch(e) { return false; }
+    }
+
+    function tapClearAutoSave() {
+        localStorage.removeItem(TAP_STORAGE_KEY);
+    }
+
+    function tapShowRestoreBanner(snap) {
+        const menit = Math.round((Date.now() - snap.savedAt) / 60000);
+        const waktuLabel = menit < 1 ? 'baru saja' : `${menit} menit lalu`;
+        const sudahDiisi = snap.jawaban ? snap.jawaban.filter(j =>
+            j.pg.some(p => p !== '') || j.esai.some(p => p !== null)).length : 0;
+        Swal.fire({
+            icon: 'info',
+            title: '🔄 Ada Sesi Sebelumnya!',
+            html: `Ditemukan data koreksi yang belum selesai (<b>${waktuLabel}</b>).<br>
+                   <span class="text-emerald-400 font-bold">${sudahDiisi} siswa</span> sudah dikoreksi dari <b>${snap.siswaList?.length || 0} siswa</b>.<br><br>
+                   <small class="text-slate-400">Lanjutkan dari siswa ke-${(snap.currentIdx || 0) + 1} (${snap.siswaList?.[snap.currentIdx]?.nama || ''})</small>`,
+            showCancelButton: true,
+            confirmButtonText: '<i class="fas fa-play mr-1"></i> Lanjutkan',
+            cancelButtonText: '<i class="fas fa-trash mr-1"></i> Mulai Baru',
+            background: '#1e293b', color: '#f8fafc',
+            confirmButtonColor: '#059669',
+            cancelButtonColor: '#64748b',
+        }).then(r => {
+            if (r.isConfirmed) {
+                // Restore state
+                tapState.siswaList     = snap.siswaList;
+                tapState.currentIdx    = snap.currentIdx || 0;
+                tapState.kunci         = snap.kunci;
+                tapState.esaiMaks      = snap.esaiMaks;
+                tapState.esaiNomorAwal = snap.esaiNomorAwal || 1;
+                tapState.jawaban       = snap.jawaban;
+                // Restore jumlah soal di UI
+                if (snap.pgJml)   document.getElementById('tap-pg-jumlah').value   = snap.pgJml;
+                if (snap.esaiJml) document.getElementById('tap-esai-jumlah').value = snap.esaiJml;
+                const nomorAwalInput = document.getElementById('tap-esai-nomor-awal');
+                if (nomorAwalInput) nomorAwalInput.value = tapState.esaiNomorAwal;
+                tapRenderKunciJawaban();
+                tapUpdateEsaiConfig();
+                // Langsung ke step input
+                document.getElementById('tap-step-setup').classList.add('hidden');
+                document.getElementById('tap-step-input').classList.remove('hidden');
+                tapRenderSiswaInput();
+            } else {
+                tapClearAutoSave();
+            }
+        });
+    }
+
+    function tapAutoNomorEsai() {
+        // Set nomor esai = setelah soal PG terakhir
+        const pgJml = parseInt(document.getElementById('tap-pg-jumlah')?.value) || 0;
+        const input = document.getElementById('tap-esai-nomor-awal');
+        if (input) input.value = pgJml + 1;
+        tapState.esaiNomorAwal = pgJml + 1;
+        tapRenderSiswaInputIfActive();
+    }
+
+    function tapAutoNomorEsaiIfDefault() {
+        // Auto-update nomor awal esai ikut PG, hanya jika user belum ubah manual
+        const input = document.getElementById('tap-esai-nomor-awal');
+        if (!input) return;
+        const pgJml = parseInt(document.getElementById('tap-pg-jumlah')?.value) || 0;
+        const curVal = parseInt(input.value) || 1;
+        const oldPg  = tapState.kunci.length;
+        // Jika nilai masih "otomatis" (= pg+1 lama atau = 1), update ikut pg baru
+        if (curVal === oldPg + 1 || curVal === 1) {
+            input.value = pgJml + 1;
+            tapState.esaiNomorAwal = pgJml + 1;
+        }
+    }
+
+    function tapRenderSiswaInputIfActive() {
+        // Re-render tampilan siswa hanya jika step input sedang aktif
+        if (!document.getElementById('tap-step-input')?.classList.contains('hidden')) {
+            tapState.esaiNomorAwal = parseInt(document.getElementById('tap-esai-nomor-awal')?.value) || 1;
+            tapRenderSiswaInput();
+        }
+    }
 
     function openModalTapInput() {
         document.getElementById('modal-tap-input').classList.remove('hidden');
@@ -14330,9 +14457,22 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
         document.getElementById('tap-esai-jumlah').value = esaiJml;
         tapRenderKunciJawaban();
         tapUpdateEsaiConfig();
-        // Tampilkan step setup
+        // Default nomor awal esai = setelah PG
+        const nomorAwalInput = document.getElementById('tap-esai-nomor-awal');
+        if (nomorAwalInput) {
+            nomorAwalInput.value = pgJml + 1;
+            tapState.esaiNomorAwal = pgJml + 1;
+        }
+        // Tampilkan step setup dulu
         document.getElementById('tap-step-setup').classList.remove('hidden');
         document.getElementById('tap-step-input').classList.add('hidden');
+
+        // Cek apakah ada sesi yang tersimpan — tawarkan untuk dilanjutkan
+        const snap = tapAutoRestore();
+        if (snap && snap.jawaban && snap.jawaban.length > 0) {
+            // Tunda sedikit agar modal sudah render sempurna
+            setTimeout(() => tapShowRestoreBanner(snap), 300);
+        }
     }
 
     function closeTapInputModal() {
@@ -14408,6 +14548,9 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
         tapState.esaiMaks = Array.from({length: esaiJml}, (_, i) =>
             parseInt(document.getElementById(`tap-esai-maks-${i}`)?.value) || 10);
 
+        // Baca nomor awal esai
+        tapState.esaiNomorAwal = parseInt(document.getElementById('tap-esai-nomor-awal')?.value) || (pgJml + 1);
+
         // Ambil daftar siswa urut absen
         tapState.siswaList = [...(db.siswa || [])].sort((a,b) => (parseInt(a.absen)||0) - (parseInt(b.absen)||0));
         if (tapState.siswaList.length === 0) {
@@ -14426,6 +14569,7 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
         document.getElementById('tap-step-input').classList.remove('hidden');
 
         tapRenderSiswaInput();
+        tapAutoSave(); // simpan konfigurasi awal
     }
 
     function tapRenderSiswaInput() {
@@ -14438,7 +14582,10 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
 
         // Label & progress
         document.getElementById('tap-siswa-label').textContent = `${siswa.absen ? siswa.absen + '. ' : ''}${siswa.nama}`;
-        document.getElementById('tap-siswa-progress').textContent = `Siswa ${idx+1} / ${total}`;
+        const sudahDiisi = tapState.jawaban.filter(j =>
+            j.pg.some(p => p !== '') || j.esai.some(p => p !== null)).length;
+        document.getElementById('tap-siswa-progress').textContent =
+            `Siswa ${idx+1} / ${total} · ✓ ${sudahDiisi} sudah dikoreksi`;
         document.getElementById('tap-progress-bar').style.width = `${Math.round(((idx) / total) * 100)}%`;
 
         // ---- RENDER PG ----
@@ -14489,15 +14636,17 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
 
         if (esaiJml > 0) {
             esaiContainer.innerHTML = '';
+            const nomorAwal = tapState.esaiNomorAwal || 1;
             for (let i = 0; i < esaiJml; i++) {
                 const maks = tapState.esaiMaks[i];
                 const poinSekarang = jawaban.esai[i];
                 const sudah = poinSekarang !== null;
+                const nomorTampil = nomorAwal + i;
 
                 const soalDiv = document.createElement('div');
                 soalDiv.className = 'bg-slate-900 rounded-xl border border-slate-800 p-3 space-y-2';
                 soalDiv.innerHTML = `<div class="flex justify-between items-center">
-                    <span class="text-[11px] font-bold text-slate-300">Soal Esai ${i+1}</span>
+                    <span class="text-[11px] font-bold text-slate-300">Soal No. <span class="text-emerald-300">${nomorTampil}</span> <span class="text-slate-500">(Esai ${i+1})</span></span>
                     <span class="text-[10px] text-slate-500">Maks: <b class="text-slate-300">${maks}</b> poin</span>
                 </div>
                 <div class="flex gap-2">
@@ -14525,6 +14674,7 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
         // Toggle: tap lagi jawaban yang sama = batalkan
         jawaban.pg[soalIdx] = jawaban.pg[soalIdx] === opt ? '' : opt;
         tapRenderSiswaInput();
+        tapAutoSave();
     }
 
     function tapInputEsai(soalIdx, poin) {
@@ -14532,6 +14682,7 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
         // Toggle: tap lagi nilai yang sama = batalkan
         jawaban.esai[soalIdx] = jawaban.esai[soalIdx] === poin ? null : poin;
         tapRenderSiswaInput();
+        tapAutoSave();
     }
 
     function tapUpdateLivePGScore() {
@@ -14594,6 +14745,7 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
         if (tapState.currentIdx < tapState.siswaList.length - 1) {
             tapState.currentIdx++;
             tapRenderSiswaInput();
+            tapAutoSave();
         }
     }
 
@@ -14601,11 +14753,13 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
         if (tapState.currentIdx > 0) {
             tapState.currentIdx--;
             tapRenderSiswaInput();
+            tapAutoSave();
         }
     }
 
     function tapSimpanSiswaDanLanjut() {
         // Simpan otomatis (data sudah di tapState.jawaban), langsung next
+        tapAutoSave();
         if (tapState.currentIdx < tapState.siswaList.length - 1) {
             tapState.currentIdx++;
             tapRenderSiswaInput();
@@ -14627,6 +14781,8 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
     }
 
     function tapSelesaiSemua() {
+        // Hapus auto-save karena sudah selesai
+        tapClearAutoSave();
         // Sync semua jawaban ke kalkorState.siswaList
         const pgJml = tapState.kunci.length;
         const esaiJml = tapState.esaiMaks.length;
