@@ -1869,9 +1869,9 @@
                             </div>
                         </div>
                         <!-- Statistik mini -->
-                        <div class="grid grid-cols-4 gap-3 p-4 border-b border-slate-800">
+                        <div class="grid grid-cols-5 gap-2 p-4 border-b border-slate-800">
                             <div class="bg-slate-800 rounded-lg p-3 text-center">
-                                <p class="text-[9px] text-slate-400 uppercase font-bold">Total Siswa</p>
+                                <p class="text-[9px] text-slate-400 uppercase font-bold">Total</p>
                                 <p id="det-total-siswa" class="text-xl font-black text-slate-100">0</p>
                             </div>
                             <div class="bg-slate-800 rounded-lg p-3 text-center">
@@ -1885,6 +1885,10 @@
                             <div class="bg-slate-800 rounded-lg p-3 text-center">
                                 <p class="text-[9px] text-red-400 uppercase font-bold">Belum Bayar</p>
                                 <p id="det-total-belum" class="text-xl font-black text-red-400">0</p>
+                            </div>
+                            <div class="bg-blue-950/50 border border-blue-800/30 rounded-lg p-3 text-center">
+                                <p class="text-[9px] text-blue-400 uppercase font-bold">🎁 Gratis</p>
+                                <p id="det-total-gratis" class="text-xl font-black text-blue-400">0</p>
                             </div>
                         </div>
                         <!-- Progress bar -->
@@ -1909,6 +1913,7 @@
                                 <option value="lunas">Lunas</option>
                                 <option value="cicilan">Cicilan</option>
                                 <option value="belum">Belum Bayar</option>
+                                <option value="gratis">🎁 Gratis</option>
                             </select>
                             <button onclick="bayarSemuaSiswa()" class="bg-emerald-700 hover:bg-emerald-600 text-white text-[10px] font-bold px-3 py-2 rounded-lg transition"><i class="fas fa-check-double mr-1"></i>Tandai Semua Lunas</button>
                             <button onclick="tambahSiswaKeAcara()" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-[10px] font-bold px-3 py-2 rounded-lg transition"><i class="fas fa-user-plus mr-1"></i>Tambah Siswa</button>
@@ -1981,6 +1986,7 @@
                                 <label class="block text-xs font-bold text-slate-400 mb-1">Keterangan (opsional)</label>
                                 <input id="input-ket-bayar" type="text" placeholder="cth: Cicilan ke-1" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100 outline-none focus:border-emerald-500">
                             </div>
+                            <div id="bayar-acara-sumber-wrap"></div>
                         </div>
                         <div class="p-4 flex gap-3 justify-end border-t border-slate-800">
                             <button onclick="closeModalInputBayar()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs px-4 py-2.5 rounded-lg transition">Batal</button>
@@ -2020,6 +2026,7 @@
                                 <tr><td class="py-1 text-slate-500">Nama Acara</td><td class="py-1 font-bold text-slate-800" id="bukti-acara">-</td></tr>
                                 <tr><td class="py-1 text-slate-500">Kategori</td><td class="py-1 font-bold text-slate-800" id="bukti-kategori">-</td></tr>
                                 <tr><td class="py-1 text-slate-500">Metode</td><td class="py-1 font-bold text-slate-800" id="bukti-metode">-</td></tr>
+                                <tr id="bukti-sumber-row" class="hidden"><td class="py-1 text-slate-500">Sumber Dana</td><td class="py-1 font-bold text-pink-600 text-[10px]" id="bukti-sumber-val">-</td></tr>
                             </table>
                             <!-- Rincian Nominal -->
                             <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 mb-4">
@@ -3451,8 +3458,8 @@
             </div>
         </div>
     </div>
-    <div id="modal-kas" class="fixed inset-0 bg-slate-950/80 z-[70] hidden flex justify-center items-center p-4"><div class="bg-slate-900 border border-slate-800 rounded-xl max-w-sm p-6 space-y-3 modal-enter w-full text-xs"><h4 class="font-bold text-white text-sm flex items-center gap-2"><i class="fas fa-coins text-emerald-400"></i> Input Kas Harian</h4><div><label class="text-[10px] text-slate-400">Tanggal</label><input type="date" id="form-kas-tgl" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white"></div><div><label class="text-[10px] text-slate-400">Siswa</label><select id="form-kas-siswa" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white"></select></div><div><label class="text-[10px] text-slate-400">Nominal (Rp)</label><input type="number" id="form-kas-nominal" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white" placeholder="Contoh: 5000"></div><div><label class="text-[10px] text-slate-400">Keterangan (opsional)</label><input type="text" id="form-kas-ket" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white" placeholder="cth: Kas minggu ini"></div><div class="flex justify-end gap-2"><button onclick="closeModalKas()" class="px-4 py-1.5 rounded bg-slate-800 text-slate-400">Batal</button><button onclick="saveFormKas()" class="px-4 py-1.5 rounded bg-emerald-600 text-white font-bold"><i class="fas fa-save mr-1"></i>Simpan & Cetak</button></div></div></div>
-    <div id="modal-lks" class="fixed inset-0 bg-slate-950/80 z-[70] hidden flex justify-center items-center p-4"><div class="bg-slate-900 border border-slate-800 rounded-xl max-w-sm p-6 space-y-3 modal-enter w-full text-xs"><h4 class="font-bold text-white text-sm border-b border-slate-800 pb-2 flex items-center gap-2"><i class="fas fa-book-open text-amber-400"></i> Bayar LKS: <span id="lks-nama-siswa" class="text-amber-400"></span></h4><input type="hidden" id="form-lks-siswaId"><div><label class="text-[10px] text-slate-400">Tanggal</label><input type="date" id="form-lks-tgl" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white"></div><div><label class="text-[10px] text-slate-400">Nominal (Rp)</label><input type="number" id="form-lks-nominal" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white" placeholder="Masukkan nominal bayar"></div><div><label class="text-[10px] text-slate-400">Keterangan (opsional)</label><input type="text" id="form-lks-ket" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white" placeholder="cth: Cicilan ke-1, Lunas, dll"></div><div class="flex justify-end gap-2"><button onclick="closeModalLks()" class="px-4 py-1.5 rounded bg-slate-800 text-slate-400">Batal</button><button onclick="saveFormLks()" class="px-4 py-1.5 rounded bg-amber-600 text-black font-bold"><i class="fas fa-save mr-1"></i>Simpan & Cetak</button></div></div></div>
+    <div id="modal-kas" class="fixed inset-0 bg-slate-950/80 z-[70] hidden flex justify-center items-center p-4"><div class="bg-slate-900 border border-slate-800 rounded-xl max-w-sm p-6 space-y-3 modal-enter w-full text-xs"><h4 class="font-bold text-white text-sm flex items-center gap-2"><i class="fas fa-coins text-emerald-400"></i> Input Kas Harian</h4><div><label class="text-[10px] text-slate-400">Tanggal</label><input type="date" id="form-kas-tgl" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white"></div><div><label class="text-[10px] text-slate-400">Siswa</label><select id="form-kas-siswa" onchange="updateSumberDanaSaldo('kas', this.value)" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white"></select></div><div><label class="text-[10px] text-slate-400">Nominal (Rp)</label><input type="number" id="form-kas-nominal" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white" placeholder="Contoh: 5000"></div><div><label class="text-[10px] text-slate-400">Keterangan (opsional)</label><input type="text" id="form-kas-ket" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white" placeholder="cth: Kas minggu ini"></div><div id="form-kas-sumber-wrap"></div><div class="flex justify-end gap-2"><button onclick="closeModalKas()" class="px-4 py-1.5 rounded bg-slate-800 text-slate-400">Batal</button><button onclick="saveFormKas()" class="px-4 py-1.5 rounded bg-emerald-600 text-white font-bold"><i class="fas fa-save mr-1"></i>Simpan & Cetak</button></div></div></div>
+    <div id="modal-lks" class="fixed inset-0 bg-slate-950/80 z-[70] hidden flex justify-center items-center p-4"><div class="bg-slate-900 border border-slate-800 rounded-xl max-w-sm p-6 space-y-3 modal-enter w-full text-xs"><h4 class="font-bold text-white text-sm border-b border-slate-800 pb-2 flex items-center gap-2"><i class="fas fa-book-open text-amber-400"></i> Bayar LKS: <span id="lks-nama-siswa" class="text-amber-400"></span></h4><input type="hidden" id="form-lks-siswaId"><div><label class="text-[10px] text-slate-400">Tanggal</label><input type="date" id="form-lks-tgl" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white"></div><div><label class="text-[10px] text-slate-400">Nominal (Rp)</label><input type="number" id="form-lks-nominal" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white" placeholder="Masukkan nominal bayar"></div><div><label class="text-[10px] text-slate-400">Keterangan (opsional)</label><input type="text" id="form-lks-ket" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white" placeholder="cth: Cicilan ke-1, Lunas, dll"></div><div id="form-lks-sumber-wrap"></div><div class="flex justify-end gap-2"><button onclick="closeModalLks()" class="px-4 py-1.5 rounded bg-slate-800 text-slate-400">Batal</button><button onclick="saveFormLks()" class="px-4 py-1.5 rounded bg-amber-600 text-black font-bold"><i class="fas fa-save mr-1"></i>Simpan & Cetak</button></div></div></div>
     <div id="modal-qty-lks" class="fixed inset-0 bg-slate-950/80 z-[70] hidden flex justify-center items-center p-4"><div class="bg-slate-900 border border-slate-800 rounded-xl max-w-xs p-6 space-y-3 modal-enter w-full text-xs"><h4 class="font-bold text-white text-sm">Qty LKS</h4><input type="hidden" id="form-qty-siswaId"><div><label class="text-[10px] text-slate-400">Jumlah Buku</label><input type="number" id="form-qty-jumlah" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white" min="0"></div><div class="flex justify-end gap-2"><button onclick="closeModalQtyLks()" class="px-4 py-1.5 rounded bg-slate-800 text-slate-400">Batal</button><button onclick="saveFormQtyLks()" class="px-4 py-1.5 rounded bg-emerald-600 text-white font-bold">Simpan</button></div></div></div>
 
     <!-- ======= MODAL: BUKTI PEMBAYARAN KAS ======= -->
@@ -3483,6 +3490,7 @@
                     <tr><td class="py-1 text-slate-500">Kelas</td><td class="py-1 font-bold text-slate-800" id="bukti-kas-kelas">-</td></tr>
                     <tr><td class="py-1 text-slate-500">Tanggal Setor</td><td class="py-1 font-bold text-slate-800" id="bukti-kas-tgl-val">-</td></tr>
                     <tr><td class="py-1 text-slate-500">Keterangan</td><td class="py-1 font-bold text-slate-800" id="bukti-kas-ket-val">Kas Harian</td></tr>
+                    <tr id="bukti-kas-sumber-row" class="hidden"><td class="py-1 text-slate-500">Sumber Dana</td><td class="py-1 font-bold text-pink-600 text-[10px]" id="bukti-kas-sumber-val">-</td></tr>
                 </table>
                 <!-- Nominal Box -->
                 <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-4 text-center mb-5">
@@ -3540,6 +3548,7 @@
                     <tr><td class="py-1 text-slate-500">Total Terbayar</td><td class="py-1 font-bold text-emerald-700" id="bukti-lks-terbayar">-</td></tr>
                     <tr><td class="py-1 text-slate-500">Sisa</td><td class="py-1 font-bold text-red-600" id="bukti-lks-sisa">-</td></tr>
                     <tr><td class="py-1 text-slate-500">Keterangan</td><td class="py-1 font-bold text-slate-800" id="bukti-lks-ket-val">-</td></tr>
+                    <tr id="bukti-lks-sumber-row" class="hidden"><td class="py-1 text-slate-500">Sumber Dana</td><td class="py-1 font-bold text-pink-600 text-[10px]" id="bukti-lks-sumber-val">-</td></tr>
                 </table>
                 <!-- Nominal Box -->
                 <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-center mb-5">
@@ -5872,16 +5881,30 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
 
         // Keuangan
         function renderKasTable() { const b=document.getElementById('table-kas-body'); let t=0; const rows=[]; db.kas.forEach(k=>{ const s=db.siswa.find(x=>x.id===k.siswaId); t+=parseFloat(k.nominal); rows.push(`<tr><td class="p-2 font-mono">${k.tgl}</td><td class="p-2 font-bold truncate">${s?s.nama:'-'}</td><td class="p-2 text-emerald-400 text-right font-mono">${parseInt(k.nominal).toLocaleString('id-ID')}</td><td class="p-2 text-center flex gap-1 justify-center"><button onclick="tampilBuktiKas('${k.id}')" class="text-emerald-400 hover:text-emerald-300" title="Cetak Bukti"><i class="fas fa-print text-[11px]"></i></button><button onclick="deleteKas('${k.id}')" class="text-red-400 hover:text-red-300 ml-1" title="Hapus"><i class="fas fa-trash text-[11px]"></i></button></td></tr>`); }); b.innerHTML=rows.join(''); document.getElementById('total-kas-rp').textContent=`Rp ${t.toLocaleString('id-ID')}`; }
-        function openModalKas() { document.getElementById('modal-kas').classList.remove('hidden'); let s=document.getElementById('form-kas-siswa'); s.innerHTML=db.siswa.map(x=>`<option value="${x.id}">${x.nama}</option>`).join(''); document.getElementById('form-kas-tgl').value=getTodayLocalStr(); document.getElementById('form-kas-nominal').value=''; }
+        function openModalKas() { document.getElementById('modal-kas').classList.remove('hidden'); let s=document.getElementById('form-kas-siswa'); s.innerHTML=db.siswa.map(x=>`<option value="${x.id}">${x.nama}</option>`).join(''); document.getElementById('form-kas-tgl').value=getTodayLocalStr(); document.getElementById('form-kas-nominal').value=''; document.getElementById('form-kas-sumber-wrap').innerHTML=renderSumberDanaPicker('kas', s.value); }
         function closeModalKas() { document.getElementById('modal-kas').classList.add('hidden'); }
         function saveFormKas() {
             const t=document.getElementById('form-kas-tgl').value,
                   s=document.getElementById('form-kas-siswa').value,
                   n=document.getElementById('form-kas-nominal').value,
-                  ket=document.getElementById('form-kas-ket').value||'Kas Harian';
+                  ket=document.getElementById('form-kas-ket').value||'Kas Harian',
+                  sumber=getSumberDanaValue('kas');
             if(t&&n){
+                const siswaObj=db.siswa.find(x=>x.id===s);
+                let sumberInfo=null;
+                if(sumber==='tabungan'){
+                    const r=prosesPembayaranDariTabungan(s, n, `Bayar Kas Harian — ${ket}`);
+                    if(!r.ok){
+                        Swal.fire({icon:'warning', title:'Saldo Tabungan Tidak Cukup',
+                            html:`Saldo <b>${siswaObj?siswaObj.nama:'-'}</b> saat ini <b>${rupiah(r.saldoSebelum)}</b>, tidak cukup untuk membayar <b>${rupiah(n)}</b>.`,
+                            background:'#1e293b', color:'#f8fafc', confirmButtonColor:'#dc2626'});
+                        return;
+                    }
+                    sumberInfo={asal:'tabungan', saldoSebelum:r.saldoSebelum, saldoSesudah:r.saldoSesudah};
+                    saveDB();
+                }
                 const newId='K_'+Date.now();
-                db.kas.push({id:newId, tgl:t, siswaId:s, nominal:n, ket:ket});
+                db.kas.push({id:newId, tgl:t, siswaId:s, nominal:n, ket:ket, sumberDana:sumberInfo});
                 saveDB(); closeModalKas(); renderKasTable();
                 tampilBuktiKas(newId);
             }
@@ -5908,6 +5931,13 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             document.getElementById('bukti-kas-tgl-val').textContent=tgl;
             document.getElementById('bukti-kas-ket-val').textContent=k.ket||'Kas Harian';
             document.getElementById('bukti-kas-nominal-print').textContent='Rp '+parseInt(k.nominal).toLocaleString('id-ID');
+            const sumberRowKas=document.getElementById('bukti-kas-sumber-row');
+            if(k.sumberDana && k.sumberDana.asal==='tabungan'){
+                document.getElementById('bukti-kas-sumber-val').innerHTML=`🏦 Tabungan Siswa <span style="color:#94a3b8;font-weight:400">(Saldo sebelum: Rp ${k.sumberDana.saldoSebelum.toLocaleString('id-ID')} → sesudah: Rp ${k.sumberDana.saldoSesudah.toLocaleString('id-ID')})</span>`;
+                sumberRowKas.classList.remove('hidden');
+            } else {
+                sumberRowKas.classList.add('hidden');
+            }
             document.getElementById('bukti-kas-ttd-tempat').textContent=now;
             document.getElementById('bukti-kas-wali').textContent=wali;
             document.getElementById('modal-bukti-kas').classList.remove('hidden');
@@ -5923,17 +5953,31 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
         function deleteKas(id) { db.kas=db.kas.filter(x=>x.id!==id); saveDB(); renderKasTable(); }
         function saveHargaLKS() { db.profil.hargaLks=document.getElementById('input-harga-lks').value; saveDB(); renderLksTable(); }
         function renderLksTable() { document.getElementById('input-harga-lks').value=db.profil.hargaLks; const b=document.getElementById('table-lks-body'); const h=parseFloat(db.profil.hargaLks)||0; b.innerHTML=db.siswa.map(s=>{ let qty=s.lksQty||1, tagihan=h*qty, trans=db.lks[s.id]||[], tot=trans.reduce((sum,tr)=>sum+parseFloat(tr.nominal),0); let stat=(tot>=tagihan&&tagihan>0)?'<span class="text-emerald-400 text-[10px]">LUNAS</span>':`<span class="text-red-400 text-[10px]">-${(tagihan-tot).toLocaleString('id-ID')}</span>`; if(qty===0) stat='<span class="text-slate-500">Tdk Beli</span>'; const lastId=trans.length>0?trans[trans.length-1].id:''; const cetakBtn=lastId?`<button onclick="tampilBuktiLKS('${s.id}','${lastId}')" class="bg-slate-800 text-emerald-400 px-2 py-1 rounded text-[10px] ml-1" title="Cetak Bukti Terakhir"><i class="fas fa-print"></i></button>`:''; return `<tr><td class="p-2 font-bold truncate">${s.nama}</td><td class="p-2 text-center cursor-pointer text-amber-400" onclick="openModalQtyLks('${s.id}')">${qty}</td><td class="p-2 text-right text-emerald-400 font-mono">${tot.toLocaleString('id-ID')}</td><td class="p-2 text-right font-mono">${tagihan.toLocaleString('id-ID')}</td><td class="p-2 text-center">${stat}</td><td class="p-2 text-center flex gap-1 justify-center"><button onclick="openModalLks('${s.id}')" class="bg-slate-800 text-amber-400 px-2 py-1 rounded text-[10px]"><i class="fas fa-plus"></i></button>${cetakBtn}</td></tr>`; }).join(''); }
-        function openModalLks(sId) { const s=db.siswa.find(x=>x.id===sId); document.getElementById('lks-nama-siswa').textContent=s.nama; document.getElementById('form-lks-siswaId').value=sId; document.getElementById('form-lks-tgl').value=getTodayLocalStr(); document.getElementById('form-lks-nominal').value=''; document.getElementById('modal-lks').classList.remove('hidden'); }
+        function openModalLks(sId) { const s=db.siswa.find(x=>x.id===sId); document.getElementById('lks-nama-siswa').textContent=s.nama; document.getElementById('form-lks-siswaId').value=sId; document.getElementById('form-lks-tgl').value=getTodayLocalStr(); document.getElementById('form-lks-nominal').value=''; document.getElementById('form-lks-sumber-wrap').innerHTML=renderSumberDanaPicker('lks', sId); document.getElementById('modal-lks').classList.remove('hidden'); }
         function closeModalLks() { document.getElementById('modal-lks').classList.add('hidden'); }
         function saveFormLks() {
             const s=document.getElementById('form-lks-siswaId').value,
                   t=document.getElementById('form-lks-tgl').value,
                   n=document.getElementById('form-lks-nominal').value,
-                  ket=document.getElementById('form-lks-ket').value||'Pembayaran LKS';
+                  ket=document.getElementById('form-lks-ket').value||'Pembayaran LKS',
+                  sumber=getSumberDanaValue('lks');
             if(n){
+                let sumberInfo=null;
+                if(sumber==='tabungan'){
+                    const r=prosesPembayaranDariTabungan(s, n, `Bayar LKS — ${ket}`);
+                    if(!r.ok){
+                        const siswaObj=db.siswa.find(x=>x.id===s);
+                        Swal.fire({icon:'warning', title:'Saldo Tabungan Tidak Cukup',
+                            html:`Saldo <b>${siswaObj?siswaObj.nama:'-'}</b> saat ini <b>${rupiah(r.saldoSebelum)}</b>, tidak cukup untuk membayar <b>${rupiah(n)}</b>.`,
+                            background:'#1e293b', color:'#f8fafc', confirmButtonColor:'#dc2626'});
+                        return;
+                    }
+                    sumberInfo={asal:'tabungan', saldoSebelum:r.saldoSebelum, saldoSesudah:r.saldoSesudah};
+                    saveDB();
+                }
                 if(!db.lks[s]) db.lks[s]=[];
                 const newId='L_'+Date.now();
-                db.lks[s].push({id:newId, tgl:t, nominal:n, ket:ket});
+                db.lks[s].push({id:newId, tgl:t, nominal:n, ket:ket, sumberDana:sumberInfo});
                 saveDB(); closeModalLks(); renderLksTable();
                 tampilBuktiLKS(s, newId);
             }
@@ -5969,6 +6013,13 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             document.getElementById('bukti-lks-sisa').textContent=sisa>0?'Rp '+sisa.toLocaleString('id-ID'):'LUNAS ✓';
             document.getElementById('bukti-lks-ket-val').textContent=trx.ket||'Pembayaran LKS';
             document.getElementById('bukti-lks-nominal-print').textContent='Rp '+parseInt(trx.nominal||0).toLocaleString('id-ID');
+            const sumberRowLks=document.getElementById('bukti-lks-sumber-row');
+            if(trx.sumberDana && trx.sumberDana.asal==='tabungan'){
+                document.getElementById('bukti-lks-sumber-val').innerHTML=`🏦 Tabungan Siswa <span style="color:#94a3b8;font-weight:400">(Saldo sebelum: Rp ${trx.sumberDana.saldoSebelum.toLocaleString('id-ID')} → sesudah: Rp ${trx.sumberDana.saldoSesudah.toLocaleString('id-ID')})</span>`;
+                sumberRowLks.classList.remove('hidden');
+            } else {
+                sumberRowLks.classList.add('hidden');
+            }
             const badge=document.getElementById('bukti-lks-status-badge');
             if(lunas){badge.textContent='✓ LUNAS';badge.style.cssText='background:#d1fae5;color:#065f46;';}
             else{badge.textContent='⚡ Cicilan / Belum Lunas';badge.style.cssText='background:#fef3c7;color:#92400e;';}
@@ -10155,6 +10206,82 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             return 'Rp ' + (parseInt(n) || 0).toLocaleString('id-ID');
         }
 
+        // ============================================
+        // SUMBER DANA TABUNGAN — Helper Lintas Modul
+        // Dipakai oleh: Kas Harian, Pembayaran LKS, Pembayaran Acara
+        // ============================================
+
+        // Hitung saldo tabungan terkini seorang siswa
+        function getSaldoTabunganSiswa(siswaId) {
+            let saldo = 0;
+            (db.tabungan || []).filter(t => t.siswaId === siswaId).forEach(t => {
+                if (t.jenis === 'setor') saldo += parseInt(t.nominal) || 0;
+                else saldo -= parseInt(t.nominal) || 0;
+            });
+            return saldo;
+        }
+
+        // Cek apakah saldo cukup untuk nominal tertentu
+        function cekSaldoCukup(siswaId, nominal) {
+            return getSaldoTabunganSiswa(siswaId) >= (parseInt(nominal) || 0);
+        }
+
+        // Proses penarikan otomatis dari tabungan siswa untuk pembayaran (Kas/LKS/Acara).
+        // Mengembalikan { ok: true, saldoSebelum, saldoSesudah } jika berhasil,
+        // atau { ok: false, saldoSebelum, saldoSesudah } jika saldo tidak cukup.
+        function prosesPembayaranDariTabungan(siswaId, nominal, ket) {
+            const nom = parseInt(nominal) || 0;
+            const saldoSebelum = getSaldoTabunganSiswa(siswaId);
+            if (saldoSebelum < nom) {
+                return { ok: false, saldoSebelum, saldoSesudah: saldoSebelum };
+            }
+            db.tabungan = db.tabungan || [];
+            db.tabungan.push({
+                id: 'TAB_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+                siswaId,
+                jenis: 'tarik',
+                nominal: nom,
+                tanggal: getTodayLocalStr(),
+                jam: new Date().toTimeString().slice(0, 8),
+                ket: ket || 'Penarikan otomatis untuk pembayaran',
+                createdAt: getTodayLocalStr()
+            });
+            return { ok: true, saldoSebelum, saldoSesudah: saldoSebelum - nom };
+        }
+
+        // Render baris pilihan "Sumber Dana" (Tunai / Tabungan) ke dalam sebuah elemen target.
+        // groupName dipakai sebagai prefix nama radio agar tidak bentrok antar modal.
+        function renderSumberDanaPicker(groupName, siswaId) {
+            const saldo = siswaId ? getSaldoTabunganSiswa(siswaId) : 0;
+            return `
+                <div>
+                    <label class="text-[10px] text-slate-400">Sumber Dana</label>
+                    <div class="flex gap-2 mt-1">
+                        <label class="flex-1 flex items-center gap-1.5 bg-slate-950 border border-slate-700 rounded p-2 cursor-pointer has-[:checked]:border-emerald-500 has-[:checked]:bg-emerald-900/20">
+                            <input type="radio" name="${groupName}-sumber" value="tunai" checked class="accent-emerald-500">
+                            <span class="text-[11px] text-slate-200 font-semibold">💵 Tunai</span>
+                        </label>
+                        <label class="flex-1 flex items-center gap-1.5 bg-slate-950 border border-slate-700 rounded p-2 cursor-pointer has-[:checked]:border-pink-500 has-[:checked]:bg-pink-900/20">
+                            <input type="radio" name="${groupName}-sumber" value="tabungan" class="accent-pink-500">
+                            <span class="text-[11px] text-slate-200 font-semibold">🏦 Tabungan</span>
+                        </label>
+                    </div>
+                    <p class="text-[9px] text-slate-500 mt-1">Saldo tabungan saat ini: <span class="text-pink-400 font-bold" id="${groupName}-saldo-info">${rupiah(saldo)}</span></p>
+                </div>`;
+        }
+
+        function getSumberDanaValue(groupName) {
+            const el = document.querySelector(`input[name="${groupName}-sumber"]:checked`);
+            return el ? el.value : 'tunai';
+        }
+
+        // Update tampilan saldo tabungan ketika siswa dipilih (mis. di modal Kas)
+        function updateSumberDanaSaldo(groupName, siswaId) {
+            const el = document.getElementById(`${groupName}-sumber-wrap`);
+            if (!el) return;
+            el.innerHTML = renderSumberDanaPicker(groupName, siswaId);
+        }
+
         // Isi dropdown siswa di semua form tabungan
         function populateTabunganSiswaSelects() {
             const opts = '<option value="">-- Pilih Siswa --</option>' +
@@ -11162,11 +11289,12 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
 
             container.innerHTML = list.map(ac => {
                 const peserta = ac.peserta || [];
-                const totalTagihan = (ac.biaya || 0) * peserta.length;
+                const totalTagihan = (ac.biaya || 0) * peserta.filter(p => p.status !== 'gratis').length;
                 const terkumpul = peserta.reduce((a, p) => a + (p.dibayar || 0), 0);
                 const jumlahLunas = peserta.filter(p => p.status === 'lunas').length;
                 const jumlahCicil = peserta.filter(p => p.status === 'cicilan').length;
                 const jumlahBelum = peserta.filter(p => p.status === 'belum').length;
+                const jumlahGratis = peserta.filter(p => p.status === 'gratis').length;
                 const pct = totalTagihan > 0 ? Math.round((terkumpul / totalTagihan) * 100) : 0;
                 const batas = ac.batas ? new Date(ac.batas) : null;
                 const now = new Date();
@@ -11184,6 +11312,7 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
                                     <span class="text-[10px] font-bold text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">${ac.kategori}</span>
                                     ${expired ? '<span class="text-[10px] font-bold text-red-400 bg-red-900/20 px-2 py-0.5 rounded-full border border-red-800/30">Batas Lewat</span>' : ''}
                                     ${ac.maxCicilan > 1 ? `<span class="text-[10px] font-bold text-amber-400 bg-amber-900/20 px-2 py-0.5 rounded-full border border-amber-800/30">Maks ${ac.maxCicilan}x Cicilan</span>` : ''}
+                                    ${jumlahGratis > 0 ? `<span class="text-[10px] font-bold text-blue-400 bg-blue-900/20 px-2 py-0.5 rounded-full border border-blue-800/30">🎁 ${jumlahGratis} Gratis</span>` : ''}
                                 </div>
                                 <div class="flex gap-4 mt-2 text-[11px] text-slate-400 flex-wrap">
                                     ${ac.tanggal ? `<span><i class="fas fa-calendar-day mr-1 text-slate-500"></i>${formatTanggalIndo(ac.tanggal)}</span>` : ''}
@@ -11199,7 +11328,7 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
                             </div>
                         </div>
                         <!-- Progress -->
-                        <div class="mt-3 grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
+                        <div class="mt-3 grid grid-cols-${jumlahGratis > 0 ? '5' : '4'} gap-2 text-center">
                             <div class="bg-slate-800 rounded-lg p-2">
                                 <p class="text-[9px] text-slate-400 uppercase font-bold">Peserta</p>
                                 <p class="text-base font-black text-slate-100">${peserta.length}</p>
@@ -11216,11 +11345,15 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
                                 <p class="text-[9px] text-red-400 uppercase font-bold">Belum</p>
                                 <p class="text-base font-black text-red-400">${jumlahBelum}</p>
                             </div>
+                            ${jumlahGratis > 0 ? `<div class="bg-blue-950/50 border border-blue-800/30 rounded-lg p-2">
+                                <p class="text-[9px] text-blue-400 uppercase font-bold">🎁 Gratis</p>
+                                <p class="text-base font-black text-blue-400">${jumlahGratis}</p>
+                            </div>` : ''}
                         </div>
                         <!-- Bar -->
                         <div class="mt-3">
                             <div class="flex justify-between text-[10px] text-slate-400 mb-1">
-                                <span>Terkumpul: <strong class="text-emerald-400">${rpFormat(terkumpul)}</strong></span>
+                                <span>Terkumpul: <strong class="text-emerald-400">${rpFormat(terkumpul)}</strong>${jumlahGratis > 0 ? ` <span class="text-blue-400 ml-1">(${jumlahGratis} siswa dibebaskan)</span>` : ''}</span>
                                 <span>Target: <strong>${rpFormat(totalTagihan)}</strong> (${pct}%)</span>
                             </div>
                             <div class="w-full bg-slate-700 rounded-full h-2">
@@ -11362,11 +11495,12 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             if (!ac) return;
 
             const peserta = ac.peserta || [];
-            const totalTagihan = (ac.biaya || 0) * peserta.length;
+            const totalTagihan = (ac.biaya || 0) * peserta.filter(p => p.status !== 'gratis').length;
             const terkumpul = peserta.reduce((s, p) => s + (p.dibayar || 0), 0);
             const jumlahLunas = peserta.filter(p => p.status === 'lunas').length;
             const jumlahCicil = peserta.filter(p => p.status === 'cicilan').length;
             const jumlahBelum = peserta.filter(p => p.status === 'belum').length;
+            const jumlahGratis = peserta.filter(p => p.status === 'gratis').length;
             const pct = totalTagihan > 0 ? Math.round((terkumpul / totalTagihan) * 100) : 0;
 
             const setEl = (id, v) => { const el = document.getElementById(id); if(el) el.textContent = v; };
@@ -11378,6 +11512,7 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             setEl('det-total-lunas', jumlahLunas);
             setEl('det-total-cicilan', jumlahCicil);
             setEl('det-total-belum', jumlahBelum);
+            setEl('det-total-gratis', jumlahGratis);
             setEl('det-pct-lunas', pct + '%');
             setEl('det-terkumpul', rpFormat(terkumpul));
             setEl('det-target', rpFormat(totalTagihan));
@@ -11415,21 +11550,28 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
                     ? '<span class="bg-emerald-900/30 text-emerald-400 border border-emerald-800/30 text-[9px] font-black px-2 py-0.5 rounded-full">LUNAS</span>'
                     : p.status === 'cicilan'
                     ? '<span class="bg-amber-900/30 text-amber-400 border border-amber-800/30 text-[9px] font-black px-2 py-0.5 rounded-full">CICILAN</span>'
+                    : p.status === 'gratis'
+                    ? '<span class="bg-blue-900/30 text-blue-400 border border-blue-800/30 text-[9px] font-black px-2 py-0.5 rounded-full">🎁 GRATIS</span>'
                     : '<span class="bg-red-900/30 text-red-400 border border-red-800/30 text-[9px] font-black px-2 py-0.5 rounded-full">BELUM</span>';
                 const sisaBayarCek = sisa > 0 && (cicLen < ac.maxCicilan || ac.maxCicilan === 1);
-                return `<tr class="${p.status === 'lunas' ? 'opacity-70' : ''}">
+                const tagihan = p.status === 'gratis' ? '<span class="text-blue-400 font-black">GRATIS</span>' : rpFormat(ac.biaya);
+                const sisaText = p.status === 'gratis' ? '<span class="text-blue-400">—</span>' : `<span class="${sisa > 0 ? 'text-red-400' : 'text-emerald-400'} font-bold">${rpFormat(Math.max(0, sisa))}</span>`;
+                return `<tr class="${p.status === 'lunas' || p.status === 'gratis' ? 'opacity-70' : ''}">
                     <td class="p-3 text-slate-500">${i + 1}</td>
-                    <td class="p-3 font-bold text-slate-200">${p.nama}</td>
-                    <td class="p-3 text-right font-bold text-slate-300">${rpFormat(ac.biaya)}</td>
-                    <td class="p-3 text-right font-bold text-emerald-400">${rpFormat(p.dibayar)}</td>
-                    <td class="p-3 text-right font-bold ${sisa > 0 ? 'text-red-400' : 'text-emerald-400'}">${rpFormat(Math.max(0, sisa))}</td>
-                    <td class="p-3 text-center text-slate-400">${cicLen}/${ac.maxCicilan}</td>
+                    <td class="p-3 font-bold text-slate-200">${p.nama}${p.keterangan_gratis ? `<span class="ml-1 text-[9px] text-blue-400 italic">(${p.keterangan_gratis})</span>` : ''}</td>
+                    <td class="p-3 text-right font-bold text-slate-300">${tagihan}</td>
+                    <td class="p-3 text-right font-bold text-emerald-400">${p.status === 'gratis' ? '<span class="text-blue-400">—</span>' : rpFormat(p.dibayar)}</td>
+                    <td class="p-3 text-right">${sisaText}</td>
+                    <td class="p-3 text-center text-slate-400">${p.status === 'gratis' ? '—' : `${cicLen}/${ac.maxCicilan}`}</td>
                     <td class="p-3 text-center">${statusBadge}</td>
                     <td class="p-3 text-center">
-                        <div class="flex gap-1 justify-center">
-                            ${p.status !== 'lunas' && (cicLen < ac.maxCicilan || p.status === 'belum') ? `<button onclick="openModalInputBayar('${ac.id}','${p.siswaId}')" class="bg-emerald-700 hover:bg-emerald-600 text-white text-[9px] font-bold px-2 py-1.5 rounded-lg transition whitespace-nowrap">💰 Bayar</button>` : ''}
+                        <div class="flex gap-1 justify-center flex-wrap">
+                            ${p.status !== 'lunas' && p.status !== 'gratis' && (cicLen < ac.maxCicilan || p.status === 'belum') ? `<button onclick="openModalInputBayar('${ac.id}','${p.siswaId}')" class="bg-emerald-700 hover:bg-emerald-600 text-white text-[9px] font-bold px-2 py-1.5 rounded-lg transition whitespace-nowrap">💰 Bayar</button>` : ''}
+                            ${p.status !== 'gratis' && p.status !== 'lunas' ? `<button onclick="tandaiGratis('${ac.id}','${p.siswaId}')" class="bg-blue-800/50 hover:bg-blue-700 text-blue-300 hover:text-white text-[9px] font-bold px-2 py-1.5 rounded-lg transition whitespace-nowrap">🎁 Gratis</button>` : ''}
+                            ${p.status === 'gratis' ? `<button onclick="batalkanGratis('${ac.id}','${p.siswaId}')" class="bg-slate-700 hover:bg-slate-600 text-slate-300 text-[9px] font-bold px-2 py-1.5 rounded-lg transition whitespace-nowrap">↩ Batalkan</button>` : ''}
                             ${cicLen > 0 ? `<button onclick="lihatRiwayatCicilan('${ac.id}','${p.siswaId}')" class="bg-slate-700 hover:bg-slate-600 text-slate-200 text-[9px] font-bold px-2 py-1.5 rounded-lg transition">📋</button>` : ''}
                             ${p.dibayar > 0 ? `<button onclick="cetakBuktiSiswa('${ac.id}','${p.siswaId}')" class="bg-orange-800/40 hover:bg-orange-700 text-orange-300 hover:text-white text-[9px] font-bold px-2 py-1.5 rounded-lg transition">🧾</button>` : ''}
+                            ${p.status === 'gratis' ? `<button onclick="cetakBuktiGratis('${ac.id}','${p.siswaId}')" class="bg-blue-800/40 hover:bg-blue-700 text-blue-300 hover:text-white text-[9px] font-bold px-2 py-1.5 rounded-lg transition">🧾</button>` : ''}
                         </div>
                     </td>
                 </tr>`;
@@ -11450,7 +11592,7 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             }).then(r => {
                 if (r.isConfirmed) {
                     (ac.peserta || []).forEach(p => {
-                        if (p.status !== 'lunas') {
+                        if (p.status !== 'lunas' && p.status !== 'gratis') {
                             const sisa = (ac.biaya || 0) - (p.dibayar || 0);
                             if (sisa > 0) {
                                 p.dibayar = ac.biaya;
@@ -11516,6 +11658,7 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             document.getElementById('input-tanggal-bayar').value = getTodayLocalStr();
             document.getElementById('input-metode-bayar').value = 'Tunai';
             document.getElementById('input-ket-bayar').value = `Cicilan ke-${(p.cicilan || []).length + 1}`;
+            document.getElementById('bayar-acara-sumber-wrap').innerHTML = renderSumberDanaPicker('acara', siswaId);
             document.getElementById('modal-input-bayar').classList.remove('hidden');
         }
 
@@ -11556,11 +11699,24 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             const metode = document.getElementById('input-metode-bayar').value;
             const ket = document.getElementById('input-ket-bayar').value.trim();
             const noBukti = generateBuktiNo();
+            const sumber = getSumberDanaValue('acara');
+
+            let sumberInfo = null;
+            if (sumber === 'tabungan') {
+                const r = prosesPembayaranDariTabungan(p.siswaId, bayarNow, `Bayar Acara "${ac.nama}" — ${ket || 'Cicilan'}`);
+                if (!r.ok) {
+                    Swal.fire({ icon: 'warning', title: 'Saldo Tabungan Tidak Cukup',
+                        html: `Saldo <b>${p.nama}</b> saat ini <b>${rupiah(r.saldoSebelum)}</b>, tidak cukup untuk membayar <b>${rupiah(bayarNow)}</b>.`,
+                        background: '#1e293b', color: '#f8fafc', confirmButtonColor: '#dc2626' });
+                    return;
+                }
+                sumberInfo = { asal: 'tabungan', saldoSebelum: r.saldoSebelum, saldoSesudah: r.saldoSesudah };
+            }
 
             p.cicilan = p.cicilan || [];
             const dibayarSebelumnya = p.dibayar || 0;
             p.dibayar = dibayarSebelumnya + bayarNow;
-            p.cicilan.push({ tgl, jumlah: bayarNow, metode, ket, no: noBukti });
+            p.cicilan.push({ tgl, jumlah: bayarNow, metode, ket, no: noBukti, sumberDana: sumberInfo });
 
             const sisaAkhir = (ac.biaya || 0) - p.dibayar;
             if (sisaAkhir <= 0) { p.status = 'lunas'; p.dibayar = ac.biaya; }
@@ -11584,7 +11740,8 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
                 dibayarSkrg: bayarNow,
                 sisaAkhir: Math.max(0, (ac.biaya - p.dibayar)),
                 status: p.status,
-                riwayat: p.cicilan || []
+                riwayat: p.cicilan || [],
+                sumberDana: sumberInfo
             };
 
             closeModalInputBayar();
@@ -11593,6 +11750,136 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             if (_currentAcaraId) refreshDetailAcara();
             renderAcaraList();
         }
+
+        // ---- TANDAI GRATIS (Anak Yatim / Bebas Bayar) ----
+        function tandaiGratis(acaraId, siswaId) {
+            const ac = (db.acaraList || []).find(a => a.id === acaraId);
+            if (!ac) return;
+            const p = (ac.peserta || []).find(x => x.siswaId === siswaId);
+            if (!p) return;
+            Swal.fire({
+                title: '🎁 Tandai Gratis / Bebas Bayar',
+                html: `<div style="text-align:left">
+                    <p style="color:#93c5fd;font-size:12px;margin-bottom:12px">Siswa: <strong style="color:#f1f5f9">${p.nama}</strong></p>
+                    <label style="display:block;font-size:11px;color:#94a3b8;margin-bottom:4px">Alasan / Keterangan:</label>
+                    <select id="swal-alasan-gratis" style="width:100%;background:#0f172a;color:#f1f5f9;border:1px solid #334155;border-radius:8px;padding:8px;font-size:12px;margin-bottom:8px">
+                        <option value="Anak Yatim">🌙 Anak Yatim</option>
+                        <option value="Anak Yatim Piatu">🌙 Anak Yatim Piatu</option>
+                        <option value="Dhuafa / Kurang Mampu">💙 Dhuafa / Kurang Mampu</option>
+                        <option value="Beasiswa">🏆 Beasiswa</option>
+                        <option value="Kebijakan Sekolah">🏫 Kebijakan Sekolah</option>
+                        <option value="Lainnya">📝 Lainnya</option>
+                    </select>
+                    <input id="swal-ket-gratis" placeholder="Keterangan tambahan (opsional)..." style="width:100%;background:#0f172a;color:#f1f5f9;border:1px solid #334155;border-radius:8px;padding:8px;font-size:12px;box-sizing:border-box">
+                </div>`,
+                showCancelButton: true,
+                confirmButtonText: '🎁 Tandai Gratis',
+                cancelButtonText: 'Batal',
+                background: '#1e293b', color: '#f8fafc',
+                confirmButtonColor: '#1d4ed8',
+                cancelButtonColor: '#475569',
+                preConfirm: () => {
+                    const alasan = document.getElementById('swal-alasan-gratis').value;
+                    const ket = document.getElementById('swal-ket-gratis').value.trim();
+                    return { alasan, ket };
+                }
+            }).then(r => {
+                if (r.isConfirmed) {
+                    p.status = 'gratis';
+                    p.keterangan_gratis = r.value.alasan + (r.value.ket ? ` — ${r.value.ket}` : '');
+                    p.dibayar = 0;
+                    p.cicilan = [];
+                    saveDB();
+                    refreshDetailAcara();
+                    renderAcaraList();
+                    Swal.fire({
+                        icon: 'success',
+                        title: '🎁 Ditandai Gratis!',
+                        html: `<b>${p.nama}</b> dibebaskan dari biaya acara ini.<br><small style="color:#93c5fd">Alasan: ${p.keterangan_gratis}</small>`,
+                        timer: 2500, showConfirmButton: false,
+                        background: '#1e293b', color: '#f8fafc'
+                    });
+                }
+            });
+        }
+
+        function batalkanGratis(acaraId, siswaId) {
+            const ac = (db.acaraList || []).find(a => a.id === acaraId);
+            if (!ac) return;
+            const p = (ac.peserta || []).find(x => x.siswaId === siswaId);
+            if (!p) return;
+            Swal.fire({
+                title: 'Batalkan Status Gratis?',
+                html: `<b>${p.nama}</b> akan dikembalikan ke status <span style="color:#ef4444">Belum Bayar</span>.`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Ya, Batalkan',
+                cancelButtonText: 'Batal',
+                background: '#1e293b', color: '#f8fafc',
+                confirmButtonColor: '#dc2626', cancelButtonColor: '#475569'
+            }).then(r => {
+                if (r.isConfirmed) {
+                    p.status = 'belum';
+                    p.keterangan_gratis = '';
+                    p.dibayar = 0;
+                    p.cicilan = [];
+                    saveDB();
+                    refreshDetailAcara();
+                    renderAcaraList();
+                }
+            });
+        }
+
+        function cetakBuktiGratis(acaraId, siswaId) {
+            const ac = (db.acaraList || []).find(a => a.id === acaraId);
+            if (!ac) return;
+            const p = (ac.peserta || []).find(x => x.siswaId === siswaId);
+            if (!p) return;
+            const pr = db.profil || {};
+            const noBukti = generateBuktiNo();
+
+            document.getElementById('bukti-sekolah-nama').textContent = pr.sekolah || 'Nama Sekolah';
+            document.getElementById('bukti-sekolah-alamat').textContent = (pr.alamat || '') + (pr.kota ? ', ' + pr.kota : '');
+            document.getElementById('bukti-no').textContent = noBukti;
+            document.getElementById('bukti-tanggal').textContent = formatTanggalIndo(getTodayLocalStr());
+            document.getElementById('bukti-nama').textContent = p.nama;
+            document.getElementById('bukti-kelas').textContent = pr.kelas || '-';
+            document.getElementById('bukti-acara').textContent = ac.nama;
+            document.getElementById('bukti-kategori').textContent = ac.kategori;
+            document.getElementById('bukti-metode').textContent = '—';
+            document.getElementById('bukti-total-tagihan').textContent = '🎁 GRATIS';
+            document.getElementById('bukti-sebelumnya').textContent = 'Rp 0';
+            document.getElementById('bukti-dibayar-skrg').textContent = 'Rp 0';
+            document.getElementById('bukti-sisa-akhir').textContent = 'Rp 0';
+
+            const statusBadgeEl = document.getElementById('bukti-status-badge');
+            statusBadgeEl.textContent = '🎁 GRATIS / BEBAS BAYAR';
+            statusBadgeEl.className = 'font-black px-3 py-0.5 rounded-full text-[11px] bg-blue-100 text-blue-700';
+
+            // Tampilkan keterangan gratis
+            const riwayatSec = document.getElementById('bukti-riwayat-section');
+            const riwayatList = document.getElementById('bukti-riwayat-list');
+            if (p.keterangan_gratis) {
+                riwayatSec.classList.remove('hidden');
+                riwayatList.innerHTML = `<div class="text-[10px] py-1 text-blue-600"><i>Keterangan: ${p.keterangan_gratis}</i></div>`;
+            } else {
+                riwayatSec.classList.add('hidden');
+            }
+
+            const waliKelas = pr.wali || pr.nama || '-';
+            document.getElementById('bukti-wali-kelas').textContent = '(' + waliKelas + ')';
+
+            const ttdImg = document.getElementById('bukti-ttd-wali-img');
+            const ttdPlaceholder = document.getElementById('bukti-ttd-wali-placeholder');
+            if (ttdImg && ttdPlaceholder) {
+                const ttdData = pr.ttdWali || '';
+                if (ttdData) { ttdImg.src = ttdData; ttdImg.style.display = 'block'; ttdPlaceholder.style.display = 'none'; }
+                else { ttdImg.src = ''; ttdImg.style.display = 'none'; ttdPlaceholder.style.display = 'block'; }
+            }
+
+            document.getElementById('modal-bukti-bayar').classList.remove('hidden');
+        }
+        // ---- END GRATIS FUNCTIONS ----
 
         function tampilkanBuktiPembayaran(d) {
             const pr = db.profil || {};
@@ -11609,6 +11896,14 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             document.getElementById('bukti-sebelumnya').textContent = rpFormat(d.dibayarSebelumnya);
             document.getElementById('bukti-dibayar-skrg').textContent = rpFormat(d.dibayarSkrg);
             document.getElementById('bukti-sisa-akhir').textContent = rpFormat(d.sisaAkhir);
+
+            const sumberRowAcara = document.getElementById('bukti-sumber-row');
+            if (d.sumberDana && d.sumberDana.asal === 'tabungan') {
+                document.getElementById('bukti-sumber-val').innerHTML = `🏦 Tabungan Siswa <span style="color:#94a3b8;font-weight:400">(Saldo sebelum: Rp ${d.sumberDana.saldoSebelum.toLocaleString('id-ID')} → sesudah: Rp ${d.sumberDana.saldoSesudah.toLocaleString('id-ID')})</span>`;
+                sumberRowAcara.classList.remove('hidden');
+            } else {
+                sumberRowAcara.classList.add('hidden');
+            }
 
             const statusBadgeEl = document.getElementById('bukti-status-badge');
             if (d.status === 'lunas') {
@@ -11678,7 +11973,8 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
                 dibayarSkrg: lastCic.jumlah,
                 sisaAkhir: Math.max(0, (ac.biaya - p.dibayar)),
                 status: p.status,
-                riwayat: p.cicilan
+                riwayat: p.cicilan,
+                sumberDana: lastCic.sumberDana || null
             };
             tampilkanBuktiPembayaran(_buktiDataTemp);
         }
