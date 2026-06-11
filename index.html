@@ -2027,6 +2027,7 @@
                                 <tr><td class="py-1 text-slate-500">Kategori</td><td class="py-1 font-bold text-slate-800" id="bukti-kategori">-</td></tr>
                                 <tr><td class="py-1 text-slate-500">Metode</td><td class="py-1 font-bold text-slate-800" id="bukti-metode">-</td></tr>
                                 <tr id="bukti-sumber-row" class="hidden"><td class="py-1 text-slate-500">Sumber Dana</td><td class="py-1 font-bold text-pink-600 text-[10px]" id="bukti-sumber-val">-</td></tr>
+                                <tr id="bukti-ket-gratis-row" class="hidden"><td class="py-1 text-slate-500">Ket. Bebas Bayar</td><td class="py-1 font-bold text-blue-700 text-[10px]" id="bukti-ket-gratis-val">-</td></tr>
                             </table>
                             <!-- Rincian Nominal -->
                             <div class="bg-slate-50 rounded-xl p-4 border border-slate-200 mb-4">
@@ -2043,9 +2044,9 @@
                                     <span id="bukti-status-badge" class="font-black px-3 py-0.5 rounded-full text-[11px]">-</span>
                                 </div>
                             </div>
-                            <!-- Riwayat Cicilan -->
+                            <!-- Riwayat Cicilan / Catatan Gratis -->
                             <div id="bukti-riwayat-section" class="mb-4 hidden">
-                                <p class="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">Riwayat Cicilan</p>
+                                <p id="bukti-riwayat-title" class="text-[10px] font-black text-slate-500 uppercase tracking-wider mb-2">Riwayat Cicilan</p>
                                 <div id="bukti-riwayat-list" class="space-y-1"></div>
                             </div>
                             <!-- TTD -->
@@ -11856,15 +11857,30 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             statusBadgeEl.textContent = '🎁 GRATIS / BEBAS BAYAR';
             statusBadgeEl.className = 'font-black px-3 py-0.5 rounded-full text-[11px] bg-blue-100 text-blue-700';
 
-            // Tampilkan keterangan gratis
+            // Sembunyikan sumber dana
+            const sumberRowGratis = document.getElementById('bukti-sumber-row');
+            if (sumberRowGratis) sumberRowGratis.classList.add('hidden');
+
+            // Tampilkan baris keterangan bebas bayar (selalu tampil)
+            const ketGratisRow = document.getElementById('bukti-ket-gratis-row');
+            const ketGratisVal = document.getElementById('bukti-ket-gratis-val');
+            if (ketGratisRow && ketGratisVal) {
+                ketGratisRow.classList.remove('hidden');
+                ketGratisVal.textContent = p.keterangan_gratis || 'Bebas biaya (tanpa keterangan tambahan)';
+            }
+
+            // Tampilkan catatan di bagian riwayat
             const riwayatSec = document.getElementById('bukti-riwayat-section');
             const riwayatList = document.getElementById('bukti-riwayat-list');
-            if (p.keterangan_gratis) {
-                riwayatSec.classList.remove('hidden');
-                riwayatList.innerHTML = `<div class="text-[10px] py-1 text-blue-600"><i>Keterangan: ${p.keterangan_gratis}</i></div>`;
-            } else {
-                riwayatSec.classList.add('hidden');
-            }
+            const riwayatTitle = document.getElementById('bukti-riwayat-title');
+            if (riwayatTitle) riwayatTitle.textContent = 'Catatan Pembebasan Biaya';
+            riwayatSec.classList.remove('hidden');
+            const ketTeks = p.keterangan_gratis || 'Siswa ini dibebaskan dari biaya acara berdasarkan ketentuan yang berlaku.';
+            riwayatList.innerHTML = `
+                <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:8px 10px;">
+                    <p style="font-size:10px;font-weight:700;color:#1d4ed8;margin-bottom:2px;">📋 Catatan Pembebasan Biaya</p>
+                    <p style="font-size:10px;color:#1e40af;">${ketTeks}</p>
+                </div>`;
 
             const waliKelas = pr.wali || pr.nama || '-';
             document.getElementById('bukti-wali-kelas').textContent = '(' + waliKelas + ')';
@@ -11896,6 +11912,14 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             document.getElementById('bukti-sebelumnya').textContent = rpFormat(d.dibayarSebelumnya);
             document.getElementById('bukti-dibayar-skrg').textContent = rpFormat(d.dibayarSkrg);
             document.getElementById('bukti-sisa-akhir').textContent = rpFormat(d.sisaAkhir);
+
+            // Sembunyikan baris ket. gratis (tidak relevan untuk pembayaran normal)
+            const ketGratisRowNormal = document.getElementById('bukti-ket-gratis-row');
+            if (ketGratisRowNormal) ketGratisRowNormal.classList.add('hidden');
+
+            // Reset judul section riwayat ke default
+            const riwayatTitleNormal = document.getElementById('bukti-riwayat-title');
+            if (riwayatTitleNormal) riwayatTitleNormal.textContent = 'Riwayat Cicilan';
 
             const sumberRowAcara = document.getElementById('bukti-sumber-row');
             if (d.sumberDana && d.sumberDana.asal === 'tabungan') {
@@ -12219,20 +12243,38 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             const target = (ac.biaya || 0) * peserta.length;
 
             const rows = peserta.map((p, i) => {
-                const sisa = Math.max(0, (ac.biaya || 0) - (p.dibayar || 0));
-                const statusText = p.status === 'lunas' ? 'LUNAS' : p.status === 'cicilan' ? 'CICILAN' : 'BELUM';
-                const badgeClass = p.status === 'lunas' ? 'badge-lunas' : p.status === 'cicilan' ? 'badge-cicilan' : 'badge-belum';
+                const isGratis = p.status === 'gratis';
+                const sisa = isGratis ? 0 : Math.max(0, (ac.biaya || 0) - (p.dibayar || 0));
+                const statusText = p.status === 'lunas' ? 'LUNAS'
+                                 : p.status === 'cicilan' ? 'CICILAN'
+                                 : isGratis ? 'GRATIS' : 'BELUM';
+                const badgeClass = p.status === 'lunas' ? 'badge-lunas'
+                                 : p.status === 'cicilan' ? 'badge-cicilan'
+                                 : isGratis ? 'badge-gratis' : 'badge-belum';
                 const sisaColor  = sisa > 0 ? '#dc2626' : '#059669';
-                return `<tr>
+                const tagihanCell = isGratis
+                    ? `<span style="color:#2563eb;font-weight:700;">—</span>`
+                    : rpFormat(ac.biaya);
+                const dibayarCell = isGratis
+                    ? `<span style="color:#2563eb;">—</span>`
+                    : `<span style="color:#059669;font-weight:700;">${rpFormat(p.dibayar)}</span>`;
+                const sisaCell = isGratis
+                    ? `<span style="color:#2563eb;">—</span>`
+                    : `<span style="color:${sisaColor};font-weight:700;">${rpFormat(sisa)}</span>`;
+                const ketGratis = isGratis && p.keterangan_gratis
+                    ? `<div style="font-size:9px;color:#2563eb;font-style:italic;margin-top:2px;">📋 ${p.keterangan_gratis}</div>`
+                    : (isGratis ? `<div style="font-size:9px;color:#93c5fd;font-style:italic;margin-top:2px;">Bebas biaya (ketentuan madrasah)</div>` : '');
+                return `<tr style="${isGratis ? 'background:#eff6ff;' : ''}">
                     <td style="padding:7px 8px;font-size:11px;color:#94a3b8;text-align:center;">${i+1}</td>
-                    <td style="padding:7px 8px;font-size:11px;font-weight:600;color:#1e293b;">${p.nama}</td>
-                    <td style="padding:7px 8px;font-size:11px;text-align:right;color:#475569;">${rpFormat(ac.biaya)}</td>
-                    <td style="padding:7px 8px;font-size:11px;text-align:right;color:#059669;font-weight:700;">${rpFormat(p.dibayar)}</td>
-                    <td style="padding:7px 8px;font-size:11px;text-align:right;color:${sisaColor};font-weight:700;">${rpFormat(sisa)}</td>
+                    <td style="padding:7px 8px;font-size:11px;font-weight:600;color:#1e293b;">${p.nama}${ketGratis}</td>
+                    <td style="padding:7px 8px;font-size:11px;text-align:right;">${tagihanCell}</td>
+                    <td style="padding:7px 8px;font-size:11px;text-align:right;">${dibayarCell}</td>
+                    <td style="padding:7px 8px;font-size:11px;text-align:right;">${sisaCell}</td>
                     <td style="padding:7px 8px;text-align:center;"><span class="${badgeClass}">${statusText}</span></td>
                 </tr>`;
             }).join('');
 
+            const jumlahGratis = peserta.filter(p => p.status === 'gratis').length;
             const pct = target > 0 ? Math.round((terkumpul / target) * 100) : 0;
             const tanggalCetak2 = new Date().toLocaleDateString('id-ID', { day:'numeric', month:'long', year:'numeric' });
 
@@ -12275,6 +12317,7 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
   .badge-lunas   { display:inline-block; background:#dcfce7; color:#166534; font-size:9px; font-weight:800; padding:2px 8px; border-radius:999px; }
   .badge-cicilan { display:inline-block; background:#fef3c7; color:#92400e; font-size:9px; font-weight:800; padding:2px 8px; border-radius:999px; }
   .badge-belum   { display:inline-block; background:#fee2e2; color:#991b1b; font-size:9px; font-weight:800; padding:2px 8px; border-radius:999px; }
+  .badge-gratis  { display:inline-block; background:#dbeafe; color:#1d4ed8; font-size:9px; font-weight:800; padding:2px 8px; border-radius:999px; }
 
   /* SUMMARY */
   .summary { margin: 0 20px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 14px 16px; }
@@ -12345,6 +12388,7 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
   <!-- SUMMARY -->
   <div class="summary">
     <div class="sum-row"><span>Total Peserta</span><strong>${peserta.length} siswa</strong></div>
+    ${jumlahGratis > 0 ? `<div class="sum-row" style="color:#2563eb;"><span>🎁 Bebas Bayar (Gratis)</span><strong style="color:#2563eb;">${jumlahGratis} siswa</strong></div>` : ''}
     <div class="sum-row green"><span>Total Terkumpul</span><strong>${rpFormat(terkumpul)}</strong></div>
     <div class="sum-row red"><span>Sisa Target</span><strong>${rpFormat(target - terkumpul)}</strong></div>
     <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;"></div></div>
