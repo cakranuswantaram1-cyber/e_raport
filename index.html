@@ -4215,6 +4215,7 @@
             temaKokurikuler: [], // Tema Ko-Kurikuler
             nilaiKokurikuler: {}, // Nilai Ko-Kurikuler per siswa per tema {siswaId: {temaId: {predikat:'SB', ket:'...'}}}
             remedial: {}, // Remedial: {siswaId_mapelId_jenis: nilaiRemedial}
+            remedialHistory: {}, // Riwayat permanen pernah remedial: {siswaId_mapelId_jenis: true} - tidak pernah dihapus oleh "Bersihkan Badge RMD"
             raporSettings: { // Pengaturan cetak rapor format Kemenag
                 kemenag: 'KEMENTERIAN AGAMA REPUBLIK INDONESIA',
                 kelas: '', fase: '', semester: 'Ganjil', tahunajaran: '',
@@ -4257,6 +4258,12 @@
         db.temaKokurikuler = db.temaKokurikuler || [];
         db.nilaiKokurikuler = db.nilaiKokurikuler || {};
         db.remedial = db.remedial || {};
+        db.remedialHistory = db.remedialHistory || {};
+        // Migrasi: tandai history dari data remedial yang sudah ada (untuk pengguna lama)
+        Object.keys(db.remedial).forEach(key => {
+            const v = db.remedial[key];
+            if (v !== undefined && v !== null && v !== '') db.remedialHistory[key] = true;
+        });
         db.acaraList = db.acaraList || [];
         // FIX #1 lanjutan: deep merge raporSettings agar field baru tidak hilang
         db.raporSettings = { ...defaultDB.raporSettings, ...(db.raporSettings || {}) };
@@ -5501,15 +5508,23 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                 const nAkhir = hitungNilaiAkhirMapel(s.id, mId);
                 const nAkhirColor = nAkhir > 0 ? (nAkhir >= kkm ? 'text-emerald-400' : 'text-red-400') : 'text-slate-500';
                 const hasAnyRemedial = hasRemFmt || hasRemSts || hasRemSas;
+                // PATEN: badge RMD tetap muncul jika siswa PERNAH remedial untuk komponen ini,
+                // meskipun data nilai remedial saat ini sudah dibersihkan/kosong.
+                const hasRmdHistory = !!(db.remedialHistory && (
+                    db.remedialHistory[`${s.id}_${mId}_formatif`] ||
+                    db.remedialHistory[`${s.id}_${mId}_sts`] ||
+                    db.remedialHistory[`${s.id}_${mId}_sas`]
+                ));
+                const showRmdBadge = hasAnyRemedial || hasRmdHistory;
                 // Status badge di kolom nilai akhir untuk kejelasan
                 const statusAkhirBadge = nAkhir <= 0 ? '' 
                     : nAkhir >= kkm 
-                        ? (hasAnyRemedial ? `<div class="text-[8px] text-emerald-400 font-bold mt-0.5">✓ Tuntas (RMD)</div>` : `<div class="text-[8px] text-emerald-600 mt-0.5">✓ Tuntas</div>`)
+                        ? (showRmdBadge ? `<div class="text-[8px] text-emerald-400 font-bold mt-0.5">✓ Tuntas (RMD)</div>` : `<div class="text-[8px] text-emerald-600 mt-0.5">✓ Tuntas</div>`)
                         : `<div class="text-[8px] text-red-400 mt-0.5">Belum Tuntas</div>`;
 
-                return `<tr class="${hasAnyRemedial ? 'bg-amber-950/10' : ''}">
+                return `<tr class="${showRmdBadge ? 'bg-amber-950/10' : ''}">
                     <td class="p-2 text-center font-mono">${s.absen}</td>
-                    <td class="p-2 font-bold">${s.nama}${hasAnyRemedial ? ' <span class="text-[8px] font-black text-amber-500 bg-amber-900/30 px-1 py-0.5 rounded ml-1"><i class="fas fa-redo-alt mr-0.5"></i>RMD</span>' : ''}</td>
+                    <td class="p-2 font-bold">${s.nama}${showRmdBadge ? ' <span class="text-[8px] font-black text-amber-500 bg-amber-900/30 px-1 py-0.5 rounded ml-1"><i class="fas fa-redo-alt mr-0.5"></i>RMD</span>' : ''}</td>
                     ${formatifCell}
                     ${stsCell}
                     ${sasCell}
@@ -5531,7 +5546,8 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                 const kkm    = mapel ? (parseFloat(mapel.kkm) || 75) : 75;
                 const cell   = document.getElementById(`nakhir-${sId}`);
                 if (cell) {
-                    const hasRmd = (db.remedial && (db.remedial[`${sId}_${mId}_formatif`] !== undefined || db.remedial[`${sId}_${mId}_sts`] !== undefined || db.remedial[`${sId}_${mId}_sas`] !== undefined));
+                    const hasRmd = !!((db.remedial && (db.remedial[`${sId}_${mId}_formatif`] !== undefined || db.remedial[`${sId}_${mId}_sts`] !== undefined || db.remedial[`${sId}_${mId}_sas`] !== undefined))
+                        || (db.remedialHistory && (db.remedialHistory[`${sId}_${mId}_formatif`] || db.remedialHistory[`${sId}_${mId}_sts`] || db.remedialHistory[`${sId}_${mId}_sas`])));
                     const statusBadge = nAkhir <= 0 ? '' 
                         : nAkhir >= kkm 
                             ? (hasRmd ? '<div class="text-[8px] text-emerald-400 font-bold mt-0.5">✓ Tuntas (RMD)</div>' : '<div class="text-[8px] text-emerald-600 mt-0.5">✓ Tuntas</div>')
@@ -5571,6 +5587,10 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                     if (db.remedial) {
                         ['formatif','sts','sas'].forEach(j => { delete db.remedial[`${sId}_${mId}_${j}`]; });
                     }
+                    // Hapus juga riwayat permanen RMD siswa ini di mapel ini (nilai dihapus total)
+                    if (db.remedialHistory) {
+                        ['formatif','sts','sas'].forEach(j => { delete db.remedialHistory[`${sId}_${mId}_${j}`]; });
+                    }
                     saveDB(); loadInputNilaiSiswa(); renderRekapitulasi();
                     Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `Nilai ${siswa?.nama} dihapus`, showConfirmButton: false, timer: 2000 });
                 }
@@ -5598,6 +5618,10 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                         // Hapus nilai remedial mapel ini untuk tiap siswa
                         if (db.remedial) {
                             ['formatif','sts','sas'].forEach(j => { delete db.remedial[`${s.id}_${mId}_${j}`]; });
+                        }
+                        // Hapus juga riwayat permanen RMD mapel ini untuk tiap siswa (nilai dihapus total)
+                        if (db.remedialHistory) {
+                            ['formatif','sts','sas'].forEach(j => { delete db.remedialHistory[`${s.id}_${mId}_${j}`]; });
                         }
                     });
                     saveDB(); loadInputNilaiSiswa(); renderRekapitulasi();
@@ -5634,6 +5658,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                             db.nilai = {};
                             db.nilaiTP = {};
                             db.remedial = {};
+                            db.remedialHistory = {};
                             saveDB(); loadInputNilaiSiswa(); renderRekapitulasi();
                             Swal.fire('Selesai', 'Semua data nilai berhasil dihapus.', 'success');
                         }
@@ -5701,9 +5726,15 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                 background: '#1e293b', color: '#f8fafc', width: '520px'
             }).then(r => {
                 if (!r.isConfirmed || hapusCount === 0) return;
+                if (!db.remedialHistory) db.remedialHistory = {};
                 Object.entries(db.remedial).forEach(([key, val]) => {
                     const numVal = parseFloat(val);
-                    if (val === '' || val === null || val === undefined || isNaN(numVal) || numVal === 0) delete db.remedial[key];
+                    if (val === '' || val === null || val === undefined || isNaN(numVal) || numVal === 0) {
+                        // PATEN: meskipun nilai remedial dibersihkan, tandai bahwa siswa ini PERNAH remedial
+                        // agar badge RMD tidak hilang dari tabel Input Nilai.
+                        db.remedialHistory[key] = true;
+                        delete db.remedial[key];
+                    }
                 });
                 saveDB();
                 if (typeof loadInputNilaiSiswa === 'function') loadInputNilaiSiswa();
@@ -6070,6 +6101,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
         // }
         function ensureRemedialDB() {
             if (!db.remedial) db.remedial = {};
+            if (!db.remedialHistory) db.remedialHistory = {};
         }
 
         function getNilaiAsliRemedial(sId, mId, jenis) {
@@ -6288,6 +6320,10 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                 const nilaiBaru = Math.min(100, Math.max(0, parseFloat(val)));
                 // Simpan nilai baru apapun yang diketik guru (guru berhak ubah nilai remedial)
                 db.remedial[key] = nilaiBaru;
+                // PATEN: tandai siswa ini pernah remedial untuk komponen ini.
+                // Flag ini permanen — tidak dihapus oleh "Bersihkan Badge RMD" atau perubahan nilai apapun,
+                // sehingga badge RMD tidak akan hilang meskipun siswa remedial ulang berkali-kali.
+                db.remedialHistory[key] = true;
             }
 
             // Simpan otomatis ke localStorage (debounced) agar hapus nilai juga tersimpan
@@ -6367,6 +6403,8 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                         if (nilaiLama === undefined || nilaiLama === null || nilaiLama === '' || nilaiBaru > parseFloat(nilaiLama)) {
                             db.remedial[key] = nilaiBaru;
                         }
+                        // PATEN: tandai siswa ini pernah remedial untuk komponen ini (permanen, tidak pernah dihapus)
+                        db.remedialHistory[key] = true;
                     }
                 });
 
@@ -8042,6 +8080,7 @@ ${htmlContent}
                 if (r.isConfirmed) {
                     db.nilaiTP = {};
                     db.remedial = {};
+                    db.remedialHistory = {};
                     saveDB();
                     // Refresh tampilan jika sedang di tab nilai
                     if (document.getElementById('tab-nilai-view') && !document.getElementById('tab-nilai-view').classList.contains('hidden')) {
@@ -14416,6 +14455,7 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
                 if (jenis === 'remedial') {
                     // Untuk remedial: simpan ke db.remedial sesuai jenis asalnya
                     if (!db.remedial) db.remedial = {};
+                    if (!db.remedialHistory) db.remedialHistory = {};
                     const remKey = `${h.siswaId}_${mapelId}_${jenisRemedialAsal}`;
                     const nilaiBaruRemedial = Math.round(h.nilaiAkhir * 100 / skala);
                     const nilaiLamaRemedial = db.remedial[remKey];
@@ -14423,6 +14463,8 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
                     if (nilaiLamaRemedial === undefined || nilaiLamaRemedial === null || nilaiLamaRemedial === '' || nilaiBaruRemedial > parseFloat(nilaiLamaRemedial)) {
                         db.remedial[remKey] = nilaiBaruRemedial;
                     }
+                    // PATEN: tandai siswa ini pernah remedial untuk komponen ini (permanen, tidak pernah dihapus)
+                    db.remedialHistory[remKey] = true;
                     // Catat nilai asli (jika belum ada) agar tidak tertimpa
                     const nilaiAsliKey = `${h.siswaId}_${mapelId}`;
                     if (!db.nilai[nilaiAsliKey]) db.nilai[nilaiAsliKey] = { formatif: '', sts: '', sas: '' };
