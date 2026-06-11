@@ -5668,80 +5668,43 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
         }
 
         // 🔒 Bersihkan data remedial yang tidak valid (nilai 0 / kosong)
+        // Bersihkan Badge RMD — hapus flag riwayat (remedialHistory) saja, nilai remedial tetap aman
         function bersihkanDataRemedial() {
-            if (!db.remedial) return Swal.fire('Info', 'Tidak ada data remedial.', 'info');
-            const sebelum = Object.keys(db.remedial).length;
-            if (sebelum === 0) return Swal.fire('Info', 'Data remedial sudah bersih.', 'info');
+            ensureRemedialDB();
+            const jumlahHistory = Object.keys(db.remedialHistory || {}).length;
+            const jumlahNilai   = Object.keys(db.remedial || {}).length;
 
-            let hapusCount = 0, simpanCount = 0;
-            const previewHapus = [], previewSimpan = [];
-
-            Object.entries(db.remedial).forEach(([key, val]) => {
-                const parts = key.split('_');
-                const jenis = parts[parts.length - 1];
-                const mId   = parts[parts.length - 2];
-                const sId   = parts.slice(0, parts.length - 2).join('_');
-                const siswa = db.siswa.find(s => s.id === sId);
-                const mapel = db.mapel.find(m => m.id === mId);
-                const numVal = parseFloat(val);
-                const invalid = val === '' || val === null || val === undefined || isNaN(numVal) || numVal === 0;
-                if (invalid) { hapusCount++; previewHapus.push({ key, nama: siswa?.nama || sId, mapel: mapel?.nama || mId, jenis, val }); }
-                else { simpanCount++; }
-            });
-
-            const previewRows = previewHapus.slice(0, 10).map(r =>
-                `<tr style="border-bottom:1px solid #1e293b">
-                    <td style="padding:3px 6px;color:#f8fafc">${r.nama}</td>
-                    <td style="padding:3px 6px;color:#94a3b8">${r.mapel}</td>
-                    <td style="padding:3px 6px;color:#fcd34d;text-align:center">${r.jenis}</td>
-                    <td style="padding:3px 6px;color:#f87171;text-align:center">${r.val ?? '—'}</td>
-                </tr>`).join('');
-            const lebihBanyak = previewHapus.length > 10
-                ? `<p style="color:#64748b;font-size:10px;margin-top:4px">...dan ${previewHapus.length - 10} lainnya</p>` : '';
+            if (jumlahHistory === 0 && jumlahNilai === 0) {
+                return Swal.fire({ icon: 'info', title: 'Tidak Ada Badge RMD',
+                    text: 'Tidak ada badge remedial yang perlu dibersihkan.',
+                    background: '#1e293b', color: '#f8fafc' });
+            }
 
             Swal.fire({
-                title: 'Bersihkan Data Remedial?',
-                html: `<div style="font-size:12px;text-align:left">
-                    <p style="color:#94a3b8;margin-bottom:8px">
-                        Ditemukan <b style="color:#f87171">${hapusCount} data remedial tidak valid</b> (nilai 0 atau kosong).<br>
-                        <b style="color:#34d399">${simpanCount} data valid</b> (nilai > 0) akan tetap disimpan.
-                    </p>
-                    ${hapusCount > 0 ? `<div style="max-height:200px;overflow-y:auto">
-                        <table style="width:100%;border-collapse:collapse;font-size:11px">
-                            <thead><tr style="background:#1e3a5f;color:#94a3b8">
-                                <th style="padding:4px 6px;text-align:left">Siswa</th>
-                                <th style="padding:4px 6px;text-align:left">Mapel</th>
-                                <th style="padding:4px 6px;text-align:center">Jenis</th>
-                                <th style="padding:4px 6px;text-align:center">Nilai</th>
-                            </tr></thead>
-                            <tbody>${previewRows}</tbody>
-                        </table>${lebihBanyak}
-                    </div>` : '<p style="color:#34d399">Tidak ada data tidak valid.</p>'}
+                title: 'Bersihkan Badge RMD?',
+                html: `<div style="font-size:12px;text-align:left;color:#94a3b8;line-height:1.7">
+                    <p>Ini akan <b style="color:#f87171">menghapus semua tanda/badge RMD</b> yang tampil di nama siswa pada menu Input Nilai dan Remedial.</p>
+                    <br>
+                    <p>Ditemukan: <b style="color:#fcd34d">${jumlahHistory} flag riwayat RMD</b> dan <b style="color:#fcd34d">${jumlahNilai} nilai remedial</b>.</p>
+                    <br>
+                    <p style="color:#64748b;font-size:11px">Nilai remedial yang tersimpan <b style="color:#34d399">tidak akan dihapus</b> — hanya tanda visualnya saja yang dihilangkan.</p>
                 </div>`,
-                icon: hapusCount > 0 ? 'warning' : 'success',
-                showCancelButton: hapusCount > 0,
-                confirmButtonText: hapusCount > 0 ? `Hapus ${hapusCount} Data Tidak Valid` : 'OK',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-broom mr-1"></i> Hapus Badge RMD',
                 cancelButtonText: 'Batal',
-                confirmButtonColor: '#dc2626',
-                background: '#1e293b', color: '#f8fafc', width: '520px'
+                confirmButtonColor: '#ea580c',
+                background: '#1e293b', color: '#f8fafc', width: '480px'
             }).then(r => {
-                if (!r.isConfirmed || hapusCount === 0) return;
-                if (!db.remedialHistory) db.remedialHistory = {};
-                Object.entries(db.remedial).forEach(([key, val]) => {
-                    const numVal = parseFloat(val);
-                    if (val === '' || val === null || val === undefined || isNaN(numVal) || numVal === 0) {
-                        // PATEN: meskipun nilai remedial dibersihkan, tandai bahwa siswa ini PERNAH remedial
-                        // agar badge RMD tidak hilang dari tabel Input Nilai.
-                        db.remedialHistory[key] = true;
-                        delete db.remedial[key];
-                    }
-                });
+                if (!r.isConfirmed) return;
+                // Hapus HANYA riwayat/flag — nilai remedial tetap tersimpan
+                db.remedialHistory = {};
                 saveDB();
                 if (typeof loadInputNilaiSiswa === 'function') loadInputNilaiSiswa();
-                if (typeof renderRemedialTab === 'function') renderRemedialTab();
-                Swal.fire({ icon: 'success', title: 'Data Remedial Dibersihkan!',
-                    html: `<b>${hapusCount}</b> data tidak valid dihapus. <b>${simpanCount}</b> data valid tetap tersimpan.`,
-                    background: '#1e293b', color: '#f8fafc' });
+                if (typeof renderRemedialTab  === 'function') renderRemedialTab();
+                Swal.fire({ icon: 'success', title: 'Badge RMD Dihapus!',
+                    text: 'Semua tanda RMD telah dihapus. Nilai remedial tetap tersimpan.',
+                    background: '#1e293b', color: '#f8fafc', timer: 2500, showConfirmButton: false });
             });
         }
 
@@ -6265,10 +6228,22 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
 
                 const nilaiAkhirColor = nilaiAkhir === null ? 'text-slate-500' : nilaiAkhir >= kkm ? 'text-emerald-400 font-black' : 'text-amber-400 font-black';
 
+                // Badge RMD permanen di menu Remedial — cek remedialHistory
+                const pernahRmdJeniIni = !!(db.remedialHistory && db.remedialHistory[key]);
+                const namaBadge = pernahRmdJeniIni
+                    ? `<span class="text-[8px] font-black text-amber-500 bg-amber-900/30 px-1 py-0.5 rounded ml-1"><i class="fas fa-redo-alt mr-0.5"></i>RMD</span>`
+                    : '';
+                // Label input: "Sdh Remedial" kalau ada nilai aktif, "Pernah Rmd" kalau hanya history
+                const inputLabel = sudahDiisi
+                    ? `<div class="text-[9px] text-amber-400 font-bold mt-0.5"><i class="fas fa-redo-alt text-[7px] mr-0.5"></i>Sdh Remedial</div>`
+                    : pernahRmdJeniIni
+                        ? `<div class="text-[9px] text-slate-500 mt-0.5"><i class="fas fa-redo-alt text-[7px] mr-0.5"></i>Pernah Rmd</div>`
+                        : '';
+
                 rows.push(`<tr class="hover:bg-slate-800/30 transition ${perluRemedial ? 'bg-red-950/10' : ''}" id="rem-row-${s.id}">
                     <td class="p-3 text-center text-slate-500 text-xs">${tampilNo}</td>
                     <td class="p-3">
-                        <div class="font-bold text-slate-100 text-xs">${s.nama}</div>
+                        <div class="font-bold text-slate-100 text-xs">${s.nama}${namaBadge}</div>
                         <div class="text-[9px] text-slate-500">Abs. ${s.absen||'-'}</div>
                     </td>
                     <td class="p-3 text-center">
@@ -6282,8 +6257,8 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                             value="${sudahDiisi ? parseFloat(remVal).toFixed(1) : ''}"
                             oninput="onRemedialInput('${s.id}','${mId}','${jenis}',${kkm},${asli !== null ? asli : 'null'})"
                             placeholder="0–100"
-                            class="w-24 bg-slate-950 border border-red-700/50 rounded-lg p-1.5 text-xs text-center text-slate-100 outline-none focus:border-red-400 transition font-mono">
-                        ${sudahDiisi ? `<div class="text-[9px] text-red-400 mt-0.5">Terisi</div>` : ''}
+                            class="w-24 bg-slate-950 border ${pernahRmdJeniIni ? 'border-amber-600/50' : 'border-red-700/50'} rounded-lg p-1.5 text-xs text-center text-slate-100 outline-none focus:border-red-400 transition font-mono">
+                        ${inputLabel}
                         <div class="text-[9px] text-amber-400 mt-0.5 hidden" id="rem-warn-${s.id}">⚠ Nilai lebih rendah, tidak berpengaruh</div>
                     </td>
                     <td class="p-3 text-center">
@@ -6398,12 +6373,11 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                         return; // lewati, jangan ubah
                     } else {
                         const nilaiBaru = Math.min(100, Math.max(0, parseFloat(val)));
-                        const nilaiLama = db.remedial[key];
-                        // Hanya timpa jika nilai baru lebih tinggi dari nilai lama
-                        if (nilaiLama === undefined || nilaiLama === null || nilaiLama === '' || nilaiBaru > parseFloat(nilaiLama)) {
-                            db.remedial[key] = nilaiBaru;
-                        }
-                        // PATEN: tandai siswa ini pernah remedial untuk komponen ini (permanen, tidak pernah dihapus)
+                        // Remedial bisa berkali-kali. Simpan nilai baru sebagai nilai remedial terkini.
+                        // Nilai EFEKTIF (yang masuk rapor) tetap diambil max(nilai_asli, nilai_remedial)
+                        // di fungsi getNilaiAkhirSetelahRemedial — jadi aman disimpan berapapun.
+                        db.remedial[key] = nilaiBaru;
+                        // PATEN: tandai siswa ini pernah remedial untuk komponen ini (permanen, tidak pernah dihapus otomatis)
                         db.remedialHistory[key] = true;
                     }
                 });
