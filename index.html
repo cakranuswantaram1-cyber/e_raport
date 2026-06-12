@@ -2414,6 +2414,12 @@
                                     </select>
                                     <input type="number" id="rekap-semester-tahun" onchange="renderRekapGuru()" min="2020" max="2099" placeholder="Tahun" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-100 outline-none focus:border-cyan-500 w-20">
                                 </div>
+                                <button onclick="cetakRekapAbsensiGuruPDF()" class="bg-green-900/30 text-green-400 border border-green-900/50 hover:bg-green-600 hover:text-white transition font-bold text-xs px-4 py-1.5 rounded-lg flex items-center gap-1.5 whitespace-nowrap">
+                                    <i class="fas fa-file-pdf"></i> Cetak PDF Rekap
+                                </button>
+                                <button onclick="cetakAbsensiGuruHarianPDF()" class="bg-blue-900/30 text-blue-300 border border-blue-800/50 hover:bg-blue-600 hover:text-white transition font-bold text-xs px-4 py-1.5 rounded-lg flex items-center gap-1.5 whitespace-nowrap">
+                                    <i class="fas fa-calendar-alt"></i> Cetak Kehadiran Harian
+                                </button>
                             </div>
                         </div>
 
@@ -8410,6 +8416,416 @@ ${htmlContent}
                     <td class="p-2 text-slate-300 text-[11px]">${rec.ket ? `<span class="${rec.status!=='Hadir'?'text-amber-300':''}">${rec.ket}</span>` : '<span class="text-slate-600 italic">—</span>'}</td>
                 </tr>`;
             }).join('');
+        }
+
+        // ============================================================
+        // CETAK PDF REKAP ABSENSI WALI KELAS (per Hari/Minggu/Bulan/Semester)
+        // ============================================================
+        function getRekapGuruDateRange() {
+            const mode = document.getElementById('rekap-wali-mode')?.value || 'semua';
+            const now = new Date();
+            let startStr, endStr, label;
+
+            if (mode === 'minggu') {
+                const mulai = document.getElementById('rekap-minggu-mulai')?.value;
+                if (!mulai) return null;
+                const dStart = new Date(mulai + 'T00:00:00');
+                const dEnd = new Date(dStart);
+                dEnd.setDate(dEnd.getDate() + 6);
+                startStr = dStart.toISOString().slice(0, 10);
+                endStr = dEnd.toISOString().slice(0, 10);
+                label = 'Minggu: ' + formatTglIndo(startStr) + ' – ' + formatTglIndo(endStr);
+            } else if (mode === 'bulan') {
+                const bv = document.getElementById('rekap-bulan-val')?.value;
+                if (!bv) return null;
+                const [yr, mo] = bv.split('-').map(Number);
+                startStr = bv + '-01';
+                const lastDay = new Date(yr, mo, 0).getDate();
+                endStr = bv + '-' + String(lastDay).padStart(2, '0');
+                const BULAN_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+                label = 'Bulan ' + BULAN_ID[mo - 1] + ' ' + yr;
+            } else if (mode === 'semester') {
+                const sem = parseInt(document.getElementById('rekap-semester-val')?.value);
+                const thn = parseInt(document.getElementById('rekap-semester-tahun')?.value) || now.getFullYear();
+                if (sem === 1) {
+                    startStr = thn + '-07-01';
+                    endStr = thn + '-12-31';
+                    label = 'Semester 1 Tahun ' + thn + '/' + (thn + 1);
+                } else {
+                    startStr = thn + '-01-01';
+                    endStr = thn + '-06-30';
+                    label = 'Semester 2 Tahun ' + (thn - 1) + '/' + thn;
+                }
+            } else {
+                // semua waktu -> ambil dari data yang ada, atau default tahun ini
+                if (!db.absensiGuru) db.absensiGuru = {};
+                const allTgl = Object.keys(db.absensiGuru).sort();
+                if (allTgl.length) {
+                    startStr = allTgl[0];
+                    endStr = allTgl[allTgl.length - 1];
+                } else {
+                    startStr = now.getFullYear() + '-01-01';
+                    endStr = now.toISOString().slice(0, 10);
+                }
+                label = 'Semua Waktu (' + formatTglIndo(startStr) + ' – ' + formatTglIndo(endStr) + ')';
+            }
+            return { startStr, endStr, label };
+        }
+
+        function cetakRekapAbsensiGuruPDF() {
+            const range = getRekapGuruDateRange();
+            if (!range) return Swal.fire('Peringatan', 'Pilih periode rekap terlebih dahulu!', 'warning');
+            const { startStr, endStr, label } = range;
+
+            if (!db.absensiGuru) db.absensiGuru = {};
+            if (!db.libur) db.libur = [];
+
+            const namaSekolah = db.profil.sekolah || 'SEKOLAH';
+            const wali        = db.profil.wali    || '-';
+            const kelas       = db.profil.kelas   || '-';
+            const nipWali     = (db.raporSettings && db.raporSettings.nipWali) || '';
+            const ttdWali     = db.profil.ttdWali || '';
+
+            // Kumpulkan tanggal dalam range
+            const tglList = [];
+            const cur = new Date(startStr + 'T00:00:00');
+            const end = new Date(endStr + 'T00:00:00');
+            while (cur <= end) {
+                tglList.push(cur.toISOString().slice(0, 10));
+                cur.setDate(cur.getDate() + 1);
+            }
+
+            let h=0, s=0, iz=0, a=0, tj=0, lib=0;
+            const rows = tglList.map((tgl, idx) => {
+                const dateObj = new Date(tgl + 'T00:00:00');
+                const namaHari = NAMA_HARI[dateObj.getDay()];
+                const tglLabel = dateObj.toLocaleDateString('id-ID', {day:'2-digit', month:'short', year:'numeric'});
+                const liburInfo = isTanggalLibur(tgl);
+                let rec = db.absensiGuru[tgl];
+                let status = rec?.status || '';
+                let ket = rec?.ket || '';
+
+                // Sinkronisasi otomatis dengan hari libur jika belum diisi manual
+                if (!status && liburInfo) {
+                    status = 'Libur';
+                    ket = ket || liburInfo.ket || 'Hari Libur';
+                }
+
+                if (status === 'Hadir') h++;
+                else if (status === 'Sakit') s++;
+                else if (status === 'Izin') iz++;
+                else if (status === 'Alfa') a++;
+                else if (status === 'TdkJadwal') tj++;
+                else if (status === 'Libur') lib++;
+
+                const labelMap = { 'Hadir':'Hadir','Sakit':'Sakit','Izin':'Izin','Alfa':'Alfa','TdkJadwal':'Tidak Ada Jadwal','Libur':'Hari Libur' };
+                const colorMap = { 'Hadir':'#15803d','Sakit':'#b45309','Izin':'#1d4ed8','Alfa':'#dc2626','TdkJadwal':'#64748b','Libur':'#7c3aed' };
+                const stLabel = status ? (labelMap[status] || status) : '<span style="color:#94a3b8;">— Belum Diisi —</span>';
+                const stColor = status ? (colorMap[status] || '#334155') : '#94a3b8';
+                const bgRow = dateObj.getDay() === 0 ? '#fff1f2' : (idx % 2 === 0 ? '#ffffff' : '#f9fafb');
+
+                return `<tr style="background:${bgRow};">
+                    <td style="padding:3px 5px;border:1px solid #d1d5db;text-align:center;font-size:10px;">${idx+1}</td>
+                    <td style="padding:3px 6px;border:1px solid #d1d5db;font-size:10px;font-weight:600;">${tglLabel}</td>
+                    <td style="padding:3px 6px;border:1px solid #d1d5db;font-size:10px;">${namaHari}</td>
+                    <td style="padding:3px 6px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:${stColor};">${stLabel}</td>
+                    <td style="padding:3px 6px;border:1px solid #d1d5db;font-size:10px;">${ket || '<span style="color:#94a3b8;">—</span>'}</td>
+                </tr>`;
+            });
+
+            const totalMasuk = h + s + iz + a;
+            const pct = totalMasuk ? Math.round((h / totalMasuk) * 100) : 0;
+            const pctColor = pct >= 90 ? '#15803d' : pct >= 75 ? '#b45309' : '#dc2626';
+
+            const now = new Date();
+            const tglCetak = now.toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' });
+
+            const htmlContent = `
+            <div style="padding:20px 24px;font-family:'Times New Roman',Georgia,serif;font-size:12px;line-height:1.6;color:#111;max-width:760px;margin:0 auto;">
+                <div style="text-align:center;border-bottom:3px double #0891b2;padding-bottom:12px;margin-bottom:16px;">
+                    <h2 style="font-size:16px;font-weight:900;text-transform:uppercase;margin:0;">${namaSekolah}</h2>
+                    <h3 style="font-size:14px;font-weight:700;margin:4px 0 2px;">REKAPITULASI ABSENSI WALI KELAS</h3>
+                    <p style="font-size:11px;margin:2px 0;"><strong>${label}</strong></p>
+                    <p style="font-size:11px;margin:2px 0;">Kelas: ${kelas} &nbsp;|&nbsp; Wali Kelas: ${wali}</p>
+                    <p style="font-size:10px;color:#666;margin-top:4px;">Dicetak: ${tglCetak}</p>
+                </div>
+
+                <div style="display:flex;gap:8px;justify-content:center;margin-bottom:14px;flex-wrap:wrap;">
+                    <div style="border:1px solid #d1d5db;border-radius:6px;padding:6px 12px;text-align:center;background:#f0fdf4;"><div style="font-size:9px;color:#15803d;font-weight:700;">HADIR</div><div style="font-size:16px;font-weight:900;color:#15803d;">${h}</div></div>
+                    <div style="border:1px solid #d1d5db;border-radius:6px;padding:6px 12px;text-align:center;background:#fffbeb;"><div style="font-size:9px;color:#b45309;font-weight:700;">SAKIT</div><div style="font-size:16px;font-weight:900;color:#b45309;">${s}</div></div>
+                    <div style="border:1px solid #d1d5db;border-radius:6px;padding:6px 12px;text-align:center;background:#eff6ff;"><div style="font-size:9px;color:#1d4ed8;font-weight:700;">IZIN</div><div style="font-size:16px;font-weight:900;color:#1d4ed8;">${iz}</div></div>
+                    <div style="border:1px solid #d1d5db;border-radius:6px;padding:6px 12px;text-align:center;background:#fef2f2;"><div style="font-size:9px;color:#dc2626;font-weight:700;">ALFA</div><div style="font-size:16px;font-weight:900;color:#dc2626;">${a}</div></div>
+                    <div style="border:1px solid #d1d5db;border-radius:6px;padding:6px 12px;text-align:center;background:#f5f3ff;"><div style="font-size:9px;color:#7c3aed;font-weight:700;">TDK ADA JADWAL</div><div style="font-size:16px;font-weight:900;color:#7c3aed;">${tj}</div></div>
+                    <div style="border:1px solid #d1d5db;border-radius:6px;padding:6px 12px;text-align:center;background:#f8fafc;"><div style="font-size:9px;color:#475569;font-weight:700;">LIBUR</div><div style="font-size:16px;font-weight:900;color:#475569;">${lib}</div></div>
+                    <div style="border:1px solid #d1d5db;border-radius:6px;padding:6px 12px;text-align:center;background:#ecfeff;"><div style="font-size:9px;color:${pctColor};font-weight:700;">% KEHADIRAN</div><div style="font-size:16px;font-weight:900;color:${pctColor};">${pct}%</div></div>
+                </div>
+
+                <table style="width:100%;border-collapse:collapse;font-size:11px;">
+                    <thead>
+                        <tr style="background:#ecfeff;border-bottom:2px solid #0891b2;">
+                            <th style="padding:5px 6px;border:1px solid #d1d5db;text-align:center;width:30px;">No</th>
+                            <th style="padding:5px 6px;border:1px solid #d1d5db;text-align:left;width:90px;">Tanggal</th>
+                            <th style="padding:5px 6px;border:1px solid #d1d5db;text-align:left;width:70px;">Hari</th>
+                            <th style="padding:5px 6px;border:1px solid #d1d5db;text-align:center;width:90px;">Status</th>
+                            <th style="padding:5px 6px;border:1px solid #d1d5db;text-align:left;">Keterangan</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rows.join('')}</tbody>
+                </table>
+
+                <div style="margin-top:24px;display:flex;justify-content:space-between;align-items:flex-end;font-size:11px;">
+                    <div style="text-align:left;">
+                        <p style="margin:0;"><strong>Keterangan:</strong></p>
+                        <p style="margin:2px 0;">H = Hadir &nbsp;|&nbsp; S = Sakit &nbsp;|&nbsp; I = Izin &nbsp;|&nbsp; A = Alfa</p>
+                        <p style="margin:2px 0;">TJ = Tidak Ada Jadwal &nbsp;|&nbsp; Libur = Hari Libur</p>
+                    </div>
+                    <div style="text-align:center;">
+                        <p style="margin:0 0 2px;">Mengetahui,</p>
+                        <p style="margin:0 0 4px;">Wali Kelas</p>
+                        <div style="position:relative;width:160px;height:80px;margin:0 auto 2px;">
+                            ${ttdWali
+                                ? `<img src="${ttdWali}" style="max-width:160px;max-height:80px;object-fit:contain;display:block;margin:0 auto;" />`
+                                : `<div style="width:160px;height:80px;"></div>`}
+                        </div>
+                        <div style="border-top:1.5px solid #374151;width:160px;margin:0 auto 3px;"></div>
+                        <p style="margin:0;font-weight:700;text-decoration:underline;">${wali}</p>
+                        ${nipWali ? `<p style="margin:2px 0 0;font-size:9px;color:#555;">NIP. ${nipWali}</p>` : ''}
+                        <img src="${generateQRDataURL([
+                            'REKAP ABSENSI WALI KELAS TERVERIFIKASI',
+                            'Sekolah: ' + namaSekolah,
+                            'Wali Kelas: ' + wali,
+                            nipWali ? 'NIP: ' + nipWali : '',
+                            'Kelas: ' + kelas,
+                            'Periode: ' + label,
+                            'Dicetak: ' + tglCetak,
+                            'ID: RKABSGURU-' + Date.now()
+                        ].filter(Boolean).join('|'))}" style="width:80px;height:80px;margin:6px auto 0;display:block;image-rendering:pixelated;" />
+                        <p style="margin:3px 0 0;font-size:8px;color:#888;font-style:italic;">⚡ Tanda Tangan Elektronik</p>
+                    </div>
+                </div>
+            </div>`;
+
+            const printWin = window.open('', '_blank', 'width=860,height=700');
+            if (!printWin) return Swal.fire('Peringatan', 'Popup diblokir browser. Izinkan popup untuk mencetak.', 'warning');
+            printWin.document.write(`<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Rekap Absensi Wali Kelas - ${label}</title>
+<style>
+  @page { size: A4 portrait; margin: 15mm 15mm 15mm 20mm; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Times New Roman', Georgia, serif; font-size: 12px; color: #111; background: #fff; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  table { border-collapse: collapse; width: 100%; }
+  @media print { body { margin: 0; } }
+</style>
+</head>
+<body>${htmlContent}
+<script>
+document.fonts.ready.then(function() { setTimeout(function() { window.print(); }, 400); });
+<\/script>
+</body>
+</html>`);
+            printWin.document.close();
+        }
+
+        // ============================================================
+        // CETAK PDF KEHADIRAN HARIAN WALI KELAS (Kalender 1-31 per bulan)
+        // Sinkron dengan db.absensiGuru & db.libur (termasuk Minggu otomatis)
+        // H = Hadir, S = Sakit, I = Izin, A = Alfa, TJ = Tidak Ada Jadwal, L = Libur
+        // ============================================================
+        function cetakAbsensiGuruHarianPDF() {
+            const mode = document.getElementById('rekap-wali-mode')?.value || 'bulan';
+            const now = new Date();
+
+            // Tentukan bulan & tahun target (selalu per-bulan untuk tampilan kalender 1-31)
+            let yr, mo; // mo: 1-12
+            if (mode === 'bulan') {
+                const bv = document.getElementById('rekap-bulan-val')?.value;
+                if (!bv) return Swal.fire('Peringatan', 'Pilih bulan terlebih dahulu pada filter rekap!', 'warning');
+                [yr, mo] = bv.split('-').map(Number);
+            } else if (mode === 'minggu') {
+                const mulai = document.getElementById('rekap-minggu-mulai')?.value;
+                if (!mulai) return Swal.fire('Peringatan', 'Pilih tanggal mulai minggu terlebih dahulu!', 'warning');
+                const d = new Date(mulai + 'T00:00:00');
+                yr = d.getFullYear(); mo = d.getMonth() + 1;
+            } else if (mode === 'semester') {
+                const sem = parseInt(document.getElementById('rekap-semester-val')?.value);
+                const thn = parseInt(document.getElementById('rekap-semester-tahun')?.value) || now.getFullYear();
+                yr = sem === 1 ? thn : thn;
+                mo = sem === 1 ? 7 : 1;
+                Swal.fire({ toast:true, position:'top-end', icon:'info', title:'Mode semester: menampilkan bulan pertama. Gunakan "Per Bulan" untuk bulan lain.', showConfirmButton:false, timer:2500 });
+            } else {
+                yr = now.getFullYear(); mo = now.getMonth() + 1;
+            }
+
+            if (!db.absensiGuru) db.absensiGuru = {};
+            if (!db.libur) db.libur = [];
+
+            const namaSekolah = db.profil.sekolah || 'SEKOLAH';
+            const wali        = db.profil.wali    || '-';
+            const kelas       = db.profil.kelas   || '-';
+            const nipWali     = (db.raporSettings && db.raporSettings.nipWali) || '';
+            const ttdWali     = db.profil.ttdWali || '';
+
+            const BULAN_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+            const HARI_MINI = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+
+            const jumlahHari = new Date(yr, mo, 0).getDate();
+
+            // Mapping kode status
+            const kodeMap = { 'Hadir':'H', 'Sakit':'S', 'Izin':'I', 'Alfa':'A', 'TdkJadwal':'TJ', 'Libur':'L' };
+            const colorMap = { 'H':'#15803d', 'S':'#b45309', 'I':'#1d4ed8', 'A':'#dc2626', 'TJ':'#64748b', 'L':'#7c3aed' };
+
+            let H=0,S=0,I=0,A=0,TJ=0,L=0;
+            let rowsHTML = '';
+
+            for (let d = 1; d <= jumlahHari; d++) {
+                const tglStr = yr + '-' + String(mo).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+                const dateObj = new Date(tglStr + 'T00:00:00');
+                const dow = dateObj.getDay();
+                const namaHari = NAMA_HARI[dow];
+                const liburInfo = isTanggalLibur(tglStr); // sudah termasuk cek Minggu otomatis (jika diaktifkan)
+
+                let rec = db.absensiGuru[tglStr];
+                let status = rec?.status || '';
+                let ket = rec?.ket || '';
+
+                // Sinkronisasi otomatis: jika belum diisi manual tapi tanggal adalah hari libur -> tandai Libur
+                if (!status && liburInfo) {
+                    status = 'Libur';
+                    ket = ket || liburInfo.ket || 'Hari Libur';
+                }
+
+                let kode = kodeMap[status] || '·';
+                if (kode === 'H') H++;
+                else if (kode === 'S') S++;
+                else if (kode === 'I') I++;
+                else if (kode === 'A') A++;
+                else if (kode === 'TJ') TJ++;
+                else if (kode === 'L') L++;
+
+                const kodeColor = colorMap[kode] || '#94a3b8';
+                const bgRow = dow === 0 ? '#fff1f2' : (d % 2 === 0 ? '#f9fafb' : '#ffffff');
+                const ketDisplay = ket || (liburInfo ? liburInfo.ket : '') || '<span style="color:#cbd5e1;">—</span>';
+
+                rowsHTML += `<tr style="background:${bgRow};">
+                    <td style="padding:3px 6px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:700;">${d}</td>
+                    <td style="padding:3px 6px;border:1px solid #d1d5db;text-align:center;font-size:10px;${dow===0?'color:#dc2626;font-weight:700;':''}">${namaHari}</td>
+                    <td style="padding:3px 6px;border:1px solid #d1d5db;text-align:center;font-size:11px;font-weight:900;color:${kodeColor};">${kode}</td>
+                    <td style="padding:3px 6px;border:1px solid #d1d5db;font-size:10px;">${ketDisplay}</td>
+                </tr>`;
+            }
+
+            const totalMasuk = H+S+I+A;
+            const pct = totalMasuk ? Math.round((H/totalMasuk)*100) : 0;
+            const pctColor = pct >= 90 ? '#15803d' : pct >= 75 ? '#b45309' : '#dc2626';
+
+            const now2 = new Date();
+            const tglCetak = now2.toLocaleDateString('id-ID', { day:'2-digit', month:'long', year:'numeric' });
+            const periodeLabel = BULAN_ID[mo-1] + ' ' + yr;
+
+            const htmlContent = `
+            <div style="padding:20px 24px;font-family:'Times New Roman',Georgia,serif;font-size:12px;line-height:1.6;color:#111;max-width:620px;margin:0 auto;">
+                <div style="text-align:center;border-bottom:3px double #0891b2;padding-bottom:12px;margin-bottom:14px;">
+                    <h2 style="font-size:16px;font-weight:900;text-transform:uppercase;margin:0;">${namaSekolah}</h2>
+                    <h3 style="font-size:14px;font-weight:700;margin:4px 0 2px;">DAFTAR KEHADIRAN HARIAN WALI KELAS</h3>
+                    <p style="font-size:11px;margin:2px 0;"><strong>Bulan ${periodeLabel}</strong></p>
+                    <p style="font-size:11px;margin:2px 0;">Kelas: ${kelas} &nbsp;|&nbsp; Nama Wali Kelas: <strong>${wali}</strong></p>
+                    <p style="font-size:10px;color:#666;margin-top:4px;">Dicetak: ${tglCetak}</p>
+                </div>
+
+                <table style="width:100%;border-collapse:collapse;font-size:11px;">
+                    <thead>
+                        <tr style="background:#ecfeff;border-bottom:2px solid #0891b2;">
+                            <th style="padding:4px 6px;border:1px solid #d1d5db;text-align:center;width:40px;">Tgl</th>
+                            <th style="padding:4px 6px;border:1px solid #d1d5db;text-align:center;width:70px;">Hari</th>
+                            <th style="padding:4px 6px;border:1px solid #d1d5db;text-align:center;width:50px;">Ket.</th>
+                            <th style="padding:4px 6px;border:1px solid #d1d5db;text-align:left;">Keterangan / Catatan</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsHTML}</tbody>
+                    <tfoot>
+                        <tr style="background:#ecfeff;border-top:2px solid #0891b2;">
+                            <td colspan="2" style="padding:4px 6px;border:1px solid #d1d5db;font-size:10px;font-weight:900;text-align:center;">REKAP</td>
+                            <td colspan="2" style="padding:4px 6px;border:1px solid #d1d5db;font-size:10px;">
+                                <span style="color:#15803d;font-weight:900;">H=${H}</span> &nbsp;
+                                <span style="color:#b45309;font-weight:900;">S=${S}</span> &nbsp;
+                                <span style="color:#1d4ed8;font-weight:900;">I=${I}</span> &nbsp;
+                                <span style="color:#dc2626;font-weight:900;">A=${A}</span> &nbsp;
+                                <span style="color:#64748b;font-weight:900;">TJ=${TJ}</span> &nbsp;
+                                <span style="color:#7c3aed;font-weight:900;">L=${L}</span> &nbsp;
+                                <span style="color:${pctColor};font-weight:900;">| % Hadir = ${pct}%</span>
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+
+                <div style="margin-top:14px;font-size:10px;">
+                    <p style="margin:0 0 4px;font-weight:700;">Keterangan Kode:</p>
+                    <table style="border:none;font-size:10px;width:100%;">
+                        <tr>
+                            <td style="border:none;padding:1px 4px 1px 0;font-weight:900;color:#15803d;">H</td><td style="border:none;padding:1px 12px 1px 0;">Hadir</td>
+                            <td style="border:none;padding:1px 4px 1px 0;font-weight:900;color:#b45309;">S</td><td style="border:none;padding:1px 12px 1px 0;">Sakit</td>
+                            <td style="border:none;padding:1px 4px 1px 0;font-weight:900;color:#1d4ed8;">I</td><td style="border:none;padding:1px 0;">Izin</td>
+                        </tr>
+                        <tr>
+                            <td style="border:none;padding:1px 4px 1px 0;font-weight:900;color:#dc2626;">A</td><td style="border:none;padding:1px 12px 1px 0;">Alfa (Tanpa Keterangan)</td>
+                            <td style="border:none;padding:1px 4px 1px 0;font-weight:900;color:#64748b;">TJ</td><td style="border:none;padding:1px 12px 1px 0;">Tidak Ada Jadwal</td>
+                            <td style="border:none;padding:1px 4px 1px 0;font-weight:900;color:#7c3aed;">L</td><td style="border:none;padding:1px 0;">Hari Libur</td>
+                        </tr>
+                    </table>
+                </div>
+
+                <div style="margin-top:24px;display:flex;justify-content:flex-end;align-items:flex-end;font-size:11px;">
+                    <div style="text-align:center;">
+                        <p style="margin:0 0 2px;">Mengetahui,</p>
+                        <p style="margin:0 0 4px;">Wali Kelas</p>
+                        <div style="position:relative;width:160px;height:80px;margin:0 auto 2px;">
+                            ${ttdWali
+                                ? `<img src="${ttdWali}" style="max-width:160px;max-height:80px;object-fit:contain;display:block;margin:0 auto;" />`
+                                : `<div style="width:160px;height:80px;"></div>`}
+                        </div>
+                        <div style="border-top:1.5px solid #374151;width:160px;margin:0 auto 3px;"></div>
+                        <p style="margin:0;font-weight:700;text-decoration:underline;">${wali}</p>
+                        ${nipWali ? `<p style="margin:2px 0 0;font-size:9px;color:#555;">NIP. ${nipWali}</p>` : ''}
+                        <img src="${generateQRDataURL([
+                            'KEHADIRAN HARIAN WALI KELAS TERVERIFIKASI',
+                            'Sekolah: ' + namaSekolah,
+                            'Wali Kelas: ' + wali,
+                            nipWali ? 'NIP: ' + nipWali : '',
+                            'Kelas: ' + kelas,
+                            'Bulan: ' + periodeLabel,
+                            'Dicetak: ' + tglCetak,
+                            'ID: HARGURU-' + Date.now()
+                        ].filter(Boolean).join('|'))}" style="width:80px;height:80px;margin:6px auto 0;display:block;image-rendering:pixelated;" />
+                        <p style="margin:3px 0 0;font-size:8px;color:#888;font-style:italic;">⚡ Tanda Tangan Elektronik</p>
+                    </div>
+                </div>
+            </div>`;
+
+            const printWin = window.open('', '_blank', 'width=860,height=700');
+            if (!printWin) return Swal.fire('Peringatan', 'Popup diblokir browser. Izinkan popup untuk mencetak.', 'warning');
+            printWin.document.write(`<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Kehadiran Harian Wali Kelas - ${periodeLabel}</title>
+<style>
+  @page { size: A4 portrait; margin: 15mm 15mm 15mm 20mm; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Times New Roman', Georgia, serif; font-size: 12px; color: #111; background: #fff; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  table { border-collapse: collapse; width: 100%; }
+  @media print { body { margin: 0; } }
+</style>
+</head>
+<body>${htmlContent}
+<script>
+document.fonts.ready.then(function() { setTimeout(function() { window.print(); }, 400); });
+<\/script>
+</body>
+</html>`);
+            printWin.document.close();
         }
 
         // =============================================
