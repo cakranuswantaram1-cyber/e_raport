@@ -4214,7 +4214,8 @@
             tabungan: [], // Tabungan Siswa
             temaKokurikuler: [], // Tema Ko-Kurikuler
             nilaiKokurikuler: {}, // Nilai Ko-Kurikuler per siswa per tema {siswaId: {temaId: {predikat:'SB', ket:'...'}}}
-            remedial: {}, // Remedial: {siswaId_mapelId_jenis: nilaiRemedial}
+            remedial: {}, // Remedial: {siswaId_mapelId_jenis: nilaiRemedial} — nilai remedial terkini (bisa berubah)
+            remedialMax: {}, // Nilai remedial tertinggi yang pernah dicapai (tidak pernah turun) {siswaId_mapelId_jenis: nilaiMax}
             remedialHistory: {}, // Riwayat permanen pernah remedial: {siswaId_mapelId_jenis: true} - tidak pernah dihapus oleh "Bersihkan Badge RMD"
             raporSettings: { // Pengaturan cetak rapor format Kemenag
                 kemenag: 'KEMENTERIAN AGAMA REPUBLIK INDONESIA',
@@ -4259,10 +4260,13 @@
         db.nilaiKokurikuler = db.nilaiKokurikuler || {};
         db.remedial = db.remedial || {};
         db.remedialHistory = db.remedialHistory || {};
+        db.remedialMax = db.remedialMax || {};
         // Migrasi: tandai history dari data remedial yang sudah ada (untuk pengguna lama)
+        // FIX: nilai 0 atau NaN tidak dianggap pernah remedial — harus ada nilai nyata (> 0)
         Object.keys(db.remedial).forEach(key => {
             const v = db.remedial[key];
-            if (v !== undefined && v !== null && v !== '') db.remedialHistory[key] = true;
+            const num = parseFloat(v);
+            if (v !== undefined && v !== null && v !== '' && !isNaN(num) && num > 0) { db.remedialHistory[key] = true; if (db.remedialMax[key] === undefined || num > db.remedialMax[key]) db.remedialMax[key] = num; }
         });
         db.acaraList = db.acaraList || [];
         // FIX #1 lanjutan: deep merge raporSettings agar field baru tidak hilang
@@ -4297,6 +4301,7 @@
                     ts: Date.now(),
                     nilai: JSON.parse(JSON.stringify(db.nilai)),
                     remedial: JSON.parse(JSON.stringify(db.remedial || {})),
+                    remedialMax: JSON.parse(JSON.stringify(db.remedialMax || {})),
                     nilaiTP: JSON.parse(JSON.stringify(db.nilaiTP || {}))
                 });
                 // Batasi jumlah snapshot
@@ -4322,6 +4327,7 @@
                 // Ada backup! Pulihkan otomatis
                 db.nilai   = latest.nilai;
                 db.remedial = latest.remedial || db.remedial || {};
+                db.remedialMax = latest.remedialMax || db.remedialMax || {};
                 db.nilaiTP  = latest.nilaiTP  || db.nilaiTP  || {};
                 console.warn('[Proteksi Nilai] db.nilai kosong terdeteksi — dipulihkan dari backup otomatis.');
                 Swal.fire({
@@ -4371,6 +4377,7 @@
                     const snap = r.value;
                     db.nilai    = snap.nilai;
                     db.remedial = snap.remedial || db.remedial || {};
+                    db.remedialMax = snap.remedialMax || db.remedialMax || {};
                     db.nilaiTP  = snap.nilaiTP  || db.nilaiTP  || {};
                     saveDB();
                     loadInputNilaiSiswa && loadInputNilaiSiswa();
@@ -4858,12 +4865,12 @@
                 // tapi di sini kita kembalikan nilai SEBELUM dikalikan bobot
                 // karena hitungNilaiAkhirMapel nanti akan kalikan sendiri
                 const { rata } = hitungRataTP(sId, mId);
-                // [REMEDIAL PATCH] Cek nilai remedial formatif
-                if (db.remedial) {
+                // [REMEDIAL PATCH] Cek nilai remedial formatif — pakai remedialMax agar nilai tertinggi selalu dipakai
+                if (db.remedialMax) {
                     const remKey = `${sId}_${mId}_formatif`;
-                    const rem = db.remedial[remKey];
-                    if (rem !== undefined && rem !== null && rem !== '') {
-                        return Math.max(rata, parseFloat(rem));
+                    const remMax = db.remedialMax[remKey];
+                    if (remMax !== undefined && remMax > 0) {
+                        return Math.max(rata, remMax);
                     }
                 }
                 return rata; // rata-rata semua TP (belum berbobot)
@@ -4873,12 +4880,12 @@
             const tMapel = db.tugas.filter(t => t.mapelId === mId);
             if (tMapel.length === 0) {
                 const baseVal = parseFloat((db.nilai[`${sId}_${mId}`]||{}).formatif)||0;
-                // [REMEDIAL PATCH]
-                if (db.remedial) {
+                // [REMEDIAL PATCH] pakai remedialMax agar nilai tertinggi selalu dipakai
+                if (db.remedialMax) {
                     const remKey = `${sId}_${mId}_formatif`;
-                    const rem = db.remedial[remKey];
-                    if (rem !== undefined && rem !== null && rem !== '') {
-                        return Math.max(baseVal, parseFloat(rem));
+                    const remMax = db.remedialMax[remKey];
+                    if (remMax !== undefined && remMax > 0) {
+                        return Math.max(baseVal, remMax);
                     }
                 }
                 return baseVal;
@@ -4887,12 +4894,12 @@
             let sum = 0;
             tMapel.forEach(tg => { const nt = db.nilaiTugas[`${sId}_${tg.id}`]; sum += (nt && nt.status==='Sudah') ? (parseFloat(nt.nilai)||0) : 0; });
             const agendaVal = sum / tMapel.length;
-            // [REMEDIAL PATCH]
-            if (db.remedial) {
+            // [REMEDIAL PATCH] pakai remedialMax agar nilai tertinggi selalu dipakai
+            if (db.remedialMax) {
                 const remKey = `${sId}_${mId}_formatif`;
-                const rem = db.remedial[remKey];
-                if (rem !== undefined && rem !== null && rem !== '') {
-                    return Math.max(agendaVal, parseFloat(rem));
+                const remMax = db.remedialMax[remKey];
+                if (remMax !== undefined && remMax > 0) {
+                    return Math.max(agendaVal, remMax);
                 }
             }
             return agendaVal;
@@ -4906,14 +4913,14 @@
             const fF = getNilaiFormatifAuto(sId, mId);
             const n = db.nilai[`${sId}_${mId}`] || { sts: 0, sas: 0 };
             
-            // [REMEDIAL PATCH] Gunakan nilai STS/SAS remedial jika ada dan lebih tinggi
+            // [REMEDIAL PATCH] Gunakan remedialMax STS/SAS — nilai tertinggi yang pernah dicapai
             let nilaiSTS = parseFloat(n.sts) || 0;
             let nilaiSAS = parseFloat(n.sas) || 0;
-            if (db.remedial) {
-                const remSTS = db.remedial[`${sId}_${mId}_sts`];
-                const remSAS = db.remedial[`${sId}_${mId}_sas`];
-                if (remSTS !== undefined && remSTS !== null && remSTS !== '') nilaiSTS = Math.max(nilaiSTS, parseFloat(remSTS));
-                if (remSAS !== undefined && remSAS !== null && remSAS !== '') nilaiSAS = Math.max(nilaiSAS, parseFloat(remSAS));
+            if (db.remedialMax) {
+                const remMaxSTS = db.remedialMax[`${sId}_${mId}_sts`];
+                const remMaxSAS = db.remedialMax[`${sId}_${mId}_sas`];
+                if (remMaxSTS !== undefined && remMaxSTS > 0) nilaiSTS = Math.max(nilaiSTS, remMaxSTS);
+                if (remMaxSAS !== undefined && remMaxSAS > 0) nilaiSAS = Math.max(nilaiSAS, remMaxSAS);
             }
             return (fF * bF) + (nilaiSTS * bS) + (nilaiSAS * bA);
         }
@@ -5428,8 +5435,10 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                 const fmtRaw = rataTP.toFixed(1);
 
                 // Cek apakah ada remedial formatif
-                const remFmtRaw = db.remedial && db.remedial[`${s.id}_${mId}_formatif`];
-                const hasRemFmt = remFmtRaw !== undefined && remFmtRaw !== null && remFmtRaw !== '';
+                // hasRemFmt: cek apakah pernah ada nilai remedial formatif nyata (pakai remedialMax)
+                const remFmtMax = db.remedialMax && db.remedialMax[`${s.id}_${mId}_formatif`];
+                const hasRemFmt = remFmtMax !== undefined && remFmtMax > 0;
+                const remFmtRaw = remFmtMax; // alias untuk kompatibilitas kode di bawah
                 // Nilai asli formatif (tanpa remedial), untuk keterangan
                 let fmtAsli = null;
                 if (hasRemFmt) {
@@ -5469,35 +5478,41 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
 
                 // ── STS ───────────────────────────────────────────────────
                 const stsAsli = n.sts !== undefined && n.sts !== '' ? parseFloat(n.sts) : null;
-                const remStsRaw = db.remedial && db.remedial[`${s.id}_${mId}_sts`];
-                const hasRemSts = remStsRaw !== undefined && remStsRaw !== null && remStsRaw !== '';
-                const remStsNum = hasRemSts ? parseFloat(remStsRaw) : null;
+                // hasRemSts: pakai remedialMax agar nilai tertinggi yang pernah dicapai yang ditampilkan
+                const remStsMax = db.remedialMax && db.remedialMax[`${s.id}_${mId}_sts`];
+                const hasRemSts = remStsMax !== undefined && remStsMax > 0;
+                const remStsRaw = remStsMax; // alias
+                const remStsNum = hasRemSts ? remStsMax : null;
                 // Nilai efektif STS: ambil yang terbesar antara nilai asli dan nilai remedial
                 const stsEfektif = hasRemSts && stsAsli !== null ? Math.max(stsAsli, remStsNum) : (hasRemSts ? remStsNum : stsAsli);
 
+                const belumUjianSts = (stsAsli === null || stsAsli === 0) && !hasRemSts;
                 const stsCell = `<td class="p-2">
                     <div class="flex flex-col items-center gap-0.5">
                         <input type="number" value="${stsAsli !== null ? stsAsli : (n.sts || '')}" oninput="saveSemuaNilaiSilent(this)" data-siswa="${s.id}" data-type="sts"
-                            class="input-nilai w-full bg-slate-950 border ${hasRemSts ? 'border-amber-600/60' : 'border-slate-700'} rounded p-1 text-center ${hasRemSts ? 'text-slate-400 text-[10px]' : 'text-blue-400'} outline-none focus:border-blue-500"
+                            class="input-nilai w-full bg-slate-950 border ${hasRemSts ? 'border-amber-600/60' : belumUjianSts ? 'border-amber-800/50' : 'border-slate-700'} rounded p-1 text-center ${hasRemSts ? 'text-slate-400 text-[10px]' : 'text-blue-400'} outline-none focus:border-blue-500"
                             title="${hasRemSts ? 'Nilai asli STS: ' + (stsAsli !== null ? stsAsli : '-') + ' | Nilai remedial: ' + remStsNum.toFixed(1) + ' | Nilai efektif (yang masuk rapor): ' + (stsEfektif !== null ? stsEfektif.toFixed(1) : '-') : ''}">
-                        ${hasRemSts ? `<span class="text-[9px] text-amber-400 font-black flex items-center gap-0.5 whitespace-nowrap"><i class="fas fa-redo-alt text-[7px]"></i> Efektif: ${stsEfektif !== null ? stsEfektif.toFixed(1) : '-'} <span class="text-slate-500 font-normal">(RMD:${remStsNum.toFixed(1)})</span></span>` : ''}
+                        ${hasRemSts ? `<span class="text-[9px] text-amber-400 font-black flex items-center gap-0.5 whitespace-nowrap"><i class="fas fa-redo-alt text-[7px]"></i> Efektif: ${stsEfektif !== null ? stsEfektif.toFixed(1) : '-'} <span class="text-slate-500 font-normal">(RMD:${remStsNum.toFixed(1)})</span></span>` : belumUjianSts ? `<span class="text-[8px] text-amber-600 font-bold flex items-center gap-0.5"><i class="fas fa-exclamation-triangle text-[7px]"></i> Belum ujian</span>` : ''}
                     </div>
                 </td>`;
 
                 // ── SAS ───────────────────────────────────────────────────
                 const sasAsli = n.sas !== undefined && n.sas !== '' ? parseFloat(n.sas) : null;
-                const remSasRaw = db.remedial && db.remedial[`${s.id}_${mId}_sas`];
-                const hasRemSas = remSasRaw !== undefined && remSasRaw !== null && remSasRaw !== '';
-                const remSasNum = hasRemSas ? parseFloat(remSasRaw) : null;
+                // hasRemSas: pakai remedialMax agar nilai tertinggi yang pernah dicapai yang ditampilkan
+                const remSasMax = db.remedialMax && db.remedialMax[`${s.id}_${mId}_sas`];
+                const hasRemSas = remSasMax !== undefined && remSasMax > 0;
+                const remSasRaw = remSasMax; // alias
+                const remSasNum = hasRemSas ? remSasMax : null;
                 // Nilai efektif SAS: ambil yang terbesar antara nilai asli dan nilai remedial
                 const sasEfektif = hasRemSas && sasAsli !== null ? Math.max(sasAsli, remSasNum) : (hasRemSas ? remSasNum : sasAsli);
 
+                const belumUjianSas = (sasAsli === null || sasAsli === 0) && !hasRemSas;
                 const sasCell = `<td class="p-2">
                     <div class="flex flex-col items-center gap-0.5">
                         <input type="number" value="${sasAsli !== null ? sasAsli : (n.sas || '')}" oninput="saveSemuaNilaiSilent(this)" data-siswa="${s.id}" data-type="sas"
-                            class="input-nilai w-full bg-slate-950 border ${hasRemSas ? 'border-amber-600/60' : 'border-slate-700'} rounded p-1 text-center ${hasRemSas ? 'text-slate-400 text-[10px]' : 'text-indigo-400'} outline-none focus:border-indigo-500"
+                            class="input-nilai w-full bg-slate-950 border ${hasRemSas ? 'border-amber-600/60' : belumUjianSas ? 'border-amber-800/50' : 'border-slate-700'} rounded p-1 text-center ${hasRemSas ? 'text-slate-400 text-[10px]' : 'text-indigo-400'} outline-none focus:border-indigo-500"
                             title="${hasRemSas ? 'Nilai asli SAS: ' + (sasAsli !== null ? sasAsli : '-') + ' | Nilai remedial: ' + remSasNum.toFixed(1) + ' | Nilai efektif (yang masuk rapor): ' + (sasEfektif !== null ? sasEfektif.toFixed(1) : '-') : ''}">
-                        ${hasRemSas ? `<span class="text-[9px] text-amber-400 font-black flex items-center gap-0.5 whitespace-nowrap"><i class="fas fa-redo-alt text-[7px]"></i> Efektif: ${sasEfektif !== null ? sasEfektif.toFixed(1) : '-'} <span class="text-slate-500 font-normal">(RMD:${remSasNum.toFixed(1)})</span></span>` : ''}
+                        ${hasRemSas ? `<span class="text-[9px] text-amber-400 font-black flex items-center gap-0.5 whitespace-nowrap"><i class="fas fa-redo-alt text-[7px]"></i> Efektif: ${sasEfektif !== null ? sasEfektif.toFixed(1) : '-'} <span class="text-slate-500 font-normal">(RMD:${remSasNum.toFixed(1)})</span></span>` : belumUjianSas ? `<span class="text-[8px] text-amber-600 font-bold flex items-center gap-0.5"><i class="fas fa-exclamation-triangle text-[7px]"></i> Belum ujian</span>` : ''}
                     </div>
                 </td>`;
 
@@ -5506,23 +5521,25 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                 const hapusBtn = `<button onclick="hapusNilaiSiswaMapel('${s.id}')" title="Hapus nilai ${s.nama}" class="w-8 h-8 flex items-center justify-center rounded-lg transition ${hasNilai ? 'text-red-400 hover:bg-red-900/30' : 'text-slate-700 cursor-not-allowed'}" ${hasNilai ? '' : 'disabled'}><i class="fas fa-times text-xs"></i></button>`;
 
                 const nAkhir = hitungNilaiAkhirMapel(s.id, mId);
+                const adaBelumUjianFmt = !hasAgendaOrTP && (n.formatif === '' || n.formatif === undefined || n.formatif === null || parseFloat(n.formatif) === 0);
                 const nAkhirColor = nAkhir > 0 ? (nAkhir >= kkm ? 'text-emerald-400' : 'text-red-400') : 'text-slate-500';
                 const hasAnyRemedial = hasRemFmt || hasRemSts || hasRemSas;
-                // PATEN: badge RMD tetap muncul jika siswa PERNAH remedial untuk komponen ini,
-                // meskipun data nilai remedial saat ini sudah dibersihkan/kosong.
+                // Badge RMD hanya tampil jika siswa SUDAH ikut remedial (ada nilai remedial aktif)
+                // Tidak tampil hanya karena history — agar tidak membingungkan
                 const hasRmdHistory = !!(db.remedialHistory && (
                     db.remedialHistory[`${s.id}_${mId}_formatif`] ||
                     db.remedialHistory[`${s.id}_${mId}_sts`] ||
                     db.remedialHistory[`${s.id}_${mId}_sas`]
                 ));
-                const showRmdBadge = hasAnyRemedial || hasRmdHistory;
+                const showRmdBadge = hasAnyRemedial; // PERBAIKAN: hanya dari nilai remedial aktif
                 // Status badge di kolom nilai akhir untuk kejelasan
                 const statusAkhirBadge = nAkhir <= 0 ? '' 
                     : nAkhir >= kkm 
                         ? (showRmdBadge ? `<div class="text-[8px] text-emerald-400 font-bold mt-0.5">✓ Tuntas (RMD)</div>` : `<div class="text-[8px] text-emerald-600 mt-0.5">✓ Tuntas</div>`)
                         : `<div class="text-[8px] text-red-400 mt-0.5">Belum Tuntas</div>`;
 
-                return `<tr class="${showRmdBadge ? 'bg-amber-950/10' : ''}">
+                const belumUjianAny = belumUjianSts || belumUjianSas;
+                return `<tr class="${showRmdBadge ? 'bg-amber-950/10' : belumUjianAny ? 'bg-amber-950/5' : ''}">
                     <td class="p-2 text-center font-mono">${s.absen}</td>
                     <td class="p-2 font-bold">${s.nama}${showRmdBadge ? ' <span class="text-[8px] font-black text-amber-500 bg-amber-900/30 px-1 py-0.5 rounded ml-1"><i class="fas fa-redo-alt mr-0.5"></i>RMD</span>' : ''}</td>
                     ${formatifCell}
@@ -5546,8 +5563,16 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                 const kkm    = mapel ? (parseFloat(mapel.kkm) || 75) : 75;
                 const cell   = document.getElementById(`nakhir-${sId}`);
                 if (cell) {
-                    const hasRmd = !!((db.remedial && (db.remedial[`${sId}_${mId}_formatif`] !== undefined || db.remedial[`${sId}_${mId}_sts`] !== undefined || db.remedial[`${sId}_${mId}_sas`] !== undefined))
-                        || (db.remedialHistory && (db.remedialHistory[`${sId}_${mId}_formatif`] || db.remedialHistory[`${sId}_${mId}_sts`] || db.remedialHistory[`${sId}_${mId}_sas`])));
+                    // FIX: cek nilai remedial > 0 agar nilai 0 tidak dianggap sudah remedial
+                    const _remFmt = db.remedial && db.remedial[`${sId}_${mId}_formatif`];
+                    const _remSts = db.remedial && db.remedial[`${sId}_${mId}_sts`];
+                    const _remSas = db.remedial && db.remedial[`${sId}_${mId}_sas`];
+                    const hasRmd = !!(
+                        (_remFmt !== undefined && _remFmt !== null && _remFmt !== '' && parseFloat(_remFmt) > 0) ||
+                        (_remSts !== undefined && _remSts !== null && _remSts !== '' && parseFloat(_remSts) > 0) ||
+                        (_remSas !== undefined && _remSas !== null && _remSas !== '' && parseFloat(_remSas) > 0) ||
+                        (db.remedialHistory && (db.remedialHistory[`${sId}_${mId}_formatif`] || db.remedialHistory[`${sId}_${mId}_sts`] || db.remedialHistory[`${sId}_${mId}_sas`]))
+                    );
                     const statusBadge = nAkhir <= 0 ? '' 
                         : nAkhir >= kkm 
                             ? (hasRmd ? '<div class="text-[8px] text-emerald-400 font-bold mt-0.5">✓ Tuntas (RMD)</div>' : '<div class="text-[8px] text-emerald-600 mt-0.5">✓ Tuntas</div>')
@@ -5587,6 +5612,9 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                     if (db.remedial) {
                         ['formatif','sts','sas'].forEach(j => { delete db.remedial[`${sId}_${mId}_${j}`]; });
                     }
+                    if (db.remedialMax) {
+                        ['formatif','sts','sas'].forEach(j => { delete db.remedialMax[`${sId}_${mId}_${j}`]; });
+                    }
                     // Hapus juga riwayat permanen RMD siswa ini di mapel ini (nilai dihapus total)
                     if (db.remedialHistory) {
                         ['formatif','sts','sas'].forEach(j => { delete db.remedialHistory[`${sId}_${mId}_${j}`]; });
@@ -5618,6 +5646,9 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                         // Hapus nilai remedial mapel ini untuk tiap siswa
                         if (db.remedial) {
                             ['formatif','sts','sas'].forEach(j => { delete db.remedial[`${s.id}_${mId}_${j}`]; });
+                        }
+                        if (db.remedialMax) {
+                            ['formatif','sts','sas'].forEach(j => { delete db.remedialMax[`${s.id}_${mId}_${j}`]; });
                         }
                         // Hapus juga riwayat permanen RMD mapel ini untuk tiap siswa (nilai dihapus total)
                         if (db.remedialHistory) {
@@ -5658,6 +5689,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                             db.nilai = {};
                             db.nilaiTP = {};
                             db.remedial = {};
+                            db.remedialMax = {};
                             db.remedialHistory = {};
                             saveDB(); loadInputNilaiSiswa(); renderRekapitulasi();
                             Swal.fire('Selesai', 'Semua data nilai berhasil dihapus.', 'success');
@@ -6064,6 +6096,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
         // }
         function ensureRemedialDB() {
             if (!db.remedial) db.remedial = {};
+            if (!db.remedialMax) db.remedialMax = {};
             if (!db.remedialHistory) db.remedialHistory = {};
         }
 
@@ -6111,16 +6144,18 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             ensureRemedialDB();
             const asli = getNilaiAsliRemedial(sId, mId, jenis);
             const key = `${sId}_${mId}_${jenis}`;
-            const rem = db.remedial[key];
-            if (rem === undefined || rem === null || rem === '') return asli;
-            const remNum = parseFloat(rem);
-            if (asli === null) return remNum;
+            // Gunakan remedialMax — nilai tertinggi yang pernah dicapai dari semua sesi remedial
+            // Ini memastikan remedial ke-2 yang nilainya 0 tidak menurunkan nilai efektif
+            if (!db.remedialMax) db.remedialMax = {};
+            const remMax = db.remedialMax[key];
+            if (remMax === undefined || remMax === null || remMax <= 0) return asli;
+            if (asli === null) return remMax;
             // Gunakan formula yang dipilih user
             const formula = window._remedialFormula || 'tertinggi';
             if (formula === 'ratarata') {
-                return parseFloat(((asli + remNum) / 2).toFixed(2));
+                return parseFloat(((asli + remMax) / 2).toFixed(2));
             }
-            return Math.max(asli, remNum);
+            return Math.max(asli, remMax);
         }
 
         // Formula remedial default
@@ -6200,24 +6235,26 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
 
             db.siswa.forEach((s, idx) => {
                 const asli = getNilaiAsliRemedial(s.id, mId, jenis);
-                const perluRemedial = asli !== null && asli < kkm;
+                const belumUjian = asli === null || asli === 0; // null atau nilai 0 = belum ujian
+                const perluRemedial = !belumUjian && asli < kkm;
                 const key = `${s.id}_${mId}_${jenis}`;
                 const remVal = db.remedial[key];
-                const sudahDiisi = remVal !== undefined && remVal !== null && remVal !== '';
+                const sudahDiisi = remVal !== undefined && remVal !== null && remVal !== '' && parseFloat(remVal) > 0;
                 const nilaiAkhir = getNilaiAkhirSetelahRemedial(s.id, mId, jenis);
 
-                if (asli !== null && asli < kkm) totalPerlu++;
+                if (belumUjian) {} // tidak masuk hitungan perlu remedial
+                else if (asli < kkm) totalPerlu++;
                 if (sudahDiisi) totalDiisi++;
-                if (asli !== null && asli < kkm && !sudahDiisi) totalBelumDiisi++;
+                if (!belumUjian && asli < kkm && !sudahDiisi) totalBelumDiisi++;
                 if (nilaiAkhir !== null && nilaiAkhir >= kkm) totalLulus++;
 
-                if (hanyaPerlu && !perluRemedial) return;
+                if (hanyaPerlu && !perluRemedial && !belumUjian) return;
                 tampilNoCounter++;
                 const tampilNo = tampilNoCounter;
 
-                const asliColor = asli === null ? 'text-slate-500' : asli >= kkm ? 'text-emerald-400' : 'text-red-400';
-                const statusBadge = asli === null
-                    ? '<span class="text-[9px] px-2 py-0.5 rounded-full bg-slate-800 text-slate-500 border border-slate-700">Belum Ada</span>'
+                const asliColor = belumUjian ? 'text-amber-600' : asli >= kkm ? 'text-emerald-400' : 'text-red-400';
+                const statusBadge = belumUjian
+                    ? '<span class="text-[9px] px-2 py-0.5 rounded-full bg-amber-900/30 text-amber-500 border border-amber-700/40 font-bold">⚠ Belum Ujian</span>'
                     : asli >= kkm
                     ? '<span class="text-[9px] px-2 py-0.5 rounded-full bg-emerald-900/40 text-emerald-400 border border-emerald-700/40">Tuntas</span>'
                     : '<span class="text-[9px] px-2 py-0.5 rounded-full bg-red-900/40 text-red-400 border border-red-700/40 animate-pulse">Perlu Remedial</span>';
@@ -6228,26 +6265,30 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
 
                 const nilaiAkhirColor = nilaiAkhir === null ? 'text-slate-500' : nilaiAkhir >= kkm ? 'text-emerald-400 font-black' : 'text-amber-400 font-black';
 
-                // Badge RMD permanen di menu Remedial — cek remedialHistory
+                // Badge RMD hanya tampil jika siswa SUDAH ikut remedial (ada nilai remedial nyata > 0)
                 const pernahRmdJeniIni = !!(db.remedialHistory && db.remedialHistory[key]);
-                const namaBadge = pernahRmdJeniIni
+                const namaBadge = sudahDiisi
                     ? `<span class="text-[8px] font-black text-amber-500 bg-amber-900/30 px-1 py-0.5 rounded ml-1"><i class="fas fa-redo-alt mr-0.5"></i>RMD</span>`
                     : '';
-                // Label input: "Sdh Remedial" kalau ada nilai aktif, "Pernah Rmd" kalau hanya history
                 const inputLabel = sudahDiisi
                     ? `<div class="text-[9px] text-amber-400 font-bold mt-0.5"><i class="fas fa-redo-alt text-[7px] mr-0.5"></i>Sdh Remedial</div>`
-                    : pernahRmdJeniIni
-                        ? `<div class="text-[9px] text-slate-500 mt-0.5"><i class="fas fa-redo-alt text-[7px] mr-0.5"></i>Pernah Rmd</div>`
-                        : '';
+                    : belumUjian
+                        ? `<div class="text-[9px] text-amber-500 font-bold mt-0.5">⚠ Belum ujian</div>`
+                        : perluRemedial
+                            ? `<div class="text-[9px] text-red-400 mt-0.5">Belum remedial</div>`
+                            : '';
 
-                rows.push(`<tr class="hover:bg-slate-800/30 transition ${perluRemedial ? 'bg-red-950/10' : ''}" id="rem-row-${s.id}">
+                rows.push(`<tr class="hover:bg-slate-800/30 transition ${belumUjian ? 'bg-amber-950/20' : perluRemedial ? 'bg-red-950/10' : ''}" id="rem-row-${s.id}">
                     <td class="p-3 text-center text-slate-500 text-xs">${tampilNo}</td>
                     <td class="p-3">
                         <div class="font-bold text-slate-100 text-xs">${s.nama}${namaBadge}</div>
                         <div class="text-[9px] text-slate-500">Abs. ${s.absen||'-'}</div>
                     </td>
                     <td class="p-3 text-center">
-                        <span class="font-black text-sm ${asliColor}">${asli !== null ? asli.toFixed(1) : '-'}</span>
+                        ${belumUjian
+                            ? `<span class="text-amber-500 font-bold text-xs">⚠ —</span>`
+                            : `<span class="font-black text-sm ${asliColor}">${asli.toFixed(1)}</span>`
+                        }
                     </td>
                     <td class="p-3 text-center text-slate-400 text-xs font-bold">${kkm}</td>
                     <td class="p-3 text-center">${statusBadge}</td>
@@ -6257,7 +6298,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                             value="${sudahDiisi ? parseFloat(remVal).toFixed(1) : ''}"
                             oninput="onRemedialInput('${s.id}','${mId}','${jenis}',${kkm},${asli !== null ? asli : 'null'})"
                             placeholder="0–100"
-                            class="w-24 bg-slate-950 border ${pernahRmdJeniIni ? 'border-amber-600/50' : 'border-red-700/50'} rounded-lg p-1.5 text-xs text-center text-slate-100 outline-none focus:border-red-400 transition font-mono">
+                            class="w-24 bg-slate-950 border ${sudahDiisi ? 'border-amber-500/70' : belumUjian ? 'border-amber-700/40' : 'border-red-700/50'} rounded-lg p-1.5 text-xs text-center text-slate-100 outline-none focus:border-red-400 transition font-mono">
                         ${inputLabel}
                         <div class="text-[9px] text-amber-400 mt-0.5 hidden" id="rem-warn-${s.id}">⚠ Nilai lebih rendah, tidak berpengaruh</div>
                     </td>
@@ -6285,20 +6326,23 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             const val = inp.value.trim();
             const key = `${sId}_${mId}_${jenis}`;
 
-            // FIX: nilai 0 dianggap valid (bukan kosong). Hanya string kosong atau bukan angka yang dihapus.
+            // Jika input dikosongkan: hapus semua data remedial siswa ini (termasuk history & max)
             if (val === '' || isNaN(Number(val))) {
-                // PENTING: hanya hapus jika input dikosongkan secara eksplisit oleh guru
-                // Ini untuk kasus guru sengaja menghapus nilai remedial yang sudah diisi
-                // di sesi ini — bukan menghapus nilai remedial lama dari sesi sebelumnya
                 delete db.remedial[key];
+                delete db.remedialMax[key];
+                delete db.remedialHistory[key];
             } else {
                 const nilaiBaru = Math.min(100, Math.max(0, parseFloat(val)));
-                // Simpan nilai baru apapun yang diketik guru (guru berhak ubah nilai remedial)
+                // Simpan nilai remedial terkini (bisa 0 — valid sebagai input)
                 db.remedial[key] = nilaiBaru;
-                // PATEN: tandai siswa ini pernah remedial untuk komponen ini.
-                // Flag ini permanen — tidak dihapus oleh "Bersihkan Badge RMD" atau perubahan nilai apapun,
-                // sehingga badge RMD tidak akan hilang meskipun siswa remedial ulang berkali-kali.
-                db.remedialHistory[key] = true;
+                // remedialMax: nilai tertinggi yang pernah dicapai — TIDAK PERNAH TURUN
+                if (nilaiBaru > 0) {
+                    db.remedialHistory[key] = true;
+                    if (!db.remedialMax) db.remedialMax = {};
+                    if (db.remedialMax[key] === undefined || nilaiBaru > db.remedialMax[key]) {
+                        db.remedialMax[key] = nilaiBaru;
+                    }
+                }
             }
 
             // Simpan otomatis ke localStorage (debounced) agar hapus nilai juga tersimpan
@@ -6312,6 +6356,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             const elAkhir = document.getElementById(`rem-akhir-${sId}`);
             const elHasil = document.getElementById(`rem-hasil-${sId}`);
             const elWarn = document.getElementById(`rem-warn-${sId}`);
+            const elNama = document.querySelector(`#rem-row-${sId} td:nth-child(2) .font-bold`);
 
             if (elAkhir) {
                 elAkhir.textContent = nilaiAkhir !== null ? nilaiAkhir.toFixed(1) : '-';
@@ -6321,6 +6366,15 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                 elHasil.innerHTML = nilaiAkhir === null ? '-' : nilaiAkhir >= kkmVal
                     ? `<span class="text-[9px] px-2 py-0.5 rounded-full bg-emerald-900/40 text-emerald-300 border border-emerald-700/40 font-black">✓ Tuntas</span>`
                     : `<span class="text-[9px] px-2 py-0.5 rounded-full bg-amber-900/40 text-amber-400 border border-amber-700/40">Belum Tuntas</span>`;
+            }
+            // Update badge RMD di nama siswa secara langsung (live)
+            if (elNama) {
+                const siswa = db.siswa.find(x => x.id === sId);
+                const namaText = siswa ? siswa.nama : sId;
+                const masihAdaRmd = !!(db.remedialHistory && db.remedialHistory[`${sId}_${mId}_${jenis}`]);
+                elNama.innerHTML = namaText + (masihAdaRmd
+                    ? ` <span class="text-[8px] font-black text-amber-500 bg-amber-900/30 px-1 py-0.5 rounded ml-1"><i class="fas fa-redo-alt mr-0.5"></i>RMD</span>`
+                    : '');
             }
             // FIX 6: Tampilkan warning jika nilai remedial lebih rendah dari nilai asli
             if (elWarn && val !== '' && !isNaN(Number(val)) && asliVal !== null) {
@@ -6363,22 +6417,23 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                     if (!inp || inp.disabled) return;
                     const val = inp.value.trim();
                     const key = `${s.id}_${mId}_${jenis}`;
-                    // FIX PENTING: Jika input kosong atau bukan angka valid, JANGAN hapus nilai remedial lama
-                    // Nilai remedial lama harus tetap ada (mungkin diisi di sesi sebelumnya)
-                    // Hanya hapus jika input sengaja dikosongkan DAN sebelumnya memang kosong
+                    // Jika input dikosongkan: hapus semua data remedial siswa ini
                     if (val === '' || isNaN(Number(val))) {
-                        // Kosongkan hanya jika sebelumnya juga tidak ada nilai (baru)
-                        // Jika sudah ada nilai remedial lama, biarkan saja
-                        // (tidak delete) — guru harus isi 0 untuk menghapus
-                        return; // lewati, jangan ubah
+                        delete db.remedial[key];
+                        delete db.remedialMax[key];
+                        delete db.remedialHistory[key];
                     } else {
                         const nilaiBaru = Math.min(100, Math.max(0, parseFloat(val)));
-                        // Remedial bisa berkali-kali. Simpan nilai baru sebagai nilai remedial terkini.
-                        // Nilai EFEKTIF (yang masuk rapor) tetap diambil max(nilai_asli, nilai_remedial)
-                        // di fungsi getNilaiAkhirSetelahRemedial — jadi aman disimpan berapapun.
+                        // Simpan nilai remedial terkini (bisa 0 — valid sebagai input)
                         db.remedial[key] = nilaiBaru;
-                        // PATEN: tandai siswa ini pernah remedial untuk komponen ini (permanen, tidak pernah dihapus otomatis)
-                        db.remedialHistory[key] = true;
+                        // remedialMax: nilai tertinggi yang pernah dicapai — TIDAK PERNAH TURUN
+                        if (nilaiBaru > 0) {
+                            db.remedialHistory[key] = true;
+                            if (!db.remedialMax) db.remedialMax = {};
+                            if (db.remedialMax[key] === undefined || nilaiBaru > db.remedialMax[key]) {
+                                db.remedialMax[key] = nilaiBaru;
+                            }
+                        }
                     }
                 });
 
@@ -6407,7 +6462,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                         i + 1, s.nama, s.absen || '-',
                         asli !== null ? parseFloat(asli.toFixed(2)) : '-',
                         kkm,
-                        asli === null ? 'Belum Ada' : asli >= kkm ? 'Tuntas' : 'Perlu Remedial',
+                        (asli === null || asli === 0) ? 'Belum Ujian' : asli >= kkm ? 'Tuntas' : 'Perlu Remedial',
                         rem !== undefined && rem !== null && rem !== '' ? parseFloat(parseFloat(rem).toFixed(2)) : '-',
                         nilaiAkhir !== null ? parseFloat(nilaiAkhir.toFixed(2)) : '-',
                         nilaiAkhir === null ? '-' : nilaiAkhir >= kkm ? 'Tuntas' : 'Belum Tuntas'
@@ -6435,49 +6490,66 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             const now = new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
             const hanyaPerlu = document.getElementById('toggle-hanya-perlu-remedial').checked;
 
-            let totalPerlu = 0, totalDiisi = 0, totalLulus = 0, totalBelumTuntas = 0;
+            let totalPerlu = 0, totalDiisi = 0, totalLulus = 0, totalBelumTuntas = 0, totalBelumUjian = 0;
             let rows = '';
             let no = 0;
 
             db.siswa.forEach((s) => {
                 const asli = getNilaiAsliRemedial(s.id, mId, jenis);
-                const perluRemedial = asli !== null && asli < kkm;
+                const belumUjian = asli === null || asli === 0;
+                const perluRemedial = !belumUjian && asli < kkm;
                 const key = `${s.id}_${mId}_${jenis}`;
                 const remVal = db.remedial[key];
-                const sudahDiisi = remVal !== undefined && remVal !== null && remVal !== '';
+                const sudahDiisi = remVal !== undefined && remVal !== null && remVal !== '' && parseFloat(remVal) > 0;
                 const nilaiAkhir = getNilaiAkhirSetelahRemedial(s.id, mId, jenis);
 
+                if (belumUjian) totalBelumUjian++;
                 if (asli !== null && asli < kkm) totalPerlu++;
                 if (sudahDiisi) totalDiisi++;
                 if (nilaiAkhir !== null && nilaiAkhir >= kkm) totalLulus++;
                 if (nilaiAkhir !== null && nilaiAkhir < kkm) totalBelumTuntas++;
 
-                if (hanyaPerlu && !perluRemedial) return;
+                if (hanyaPerlu && !perluRemedial && !belumUjian) return;
                 no++;
 
-                const statusAsli = asli === null ? 'Belum Ada'
-                    : asli >= kkm ? 'Tuntas' : 'Remedial';
-                const statusAsliColor = asli === null ? '#94a3b8'
+                const statusAsli = belumUjian ? 'Belum Ujian'
+                    : asli >= kkm ? 'Tuntas' : 'Perlu Remedial';
+                const statusAsliColor = belumUjian ? '#b45309'
                     : asli >= kkm ? '#16a34a' : '#dc2626';
-                const hasilAkhir = nilaiAkhir === null ? '-'
+                const hasilAkhir = nilaiAkhir === null ? '—'
                     : nilaiAkhir >= kkm ? '✓ Tuntas' : 'Belum Tuntas';
                 const hasilColor = nilaiAkhir === null ? '#94a3b8'
                     : nilaiAkhir >= kkm ? '#16a34a' : '#d97706';
                 const rowBg = no % 2 === 0 ? '#ffffff' : '#f9fafb';
-                const remedialHighlight = perluRemedial ? '#fff5f5' : rowBg;
+                // warna baris: kuning muda = belum ujian, merah muda = perlu remedial, putih = lainnya
+                const rowHighlight = belumUjian ? '#fffbeb' : perluRemedial ? '#fff5f5' : rowBg;
+                // tanda khusus di kolom nilai asli jika belum ujian
+                const nilaiAsliDisplay = belumUjian
+                    ? '<span style="font-size:10px;font-weight:700;color:#b45309;">⚠ —</span>'
+                    : `<span style="font-weight:700;font-size:12px;color:${asli >= kkm ? '#16a34a' : '#dc2626'};">${asli.toFixed(1)}</span>`;
+                // tanda di kolom nilai remedial jika belum ujian
+                const nilaiRemedialDisplay = belumUjian
+                    ? '<span style="font-size:10px;color:#b45309;font-style:italic;">Belum ujian</span>'
+                    : sudahDiisi
+                        ? `<span style="font-weight:700;font-size:12px;color:#7c3aed;">${parseFloat(remVal).toFixed(1)}</span>`
+                        : '<span style="color:#94a3b8;font-size:10px;">—</span>';
+                // kolom nilai akhir
+                const nilaiAkhirDisplay = nilaiAkhir !== null
+                    ? `<span style="font-weight:900;font-size:13px;color:${hasilColor === '#16a34a' ? '#15803d' : hasilColor};">${nilaiAkhir.toFixed(1)}</span>`
+                    : '<span style="color:#94a3b8;">—</span>';
 
-                rows += `<tr style="background:${remedialHighlight}">
-                    <td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;font-size:11px;">${no}</td>
-                    <td style="padding:5px 8px;border:1px solid #e2e8f0;font-size:11px;">${s.nama}</td>
-                    <td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;font-size:10px;color:#64748b;">${s.absen || '-'}</td>
-                    <td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;font-weight:700;font-size:12px;color:${asli === null ? '#94a3b8' : asli >= kkm ? '#16a34a' : '#dc2626'};">${asli !== null ? asli.toFixed(1) : '-'}</td>
-                    <td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;font-size:11px;color:#475569;">${kkm}</td>
-                    <td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">
+                rows += `<tr style="background:${rowHighlight}">
+                    <td style="padding:3px 5px;border:1px solid #e2e8f0;text-align:center;font-size:9px;">${no}</td>
+                    <td style="padding:3px 5px;border:1px solid #e2e8f0;font-size:9px;font-weight:${belumUjian ? '700' : 'normal'};">${s.nama}${belumUjian ? ' <span style="font-size:8px;font-weight:700;color:#b45309;border:1px solid #b4530950;border-radius:4px;padding:1px 5px;background:#fffbeb;">⚠ Belum Ujian</span>' : ''}</td>
+                    <td style="padding:3px 5px;border:1px solid #e2e8f0;text-align:center;font-size:9px;color:#64748b;">${s.absen || '-'}</td>
+                    <td style="padding:3px 5px;border:1px solid #e2e8f0;text-align:center;">${nilaiAsliDisplay}</td>
+                    <td style="padding:3px 5px;border:1px solid #e2e8f0;text-align:center;font-size:9px;color:#475569;">${kkm}</td>
+                    <td style="padding:3px 5px;border:1px solid #e2e8f0;text-align:center;">
                         <span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;background:${statusAsliColor}20;color:${statusAsliColor};border:1px solid ${statusAsliColor}60;">${statusAsli}</span>
                     </td>
-                    <td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;font-weight:700;font-size:12px;color:#7c3aed;">${sudahDiisi ? parseFloat(remVal).toFixed(1) : '<span style="color:#94a3b8;font-size:10px;">—</span>'}</td>
-                    <td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;font-weight:900;font-size:13px;color:${hasilColor === '#16a34a' ? '#15803d' : hasilColor};">${nilaiAkhir !== null ? nilaiAkhir.toFixed(1) : '-'}</td>
-                    <td style="padding:5px 8px;border:1px solid #e2e8f0;text-align:center;">
+                    <td style="padding:3px 5px;border:1px solid #e2e8f0;text-align:center;">${nilaiRemedialDisplay}</td>
+                    <td style="padding:3px 5px;border:1px solid #e2e8f0;text-align:center;">${nilaiAkhirDisplay}</td>
+                    <td style="padding:3px 5px;border:1px solid #e2e8f0;text-align:center;">
                         <span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;background:${hasilColor}20;color:${hasilColor};border:1px solid ${hasilColor}60;">${hasilAkhir}</span>
                     </td>
                 </tr>`;
@@ -6488,53 +6560,68 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             const html = `<!DOCTYPE html><html lang="id"><head><meta charset="UTF-8">
             <title>Remedial – ${m.nama} – ${namaSekolah}</title>
             <style>
-                @page { size: A4 landscape; margin: 12mm; }
+                @page { size: 210mm 330mm; margin: 8mm 10mm; }
                 * { box-sizing: border-box; }
-                body { font-family: 'Times New Roman', serif; font-size: 11px; color: #1e293b; background: #fff; margin: 0; padding: 0; }
+                body { font-family: 'Times New Roman', serif; font-size: 10px; color: #1e293b; background: #fff; margin: 0; padding: 0; }
                 table { border-collapse: collapse; width: 100%; }
+                thead { display: table-header-group; }
+                tr { page-break-inside: avoid; }
                 @media print { body { margin: 0; } }
             </style>
             </head><body>
-            <div style="text-align:center;border-bottom:3px double #dc2626;padding-bottom:10px;margin-bottom:14px;">
-                <h2 style="font-size:16px;font-weight:900;text-transform:uppercase;margin:0 0 3px 0;">${namaSekolah}</h2>
-                <h3 style="font-size:13px;font-weight:700;margin:0 0 4px 0;">DAFTAR NILAI REMEDIAL</h3>
-                <p style="font-size:11px;font-weight:700;margin:2px 0;color:#7c3aed;">Mata Pelajaran: ${m.nama} &nbsp;|&nbsp; Jenis: ${jenisLabel}</p>
-                <p style="font-size:10px;margin:2px 0;color:#475569;">Kelas: ${kelas} &nbsp;|&nbsp; Wali Kelas: ${wali} &nbsp;|&nbsp; KKM: ${kkm} &nbsp;|&nbsp; Dicetak: ${now}</p>
+            <div style="text-align:center;border-bottom:2px double #dc2626;padding-bottom:6px;margin-bottom:8px;">
+                <h2 style="font-size:13px;font-weight:900;text-transform:uppercase;margin:0 0 2px 0;">${namaSekolah}</h2>
+                <h3 style="font-size:11px;font-weight:700;margin:0 0 3px 0;">DAFTAR NILAI REMEDIAL</h3>
+                <p style="font-size:10px;font-weight:700;margin:1px 0;color:#7c3aed;">Mata Pelajaran: ${m.nama} &nbsp;|&nbsp; Jenis: ${jenisLabel}</p>
+                <p style="font-size:9px;margin:1px 0;color:#475569;">Kelas: ${kelas} &nbsp;|&nbsp; Wali Kelas: ${wali} &nbsp;|&nbsp; KKM: ${kkm} &nbsp;|&nbsp; Dicetak: ${now}</p>
             </div>
-            <table style="margin-bottom:12px;width:auto;font-size:10px;border:none;">
+            <table style="margin-bottom:6px;width:100%;font-size:9px;border:none;">
                 <tr>
-                    <td style="padding:3px 10px;border:none;"><strong>Total Siswa:</strong> ${db.siswa.length}</td>
-                    <td style="padding:3px 10px;border:none;"><strong>Perlu Remedial:</strong> <span style="color:#dc2626">${totalPerlu}</span></td>
-                    <td style="padding:3px 10px;border:none;"><strong>Sudah Diisi:</strong> <span style="color:#7c3aed">${totalDiisi}</span></td>
-                    <td style="padding:3px 10px;border:none;"><strong>Tuntas:</strong> <span style="color:#16a34a">${totalLulus}</span></td>
-                    <td style="padding:3px 10px;border:none;"><strong>Belum Tuntas:</strong> <span style="color:#d97706">${totalBelumTuntas}</span></td>
+                    <td style="padding:2px 8px;border:none;"><strong>Total Siswa:</strong> ${db.siswa.length}</td>
+                    <td style="padding:2px 8px;border:none;background:#fffbeb;border-radius:3px;"><strong>⚠ Belum Ujian:</strong> <span style="color:#b45309;font-weight:900;">${totalBelumUjian}</span></td>
+                    <td style="padding:2px 8px;border:none;"><strong>Perlu Remedial:</strong> <span style="color:#dc2626">${totalPerlu}</span></td>
+                    <td style="padding:2px 8px;border:none;"><strong>Sudah Remedial:</strong> <span style="color:#7c3aed">${totalDiisi}</span></td>
+                    <td style="padding:2px 8px;border:none;"><strong>Tuntas:</strong> <span style="color:#16a34a">${totalLulus}</span></td>
+                    <td style="padding:2px 8px;border:none;"><strong>Belum Tuntas:</strong> <span style="color:#d97706">${totalBelumTuntas}</span></td>
                 </tr>
             </table>
             <table>
                 <thead>
                     <tr style="background:#fef2f2;border-bottom:2px solid #dc2626;">
-                        <th style="padding:7px 8px;border:1px solid #e2e8f0;width:32px;">No</th>
-                        <th style="padding:7px 8px;border:1px solid #e2e8f0;text-align:left;">Nama Siswa</th>
-                        <th style="padding:7px 8px;border:1px solid #e2e8f0;width:40px;">Abs.</th>
-                        <th style="padding:7px 8px;border:1px solid #e2e8f0;width:70px;color:#92400e;">Nilai Asli</th>
-                        <th style="padding:7px 8px;border:1px solid #e2e8f0;width:45px;color:#475569;">KKM</th>
-                        <th style="padding:7px 8px;border:1px solid #e2e8f0;width:80px;">Status</th>
-                        <th style="padding:7px 8px;border:1px solid #e2e8f0;width:80px;color:#7c3aed;">Nilai Remedial</th>
-                        <th style="padding:7px 8px;border:1px solid #e2e8f0;width:75px;color:#166534;">Nilai Akhir</th>
-                        <th style="padding:7px 8px;border:1px solid #e2e8f0;width:80px;">Hasil</th>
+                        <th style="padding:4px 5px;border:1px solid #e2e8f0;width:24px;font-size:9px;">No</th>
+                        <th style="padding:4px 5px;border:1px solid #e2e8f0;text-align:left;font-size:9px;">Nama Siswa</th>
+                        <th style="padding:4px 5px;border:1px solid #e2e8f0;width:30px;font-size:9px;">Abs.</th>
+                        <th style="padding:4px 5px;border:1px solid #e2e8f0;width:55px;color:#92400e;font-size:9px;">Nilai Asli</th>
+                        <th style="padding:4px 5px;border:1px solid #e2e8f0;width:35px;color:#475569;font-size:9px;">KKM</th>
+                        <th style="padding:4px 5px;border:1px solid #e2e8f0;width:70px;font-size:9px;">Status</th>
+                        <th style="padding:4px 5px;border:1px solid #e2e8f0;width:65px;color:#7c3aed;font-size:9px;">Nilai Remedial</th>
+                        <th style="padding:4px 5px;border:1px solid #e2e8f0;width:55px;color:#166534;font-size:9px;">Nilai Akhir</th>
+                        <th style="padding:4px 5px;border:1px solid #e2e8f0;width:65px;font-size:9px;">Hasil</th>
                     </tr>
                 </thead>
                 <tbody>${rows}</tbody>
             </table>
-            <div style="margin-top:24px;display:flex;justify-content:space-between;font-size:10px;color:#475569;">
+            <div style="margin-top:8px;font-size:9px;color:#475569;">
+                <table style="width:auto;border:none;margin-bottom:8px;">
+                    <tr>
+                        <td style="border:none;padding:2px 12px 2px 0;"><strong>Keterangan Warna:</strong></td>
+                        <td style="border:none;padding:2px 8px;background:#fffbeb;border-radius:4px;color:#b45309;font-weight:700;">■ Kuning = Belum Ujian</td>
+                        <td style="border:none;padding:2px 8px;color:#475569;">|</td>
+                        <td style="border:none;padding:2px 8px;background:#fff5f5;border-radius:4px;color:#dc2626;font-weight:700;">■ Merah = Perlu Remedial</td>
+                        <td style="border:none;padding:2px 8px;color:#475569;">|</td>
+                        <td style="border:none;padding:2px 8px;color:#64748b;">■ Putih = Tuntas / Normal</td>
+                    </tr>
+                </table>
+            </div>
+            <div style="margin-top:4px;display:flex;justify-content:space-between;font-size:9px;color:#475569;">
                 <div>
-                    <p style="margin:0;font-style:italic;">Keterangan: Nilai Akhir = Nilai Remedial jika lebih tinggi dari Nilai Asli, jika tidak maka tetap Nilai Asli.</p>
+                    <p style="margin:0;font-style:italic;">Keterangan: Nilai Akhir = Nilai Remedial jika lebih tinggi dari Nilai Asli. Baris kuning = siswa belum mengikuti ujian.</p>
                     <p style="margin:2px 0 0;font-style:italic;color:#94a3b8;">Dicetak dari e-Rapot Madrasah v6.1</p>
                 </div>
                 <div style="text-align:right;">
                     <p style="margin:0;">Mengetahui,</p>
                     <p style="margin:0;">Wali Kelas</p>
-                    <br><br>
+                    <br>
                     <p style="margin:0;font-weight:700;border-top:1px solid #475569;padding-top:2px;">${wali}</p>
                 </div>
             </div>
@@ -8054,6 +8141,7 @@ ${htmlContent}
                 if (r.isConfirmed) {
                     db.nilaiTP = {};
                     db.remedial = {};
+                    db.remedialMax = {};
                     db.remedialHistory = {};
                     saveDB();
                     // Refresh tampilan jika sedang di tab nilai
@@ -14429,6 +14517,7 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
                 if (jenis === 'remedial') {
                     // Untuk remedial: simpan ke db.remedial sesuai jenis asalnya
                     if (!db.remedial) db.remedial = {};
+                    if (!db.remedialMax) db.remedialMax = {};
                     if (!db.remedialHistory) db.remedialHistory = {};
                     const remKey = `${h.siswaId}_${mapelId}_${jenisRemedialAsal}`;
                     const nilaiBaruRemedial = Math.round(h.nilaiAkhir * 100 / skala);
