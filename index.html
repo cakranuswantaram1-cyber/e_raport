@@ -1353,6 +1353,7 @@
                         <div><h3 class="text-sm font-bold text-slate-100">Database Siswa Lengkap</h3><p class="text-[10px] text-slate-400 mt-1">Simpan profil, kontak ortu, dan alamat.</p></div>
                         <div class="flex gap-2">
                             <button onclick="openModalMassal()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs px-4 py-2 rounded-lg border border-slate-700 transition"><i class="fas fa-file-import mr-1"></i> Paste Massal</button>
+                            <label class="bg-blue-700/30 hover:bg-blue-600 text-blue-300 hover:text-white font-bold text-xs px-4 py-2 rounded-lg border border-blue-700/50 transition cursor-pointer"><i class="fas fa-file-excel mr-1"></i> Upload Template RDM <input type="file" id="upload-rdm-siswa" accept=".xlsx,.xls" onchange="importSiswaDariRDM(event)" class="hidden"></label>
                             <button onclick="openModalSiswa()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2 rounded-lg transition shadow-md shadow-emerald-900/20"><i class="fas fa-user-plus mr-1"></i> Tambah Siswa</button>
                         </div>
                     </div>
@@ -2155,7 +2156,7 @@
                                         <td style="width:50%;vertical-align:top;">
                                             <table style="width:100%;border-collapse:collapse;">
                                                 <tr><td style="width:80px;padding:1px 0;">NAMA</td><td style="width:10px;">:</td><td><b id="print-nama-siswa-id">-</b></td></tr>
-                                                <tr><td style="padding:1px 0;">NIS/NISN</td><td>:</td><td id="print-nis-siswa-id">-</td></tr>
+                                                <tr><td style="padding:1px 0;">NIS</td><td>:</td><td id="print-nis-siswa-id">-</td></tr><tr><td style="padding:1px 0;">NISN</td><td>:</td><td id="print-nisn-siswa-id">-</td></tr>
                                                 <tr><td style="padding:1px 0;">Madrasah</td><td>:</td><td id="print-nama-madrasah-id">-</td></tr>
                                                 <tr><td style="padding:1px 0;">Alamat</td><td>:</td><td id="print-alamat-siswa-id">-</td></tr>
                                             </table>
@@ -3361,8 +3362,12 @@
                         <label class="block text-[10px] text-slate-400 mb-1">Nomor Absen & NIS</label>
                         <div class="flex gap-2">
                             <input type="number" id="form-siswa-absen" class="w-1/3 bg-slate-950 border border-slate-700 rounded p-2 text-xs text-slate-100 outline-none" placeholder="Absen">
-                            <input type="number" id="form-siswa-nis" class="w-2/3 bg-slate-950 border border-slate-700 rounded p-2 text-xs text-slate-100 outline-none" placeholder="NIS/NISN">
+                            <input type="number" id="form-siswa-nis" class="w-2/3 bg-slate-950 border border-slate-700 rounded p-2 text-xs text-slate-100 outline-none" placeholder="NIS">
                         </div>
+                    </div>
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-1">NISN</label>
+                        <input type="text" id="form-siswa-nisn" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-slate-100 outline-none" placeholder="NISN (10 digit)">
                     </div>
                     <div>
                         <label class="block text-[10px] text-slate-400 mb-1">Nama Lengkap Siswa</label>
@@ -5420,7 +5425,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             if (!db.siswa.length) { b.innerHTML = '<tr><td colspan="6" class="text-center py-4">Kosong</td></tr>'; return; }
             const rows = db.siswa.map(s => {
                 let ava = s.foto ? `<img src="${s.foto}" class="w-10 h-10 rounded-full student-avatar border border-slate-700">` : `<div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-500"><i class="fas fa-user"></i></div>`;
-                return `<tr class="hover:bg-slate-800/50 transition"><td class="p-3 text-center font-mono">${s.absen||'-'}</td><td class="p-3">${ava}</td><td class="p-3"><div class="font-bold text-slate-100">${s.nama} <span class="text-emerald-400 text-[10px]">(${s.jk||'L'})</span></div><div class="text-[10px] text-slate-400 font-mono">NIS: ${s.nis}</div></td><td class="p-3"><div class="font-bold text-slate-300 text-[11px]">${s.ortu||'-'}</div><div class="text-[10px] text-emerald-400 font-mono"><i class="fab fa-whatsapp"></i> ${s.wa||'-'}</div></td><td class="p-3 text-[10px] text-slate-400 truncate max-w-[150px]">${s.alamat||'-'}</td><td class="p-3 text-center"><button onclick="openModalSiswa('${s.id}')" class="text-amber-400 mx-1 p-1 hover:bg-slate-700 rounded"><i class="fas fa-edit"></i></button><button onclick="deleteSiswa('${s.id}')" class="text-red-400 mx-1 p-1 hover:bg-slate-700 rounded"><i class="fas fa-trash"></i></button></td></tr>`;
+                return `<tr class="hover:bg-slate-800/50 transition"><td class="p-3 text-center font-mono">${s.absen||'-'}</td><td class="p-3">${ava}</td><td class="p-3"><div class="font-bold text-slate-100">${s.nama} <span class="text-emerald-400 text-[10px]">(${s.jk||'L'})</span></div><div class="text-[10px] text-slate-400 font-mono">NIS: ${s.nis||'-'} | NISN: ${s.nisn||'(belum diisi)'}</div></td><td class="p-3"><div class="font-bold text-slate-300 text-[11px]">${s.ortu||'-'}</div><div class="text-[10px] text-emerald-400 font-mono"><i class="fab fa-whatsapp"></i> ${s.wa||'-'}</div></td><td class="p-3 text-[10px] text-slate-400 truncate max-w-[150px]">${s.alamat||'-'}</td><td class="p-3 text-center"><button onclick="openModalSiswa('${s.id}')" class="text-amber-400 mx-1 p-1 hover:bg-slate-700 rounded"><i class="fas fa-edit"></i></button><button onclick="deleteSiswa('${s.id}')" class="text-red-400 mx-1 p-1 hover:bg-slate-700 rounded"><i class="fas fa-trash"></i></button></td></tr>`;
             });
             b.innerHTML = rows.join('');
         }
@@ -5429,16 +5434,16 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             document.getElementById('modal-siswa').classList.remove('hidden'); 
             const pre = document.getElementById('form-siswa-foto-preview'), plc = document.getElementById('form-siswa-foto-placeholder');
             if(id){ 
-                const s=db.siswa.find(x=>x.id===id); document.getElementById('form-siswa-id').value=s.id; document.getElementById('form-siswa-absen').value=s.absen; document.getElementById('form-siswa-nis').value=s.nis; document.getElementById('form-siswa-nama').value=s.nama; document.getElementById('form-siswa-jk').value=s.jk||'L'; document.getElementById('form-siswa-ortu').value=s.ortu; document.getElementById('form-siswa-wa').value=s.wa; document.getElementById('form-siswa-alamat').value=s.alamat; document.getElementById('form-siswa-foto-base64').value=s.foto;
+                const s=db.siswa.find(x=>x.id===id); document.getElementById('form-siswa-id').value=s.id; document.getElementById('form-siswa-absen').value=s.absen; document.getElementById('form-siswa-nis').value=s.nis; document.getElementById('form-siswa-nisn').value=s.nisn||''; document.getElementById('form-siswa-nama').value=s.nama; document.getElementById('form-siswa-jk').value=s.jk||'L'; document.getElementById('form-siswa-ortu').value=s.ortu; document.getElementById('form-siswa-wa').value=s.wa; document.getElementById('form-siswa-alamat').value=s.alamat; document.getElementById('form-siswa-foto-base64').value=s.foto;
                 if(s.foto){ pre.src=s.foto; pre.classList.remove('hidden'); plc.classList.add('hidden'); } else { pre.classList.add('hidden'); plc.classList.remove('hidden'); }
             } else { 
-                document.getElementById('form-siswa-id').value=''; document.getElementById('form-siswa-absen').value=db.siswa.length+1; document.getElementById('form-siswa-nis').value=''; document.getElementById('form-siswa-nama').value=''; document.getElementById('form-siswa-jk').value='L'; document.getElementById('form-siswa-ortu').value=''; document.getElementById('form-siswa-wa').value=''; document.getElementById('form-siswa-alamat').value=''; document.getElementById('form-siswa-foto-base64').value=''; pre.classList.add('hidden'); plc.classList.remove('hidden');
+                document.getElementById('form-siswa-id').value=''; document.getElementById('form-siswa-absen').value=db.siswa.length+1; document.getElementById('form-siswa-nis').value=''; document.getElementById('form-siswa-nisn').value=''; document.getElementById('form-siswa-nama').value=''; document.getElementById('form-siswa-jk').value='L'; document.getElementById('form-siswa-ortu').value=''; document.getElementById('form-siswa-wa').value=''; document.getElementById('form-siswa-alamat').value=''; document.getElementById('form-siswa-foto-base64').value=''; pre.classList.add('hidden'); plc.classList.remove('hidden');
             } 
         }
         function closeModalSiswa() { document.getElementById('modal-siswa').classList.add('hidden'); }
         function saveFormSiswa() { 
             const id=document.getElementById('form-siswa-id').value, nm=document.getElementById('form-siswa-nama').value; if(!nm) return; 
-            const data = { absen:document.getElementById('form-siswa-absen').value, nis:document.getElementById('form-siswa-nis').value, nama:nm, jk:document.getElementById('form-siswa-jk').value, ortu:document.getElementById('form-siswa-ortu').value, wa:document.getElementById('form-siswa-wa').value, alamat:document.getElementById('form-siswa-alamat').value, foto:document.getElementById('form-siswa-foto-base64').value, lksQty:1 };
+            const data = { absen:document.getElementById('form-siswa-absen').value, nis:document.getElementById('form-siswa-nis').value, nisn:document.getElementById('form-siswa-nisn').value, nama:nm, jk:document.getElementById('form-siswa-jk').value, ortu:document.getElementById('form-siswa-ortu').value, wa:document.getElementById('form-siswa-wa').value, alamat:document.getElementById('form-siswa-alamat').value, foto:document.getElementById('form-siswa-foto-base64').value, lksQty:1 };
             if(id){ let s=db.siswa.find(x=>x.id===id); Object.assign(s, data); } else { db.siswa.push({id:'S_'+Date.now(), ...data}); } 
             saveDB(); closeModalSiswa(); renderSiswaTable(); 
         }
@@ -5484,6 +5489,158 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             reader.readAsArrayBuffer(file);
             });
         }
+
+
+        // ===== TEMPLATE SUMATIF - Download & Import =====
+        function downloadTemplateSumatif() {
+            if(!db.siswa.length) return Swal.fire('Error','Data siswa kosong. Tambahkan siswa terlebih dahulu.','error');
+            if(!db.mapel.length) return Swal.fire('Error','Data mata pelajaran kosong. Tambahkan mapel terlebih dahulu.','error');
+            loadXLSX().then(() => {
+                const kelas = db.profil?.kelas || db.raporSettings?.kelas || 'Kelas';
+                const wali = db.profil?.wali || 'Wali Kelas';
+                const sortedSiswa = [...db.siswa].sort((a,b)=>(parseInt(a.absen)||0)-(parseInt(b.absen)||0));
+
+                const wb = XLSX.utils.book_new();
+
+                db.mapel.forEach((mapel, idx) => {
+                    const sheetName = 'SUM ' + (idx + 1);
+                    const mapelNama = mapel.nama;
+                    const kelasMapel = kelas + '/' + mapelNama;
+                    const nilaiMapel = db.nilai;
+
+                    // Build worksheet data
+                    const ws_data = [
+                        ['Template Nilai Sumatif', '', '', '', '', ''],            // Row 1 - header
+                        ['Nama', '', '', 'Kelas/Mapel:', kelasMapel, ''],          // Row 2
+                        ['Materi', '', '', '', '', ''],                            // Row 3
+                        ['', '', '', '', '', ''],                                   // Row 4
+                        ['KKTP', '', '', '', '', ''],                              // Row 5
+                        ['No', 'ID Siswa', 'NIS', 'Nisn', 'Nama', 'Nilai'],       // Row 6 - headers
+                    ];
+
+                    // Add student rows
+                    sortedSiswa.forEach((s, i) => {
+                        const nilaiKey = `${s.id}_${mapel.id}`;
+                        const nilaiData = nilaiMapel[nilaiKey] || {};
+                        // For sumatif template: use STS value (Sumatif Tengah Semester)
+                        const nilaiSts = nilaiData.sts !== undefined ? nilaiData.sts : '';
+                        ws_data.push([i+1, s.id, s.nis || '', s.nisn || '', s.nama, nilaiSts]);
+                    });
+
+                    const ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+                    // Apply column widths
+                    ws['!cols'] = [
+                        {wch: 9},   // A - No
+                        {wch: 50},  // B - ID Siswa
+                        {wch: 12},  // C - NIS
+                        {wch: 16},  // D - NISN
+                        {wch: 35},  // E - Nama
+                        {wch: 10},  // F - Nilai
+                    ];
+
+                    // Merges
+                    ws['!merges'] = [
+                        {s:{r:0,c:0}, e:{r:0,c:5}},  // A1:F1 - Title
+                        {s:{r:1,c:0}, e:{r:1,c:2}},  // A2:C2 - Nama
+                        {s:{r:1,c:4}, e:{r:1,c:5}},  // E2:F2 - kelas/mapel value
+                        {s:{r:2,c:0}, e:{r:2,c:0}},  // A3:A4
+                        {s:{r:2,c:1}, e:{r:3,c:5}},  // B3:F4 - Materi area
+                    ];
+
+                    XLSX.utils.book_append_sheet(wb, ws, sheetName);
+                });
+
+                // Create filename
+                const mapelNama0 = db.mapel[0]?.nama || 'Mapel';
+                const kelasStr = (db.profil?.kelas || db.raporSettings?.kelas || 'Kelas').replace(/[/\\:*?"<>|]/g, '_');
+                const filename = `Template_Nilai_Sumatif-${kelasStr}-${mapelNama0.replace(/[/\\:*?"<>|]/g, '_')}.xlsx`;
+                XLSX.writeFile(wb, filename);
+                Swal.fire({icon:'success', title:'Template Diunduh', text:`File "${filename}" berhasil diunduh. Isi kolom Nilai lalu import kembali via tombol Import Sumatif.`, background:'#1e293b', color:'#f8fafc', confirmButtonColor:'#059669'});
+            });
+        }
+
+        // ===== IMPORT SISWA DARI TEMPLATE RDM (di menu Data Siswa) =====
+        function importSiswaDariRDM(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+            loadXLSX().then(() => {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    try {
+                        const data = new Uint8Array(event.target.result);
+                        const wb = XLSX.read(data, {type: 'array'});
+
+                        // Baca sheet pertama saja untuk ambil data siswa
+                        // Format RDM: baris 1-5 = header, baris 6 = judul kolom, baris 7+ = data siswa
+                        // Kolom: [No(A), ID_Siswa(B), NIS(C), NISN(D), Nama(E), Nilai(F)]
+                        const ws = wb.Sheets[wb.SheetNames[0]];
+                        const rows = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+
+                        let siswaBaru = 0, siswaUpdate = 0;
+                        let absenCounter = db.siswa.length + 1;
+
+                        for(let i = 6; i < rows.length; i++) {
+                            const row = rows[i];
+                            // Pastikan ada data di baris ini
+                            const noAbsen = row[0];
+                            const sId    = row[1] ? String(row[1]).trim() : '';
+                            const nis    = row[2] ? String(row[2]).trim() : '';
+                            const nisn   = row[3] ? String(row[3]).trim() : '';
+                            const nama   = row[4] ? String(row[4]).trim() : '';
+
+                            // Skip baris kosong
+                            if(!nama && !sId) continue;
+                            if(!nama) continue;
+
+                            const existing = db.siswa.find(s => s.id === sId);
+                            if(existing) {
+                                // Perbarui NIS, NISN, Nama
+                                let changed = false;
+                                if(nis && existing.nis !== nis)   { existing.nis = nis; changed = true; }
+                                if(nisn && existing.nisn !== nisn) { existing.nisn = nisn; changed = true; }
+                                if(nama && existing.nama !== nama) { existing.nama = nama; changed = true; }
+                                if(changed) siswaUpdate++;
+                            } else {
+                                // Siswa baru dari RDM
+                                db.siswa.push({
+                                    id:    sId || ('S_' + Date.now() + '_' + Math.random().toString(36).slice(2,6)),
+                                    absen: noAbsen || absenCounter++,
+                                    nis:   nis,
+                                    nisn:  nisn,
+                                    nama:  nama,
+                                    jk: 'L', foto: '', ortu: '', wa: '', alamat: '', lksQty: 1
+                                });
+                                siswaBaru++;
+                            }
+                        }
+
+                        saveDB();
+                        renderSiswaTable();
+                        document.getElementById('upload-rdm-siswa').value = '';
+
+                        let html = '';
+                        if(siswaBaru > 0)  html += `<div>✅ <b class="text-emerald-400">${siswaBaru} siswa baru</b> berhasil ditambahkan ke Data Siswa</div>`;
+                        if(siswaUpdate > 0) html += `<div>🔄 <b class="text-blue-400">${siswaUpdate} data siswa</b> diperbarui (NIS / NISN / Nama)</div>`;
+                        if(!html) html = '<div>Semua data siswa sudah sinkron, tidak ada yang berubah.</div>';
+                        html += '<div class="text-[10px] text-slate-400 mt-2">Silakan cek menu Data Siswa. Lengkapi JK, ortu, WA jika perlu.</div>';
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Import dari RDM Selesai',
+                            html,
+                            background: '#1e293b', color: '#f8fafc', confirmButtonColor: '#059669'
+                        });
+                    } catch(err) {
+                        console.error(err);
+                        Swal.fire('Error', 'Gagal membaca file. Pastikan file adalah Template Sumatif dari RDM (.xlsx).', 'error');
+                        document.getElementById('upload-rdm-siswa').value = '';
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            });
+        }
+        // ===== END IMPORT SISWA RDM =====
 
         // Mapel, Bobot, Nilai Manual
         function renderMapelTable() { const b=document.getElementById('table-mapel-body'); if(!db.mapel.length){b.innerHTML='<tr><td colspan="4" class="text-center py-4">Kosong</td></tr>'; return;} b.innerHTML=db.mapel.map((m,i)=>`<tr><td class="p-3 text-center">${i+1}</td><td class="p-3 font-bold">${m.nama}</td><td class="p-3 text-center text-amber-400 font-bold">${m.kkm}</td><td class="p-3 text-center"><button onclick="openModalMapel('${m.id}')" class="text-amber-400 mx-1"><i class="fas fa-edit"></i></button><button onclick="deleteMapel('${m.id}')" class="text-red-400 mx-1"><i class="fas fa-trash"></i></button></td></tr>`).join(''); }
@@ -7825,7 +7982,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             // Identitas siswa
             const el = (id) => document.getElementById(id);
             if(el('print-nama-siswa-id')) el('print-nama-siswa-id').textContent = s.nama;
-            if(el('print-nis-siswa-id')) el('print-nis-siswa-id').textContent = s.nis || '-';
+            if(el('print-nis-siswa-id')) el('print-nis-siswa-id').textContent = s.nis || '-'; if(el('print-nisn-siswa-id')) el('print-nisn-siswa-id').textContent = s.nisn || '-';
             if(el('print-alamat-siswa-id')) el('print-alamat-siswa-id').textContent = s.alamat || '-';
             if(el('print-kelas-id')) el('print-kelas-id').textContent = rs.kelas || '-';
             if(el('print-fase-id')) el('print-fase-id').textContent = rs.fase || '-';
@@ -8270,7 +8427,7 @@ ${htmlContent}
               + '<div class="id-wrap">'
               + '<div class="id-col"><table>'
               + '<tr><td style="width:80px;">NAMA</td><td style="width:8px;">:</td><td><b>' + s.nama + '</b></td></tr>'
-              + '<tr><td>NIS/NISN</td><td>:</td><td>' + (s.nis || '-') + '</td></tr>'
+              + '<tr><td>NIS</td><td>:</td><td>' + (s.nis || '-') + '</td></tr>' + '<tr><td>NISN</td><td>:</td><td>' + (s.nisn || '-') + '</td></tr>'
               + '<tr><td>Madrasah</td><td>:</td><td>' + namaSekolah + '</td></tr>'
               + '<tr><td style="vertical-align:top;">Alamat</td><td style="vertical-align:top;">:</td><td>' + (s.alamat || '-') + '</td></tr>'
               + '</table></div>'
@@ -14408,39 +14565,15 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             const nipWali     = (db.raporSettings && db.raporSettings.nipWali) || '';
             const ttdWali     = db.profil.ttdWali || '';
 
-            // Kumpulkan semua tanggal dalam range
-            const tglList = [];
-            const cur = new Date(startStr + 'T00:00:00');
-            const end = new Date(endStr   + 'T00:00:00');
-            while (cur <= end) {
-                tglList.push(cur.toISOString().slice(0, 10));
-                cur.setDate(cur.getDate() + 1);
-            }
-
-            if (tglList.length === 0) return Swal.fire('Info', 'Tidak ada tanggal dalam range yang dipilih.', 'info');
-
             // Siswa urut absensi
             const siswaList = [...db.siswa].sort((a, b) => (parseInt(a.absen) || 0) - (parseInt(b.absen) || 0));
             if (siswaList.length === 0) return Swal.fire('Info', 'Belum ada data siswa.', 'info');
 
-            // Cek apakah ada absensi sama sekali
-            const adaData = tglList.some(t => db.absensi[t] && Object.keys(db.absensi[t]).length > 0);
-
-            // Mode: jika bulan tunggal → tampilkan kolom tanggal saja (1..31)
-            // Jika range panjang (semester/minggu multi-bulan) → tetap tampilkan tanggal lengkap
-            const isBulanTunggal = (function() {
-                const s = new Date(startStr + 'T00:00:00');
-                const e = new Date(endStr   + 'T00:00:00');
-                return s.getFullYear() === e.getFullYear() && s.getMonth() === e.getMonth();
-            })();
-
-            // Untuk mode bulan: kolom header = nomor tanggal saja
-            // Untuk range panjang: kolom header = dd/mm
-            const BULAN_ID = ['Januari','Februari','Maret','April','Mei','Juni',
-                              'Juli','Agustus','September','Oktober','November','Desember'];
+            const BULAN_ID  = ['Januari','Februari','Maret','April','Mei','Juni',
+                               'Juli','Agustus','September','Oktober','November','Desember'];
             const HARI_MINI = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
 
-            // Warna tiap status (untuk HTML cetak)
+            // Warna tiap status
             function statusStyle(kode) {
                 if (kode === 'H') return 'color:#15803d;font-weight:900;';
                 if (kode === 'S') return 'color:#b45309;font-weight:900;';
@@ -14449,133 +14582,263 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
                 return 'color:#94a3b8;';
             }
 
-            // Buat header kolom tanggal
-            let thDates = '';
-            tglList.forEach(tgl => {
-                const d  = new Date(tgl + 'T00:00:00');
-                const dd = d.getDate();
-                const hr = HARI_MINI[d.getDay()];
-                const isMggu = d.getDay() === 0;
-                const bgH = isMggu ? 'background:#fee2e2;' : 'background:#f0fdf4;';
-                const clH = isMggu ? 'color:#dc2626;' : 'color:#047857;';
-                if (isBulanTunggal) {
-                    thDates += `<th style="padding:3px 2px;border:1px solid #d1d5db;text-align:center;width:22px;font-size:9px;${bgH}${clH}">${dd}<br><span style="font-size:7px;font-weight:400;">${hr}</span></th>`;
-                } else {
-                    const mm = String(d.getMonth()+1).padStart(2,'0');
-                    thDates += `<th style="padding:3px 2px;border:1px solid #d1d5db;text-align:center;width:26px;font-size:8px;${bgH}${clH}">${dd}/${mm}<br><span style="font-size:7px;font-weight:400;">${hr}</span></th>`;
-                }
-            });
+            // -------------------------------------------------------
+            // Kelompokkan tanggal per bulan
+            // -------------------------------------------------------
+            const bulanMap = {}; // key: "YYYY-MM", value: [tgl, ...]
+            const cur = new Date(startStr + 'T00:00:00');
+            const end = new Date(endStr   + 'T00:00:00');
+            while (cur <= end) {
+                const tgl = cur.toISOString().slice(0, 10);
+                const key = tgl.slice(0, 7); // "YYYY-MM"
+                if (!bulanMap[key]) bulanMap[key] = [];
+                bulanMap[key].push(tgl);
+                cur.setDate(cur.getDate() + 1);
+            }
 
-            // Buat baris siswa
-            let rows = '';
-            let totH = 0, totS = 0, totI = 0, totA = 0;
-            siswaList.forEach((s, idx) => {
-                let H = 0, S = 0, I = 0, A = 0;
-                let cells = '';
-                tglList.forEach(tgl => {
-                    const rec = db.absensi[tgl] && db.absensi[tgl][s.id];
-                    const d   = new Date(tgl + 'T00:00:00');
-                    const isMggu = d.getDay() === 0;
-                    let kode = '·';
-                    let st = '';
-                    if (rec) {
-                        st = rec.status || 'Hadir';
-                        if (st === 'Hadir') { kode = 'H'; H++; }
-                        else if (st === 'Sakit') { kode = 'S'; S++; }
-                        else if (st === 'Izin')  { kode = 'I'; I++; }
-                        else if (st === 'Alfa')  { kode = 'A'; A++; }
-                    }
-                    const bgCell = isMggu ? 'background:#fff1f2;' : (idx % 2 === 0 ? '' : 'background:#f9fafb;');
-                    cells += `<td style="padding:2px;border:1px solid #e5e7eb;text-align:center;font-size:10px;${bgCell}${statusStyle(kode)}">${kode}</td>`;
-                });
-                totH += H; totS += S; totI += I; totA += A;
-                const total  = H + S + I + A;
-                const pct    = total > 0 ? Math.round((H / total) * 100) : 0;
-                const pctClr = pct >= 80 ? '#15803d' : pct >= 60 ? '#b45309' : '#dc2626';
-                const bgRow  = idx % 2 === 0 ? '#ffffff' : '#f9fafb';
-                rows += `<tr style="background:${bgRow};">
-                    <td style="padding:3px 5px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:700;">${s.absen || (idx+1)}</td>
-                    <td style="padding:3px 6px;border:1px solid #d1d5db;font-size:10px;font-weight:600;white-space:nowrap;">${s.nama}</td>
-                    ${cells}
-                    <td style="padding:3px 4px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#15803d;">${H}</td>
-                    <td style="padding:3px 4px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#b45309;">${S}</td>
-                    <td style="padding:3px 4px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#1d4ed8;">${I}</td>
-                    <td style="padding:3px 4px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#dc2626;">${A}</td>
-                    <td style="padding:3px 4px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:${pctClr};">${pct}%</td>
-                </tr>`;
-            });
-
-            // Baris total bawah
-            rows += `<tr style="background:#f0fdf4;border-top:2px solid #16a34a;">
-                <td colspan="2" style="padding:4px 6px;border:1px solid #d1d5db;font-size:10px;font-weight:900;text-align:center;">TOTAL</td>
-                ${tglList.map(() => `<td style="padding:3px 2px;border:1px solid #e5e7eb;"></td>`).join('')}
-                <td style="padding:3px 4px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#15803d;">${totH}</td>
-                <td style="padding:3px 4px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#b45309;">${totS}</td>
-                <td style="padding:3px 4px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#1d4ed8;">${totI}</td>
-                <td style="padding:3px 4px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#dc2626;">${totA}</td>
-                <td style="padding:3px 4px;border:1px solid #d1d5db;"></td>
-            </tr>`;
+            const bulanKeys = Object.keys(bulanMap).sort();
+            if (bulanKeys.length === 0) return Swal.fire('Info', 'Tidak ada tanggal dalam range yang dipilih.', 'info');
 
             const now      = new Date();
             const tglCetak = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
-            const isLandscape = tglList.length > 20;
 
-            const htmlContent = `
-            <div style="font-family:'Times New Roman',Georgia,serif;font-size:11px;color:#111;">
-                <!-- KOP -->
-                <div style="text-align:center;border-bottom:3px double #15803d;padding-bottom:10px;margin-bottom:14px;">
-                    <h2 style="font-size:15px;font-weight:900;text-transform:uppercase;margin:0 0 2px;">${namaSekolah}</h2>
-                    <h3 style="font-size:14px;font-weight:700;margin:0 0 2px;">REKAPITULASI ABSENSI SISWA</h3>
-                    <p style="font-size:11px;margin:2px 0;"><strong>${label}</strong></p>
-                    <p style="font-size:11px;margin:2px 0;">Kelas: <strong>${kelas}</strong> &nbsp;|&nbsp; Wali Kelas: <strong>${wali}</strong></p>
-                    <p style="font-size:10px;color:#555;margin-top:3px;">Dicetak: ${tglCetak}</p>
-                </div>
+            // Ambil semester dari label (untuk heading)
+            // Cek apakah range multi-bulan atau tunggal
+            const isMultiBulan = bulanKeys.length > 1;
 
-                <!-- TABEL HARIAN -->
-                <div style="overflow-x:auto;">
-                <table style="border-collapse:collapse;width:100%;font-size:10px;">
-                    <thead>
-                        <tr style="background:#dcfce7;border-bottom:2px solid #16a34a;">
-                            <th style="padding:4px 5px;border:1px solid #d1d5db;text-align:center;width:28px;font-size:10px;">No</th>
-                            <th style="padding:4px 6px;border:1px solid #d1d5db;text-align:left;font-size:10px;">Nama Siswa</th>
-                            ${thDates}
-                            <th style="padding:4px 3px;border:1px solid #d1d5db;text-align:center;width:24px;font-size:9px;color:#15803d;">H</th>
-                            <th style="padding:4px 3px;border:1px solid #d1d5db;text-align:center;width:24px;font-size:9px;color:#b45309;">S</th>
-                            <th style="padding:4px 3px;border:1px solid #d1d5db;text-align:center;width:24px;font-size:9px;color:#1d4ed8;">I</th>
-                            <th style="padding:4px 3px;border:1px solid #d1d5db;text-align:center;width:24px;font-size:9px;color:#dc2626;">A</th>
-                            <th style="padding:4px 3px;border:1px solid #d1d5db;text-align:center;width:32px;font-size:9px;">%</th>
-                        </tr>
-                    </thead>
-                    <tbody>${rows}</tbody>
-                </table>
-                </div>
+            // -------------------------------------------------------
+            // Bangun HTML setiap halaman (1 halaman = 1 bulan)
+            // -------------------------------------------------------
+            let allPages = '';
 
-                <!-- KETERANGAN + TTD -->
-                <div style="margin-top:20px;display:flex;justify-content:space-between;align-items:flex-end;font-size:10px;flex-wrap:wrap;gap:12px;">
+            // Untuk rekapitulasi akumulasi akhir (jika multi bulan)
+            const rekapSemester = {}; // siswaId → { H, S, I, A }
+            siswaList.forEach(s => { rekapSemester[s.id] = { H:0, S:0, I:0, A:0 }; });
+
+            bulanKeys.forEach((bKey, pageIdx) => {
+                const tglList  = bulanMap[bKey];
+                const [yr, mo] = bKey.split('-').map(Number);
+                const namaBulan = BULAN_ID[mo - 1] + ' ' + yr;
+
+                // Header kolom tanggal
+                let thDates = '';
+                tglList.forEach(tgl => {
+                    const d      = new Date(tgl + 'T00:00:00');
+                    const dd     = d.getDate();
+                    const hr     = HARI_MINI[d.getDay()];
+                    const isMggu = d.getDay() === 0;
+                    const bgH    = isMggu ? 'background:#fee2e2;' : 'background:#f0fdf4;';
+                    const clH    = isMggu ? 'color:#dc2626;' : 'color:#047857;';
+                    thDates += `<th style="padding:3px 1px;border:1px solid #d1d5db;text-align:center;width:20px;font-size:8.5px;${bgH}${clH}">${dd}<br><span style="font-size:6.5px;font-weight:400;">${hr}</span></th>`;
+                });
+
+                // Baris siswa
+                let rows = '';
+                let totH = 0, totS = 0, totI = 0, totA = 0;
+                siswaList.forEach((s, idx) => {
+                    let H = 0, S = 0, I = 0, A = 0;
+                    let cells = '';
+                    tglList.forEach(tgl => {
+                        const rec    = db.absensi[tgl] && db.absensi[tgl][s.id];
+                        const d      = new Date(tgl + 'T00:00:00');
+                        const isMggu = d.getDay() === 0;
+                        let kode = '·';
+                        if (rec) {
+                            const st = rec.status || 'Hadir';
+                            if (st === 'Hadir') { kode = 'H'; H++; }
+                            else if (st === 'Sakit') { kode = 'S'; S++; }
+                            else if (st === 'Izin')  { kode = 'I'; I++; }
+                            else if (st === 'Alfa')  { kode = 'A'; A++; }
+                        }
+                        const bgCell = isMggu ? 'background:#fff1f2;' : (idx % 2 === 0 ? '' : 'background:#f9fafb;');
+                        cells += `<td style="padding:1px;border:1px solid #e5e7eb;text-align:center;font-size:9px;${bgCell}${statusStyle(kode)}">${kode}</td>`;
+                    });
+
+                    // Akumulasi ke semester
+                    rekapSemester[s.id].H += H;
+                    rekapSemester[s.id].S += S;
+                    rekapSemester[s.id].I += I;
+                    rekapSemester[s.id].A += A;
+
+                    totH += H; totS += S; totI += I; totA += A;
+                    const total  = H + S + I + A;
+                    const pct    = total > 0 ? Math.round((H / total) * 100) : 0;
+                    const pctClr = pct >= 80 ? '#15803d' : pct >= 60 ? '#b45309' : '#dc2626';
+                    const bgRow  = idx % 2 === 0 ? '#ffffff' : '#f9fafb';
+                    rows += `<tr style="background:${bgRow};">
+                        <td style="padding:2px 4px;border:1px solid #d1d5db;text-align:center;font-size:9px;font-weight:700;">${s.absen || (idx+1)}</td>
+                        <td style="padding:2px 5px;border:1px solid #d1d5db;font-size:9px;font-weight:600;white-space:nowrap;">${s.nama}</td>
+                        ${cells}
+                        <td style="padding:2px 3px;border:1px solid #d1d5db;text-align:center;font-size:9px;font-weight:900;color:#15803d;">${H}</td>
+                        <td style="padding:2px 3px;border:1px solid #d1d5db;text-align:center;font-size:9px;font-weight:900;color:#b45309;">${S}</td>
+                        <td style="padding:2px 3px;border:1px solid #d1d5db;text-align:center;font-size:9px;font-weight:900;color:#1d4ed8;">${I}</td>
+                        <td style="padding:2px 3px;border:1px solid #d1d5db;text-align:center;font-size:9px;font-weight:900;color:#dc2626;">${A}</td>
+                        <td style="padding:2px 3px;border:1px solid #d1d5db;text-align:center;font-size:9px;font-weight:900;color:${pctClr};">${pct}%</td>
+                    </tr>`;
+                });
+
+                // Baris total bawah
+                rows += `<tr style="background:#f0fdf4;border-top:2px solid #16a34a;">
+                    <td colspan="2" style="padding:3px 5px;border:1px solid #d1d5db;font-size:9px;font-weight:900;text-align:center;color:#065f46;">TOTAL</td>
+                    ${tglList.map(() => `<td style="padding:2px 1px;border:1px solid #e5e7eb;"></td>`).join('')}
+                    <td style="padding:2px 3px;border:1px solid #d1d5db;text-align:center;font-size:9px;font-weight:900;color:#15803d;">${totH}</td>
+                    <td style="padding:2px 3px;border:1px solid #d1d5db;text-align:center;font-size:9px;font-weight:900;color:#b45309;">${totS}</td>
+                    <td style="padding:2px 3px;border:1px solid #d1d5db;text-align:center;font-size:9px;font-weight:900;color:#1d4ed8;">${totI}</td>
+                    <td style="padding:2px 3px;border:1px solid #d1d5db;text-align:center;font-size:9px;font-weight:900;color:#dc2626;">${totA}</td>
+                    <td style="padding:2px 3px;border:1px solid #d1d5db;"></td>
+                </tr>`;
+
+                const isLastPage = !isMultiBulan || (pageIdx === bulanKeys.length - 1);
+
+                // Keterangan + TTD (hanya di halaman terakhir untuk multi-bulan, selalu tampil untuk bulan tunggal)
+                const keteranganTTD = (isLastPage || !isMultiBulan) ? `
+                <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:flex-end;font-size:9px;flex-wrap:wrap;gap:10px;">
                     <div>
-                        <p style="margin:0 0 4px;font-weight:700;">Keterangan:</p>
-                        <table style="border:none;font-size:10px;">
-                            <tr><td style="border:none;padding:1px 8px 1px 0;font-weight:900;color:#15803d;">H</td><td style="border:none;padding:1px 0;">=&nbsp;Hadir</td></tr>
-                            <tr><td style="border:none;padding:1px 8px 1px 0;font-weight:900;color:#b45309;">S</td><td style="border:none;padding:1px 0;">=&nbsp;Sakit</td></tr>
-                            <tr><td style="border:none;padding:1px 8px 1px 0;font-weight:900;color:#1d4ed8;">I</td><td style="border:none;padding:1px 0;">=&nbsp;Izin</td></tr>
-                            <tr><td style="border:none;padding:1px 8px 1px 0;font-weight:900;color:#dc2626;">A</td><td style="border:none;padding:1px 0;">=&nbsp;Alfa (Tanpa Keterangan)</td></tr>
-                            <tr><td style="border:none;padding:1px 8px 1px 0;color:#94a3b8;">·</td><td style="border:none;padding:1px 0;">=&nbsp;Tidak ada data / Libur</td></tr>
+                        <p style="margin:0 0 3px;font-weight:700;font-size:9px;">Keterangan:</p>
+                        <table style="border:none;font-size:9px;">
+                            <tr><td style="border:none;padding:1px 6px 1px 0;font-weight:900;color:#15803d;">H</td><td style="border:none;padding:1px 0;">=&nbsp;Hadir</td></tr>
+                            <tr><td style="border:none;padding:1px 6px 1px 0;font-weight:900;color:#b45309;">S</td><td style="border:none;padding:1px 0;">=&nbsp;Sakit</td></tr>
+                            <tr><td style="border:none;padding:1px 6px 1px 0;font-weight:900;color:#1d4ed8;">I</td><td style="border:none;padding:1px 0;">=&nbsp;Izin</td></tr>
+                            <tr><td style="border:none;padding:1px 6px 1px 0;font-weight:900;color:#dc2626;">A</td><td style="border:none;padding:1px 0;">=&nbsp;Alfa (Tanpa Keterangan)</td></tr>
+                            <tr><td style="border:none;padding:1px 6px 1px 0;color:#94a3b8;">·</td><td style="border:none;padding:1px 0;">=&nbsp;Tidak ada data / Libur</td></tr>
                         </table>
                     </div>
                     <div style="text-align:center;">
-                        <p style="margin:0 0 2px;">Mengetahui,</p>
-                        <p style="margin:0 0 4px;">Wali Kelas</p>
-                        <div style="width:160px;height:70px;margin:0 auto 2px;">
+                        <p style="margin:0 0 2px;font-size:9px;">Mengetahui,</p>
+                        <p style="margin:0 0 3px;font-size:9px;">Wali Kelas</p>
+                        <div style="width:140px;height:60px;margin:0 auto 2px;">
                             ${ttdWali
-                                ? `<img src="${ttdWali}" style="max-width:160px;max-height:70px;object-fit:contain;display:block;margin:0 auto;" />`
-                                : `<div style="width:160px;height:70px;"></div>`}
+                                ? `<img src="${ttdWali}" style="max-width:140px;max-height:60px;object-fit:contain;display:block;margin:0 auto;" />`
+                                : `<div style="width:140px;height:60px;"></div>`}
                         </div>
-                        <div style="border-top:1.5px solid #374151;width:160px;margin:0 auto 3px;"></div>
-                        <p style="margin:0;font-weight:700;text-decoration:underline;">${wali}</p>
-                        ${nipWali ? `<p style="margin:2px 0 0;font-size:9px;color:#555;">NIP. ${nipWali}</p>` : ''}
+                        <div style="border-top:1.5px solid #374151;width:140px;margin:0 auto 2px;"></div>
+                        <p style="margin:0;font-weight:700;text-decoration:underline;font-size:9px;">${wali}</p>
+                        ${nipWali ? `<p style="margin:2px 0 0;font-size:8px;color:#555;">NIP. ${nipWali}</p>` : ''}
                     </div>
-                </div>
-            </div>`;
+                </div>` : `
+                <div style="margin-top:10px;font-size:8px;color:#94a3b8;text-align:right;">
+                    (Bersambung ke bulan berikutnya...)
+                </div>`;
+
+                // Nomor halaman
+                const noHal = isMultiBulan ? `<p style="font-size:8px;color:#6b7280;text-align:right;margin:2px 0 0;">Halaman ${pageIdx+1} dari ${bulanKeys.length}${isMultiBulan ? ' | ' + label : ''}</p>` : '';
+
+                // Satu blok halaman
+                allPages += `
+                <div class="page-block">
+                    <!-- KOP -->
+                    <div style="text-align:center;border-bottom:3px double #15803d;padding-bottom:8px;margin-bottom:10px;">
+                        <h2 style="font-size:14px;font-weight:900;text-transform:uppercase;margin:0 0 1px;">${namaSekolah}</h2>
+                        <h3 style="font-size:13px;font-weight:700;margin:0 0 2px;">REKAPITULASI ABSENSI SISWA</h3>
+                        <p style="font-size:10px;margin:1px 0;"><strong>Bulan ${namaBulan}</strong></p>
+                        <p style="font-size:10px;margin:1px 0;">Kelas: <strong>${kelas}</strong> &nbsp;|&nbsp; Wali Kelas: <strong>${wali}</strong></p>
+                        <p style="font-size:9px;color:#555;margin-top:2px;">Dicetak: ${tglCetak}</p>
+                    </div>
+
+                    <!-- TABEL HARIAN -->
+                    <table style="border-collapse:collapse;width:100%;font-size:9px;table-layout:auto;">
+                        <thead>
+                            <tr style="background:#dcfce7;border-bottom:2px solid #16a34a;">
+                                <th style="padding:3px 4px;border:1px solid #d1d5db;text-align:center;font-size:9px;white-space:nowrap;">No</th>
+                                <th style="padding:3px 5px;border:1px solid #d1d5db;text-align:left;font-size:9px;min-width:90px;">Nama Siswa</th>
+                                ${thDates}
+                                <th style="padding:3px 2px;border:1px solid #d1d5db;text-align:center;width:22px;font-size:8px;color:#15803d;">H</th>
+                                <th style="padding:3px 2px;border:1px solid #d1d5db;text-align:center;width:22px;font-size:8px;color:#b45309;">S</th>
+                                <th style="padding:3px 2px;border:1px solid #d1d5db;text-align:center;width:22px;font-size:8px;color:#1d4ed8;">I</th>
+                                <th style="padding:3px 2px;border:1px solid #d1d5db;text-align:center;width:22px;font-size:8px;color:#dc2626;">A</th>
+                                <th style="padding:3px 2px;border:1px solid #d1d5db;text-align:center;width:28px;font-size:8px;">%</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+
+                    ${keteranganTTD}
+                    ${noHal}
+                </div>`;
+            });
+
+            // -------------------------------------------------------
+            // Halaman REKAP SEMESTER (hanya jika multi-bulan)
+            // -------------------------------------------------------
+            if (isMultiBulan) {
+                let rekapRows = '';
+                let rH = 0, rS = 0, rI = 0, rA = 0;
+                siswaList.forEach((s, idx) => {
+                    const r   = rekapSemester[s.id];
+                    const tot = r.H + r.S + r.I + r.A;
+                    const pct = tot > 0 ? Math.round((r.H / tot) * 100) : 0;
+                    const pctClr = pct >= 80 ? '#15803d' : pct >= 60 ? '#b45309' : '#dc2626';
+                    rH += r.H; rS += r.S; rI += r.I; rA += r.A;
+                    const bgRow = idx % 2 === 0 ? '#ffffff' : '#f9fafb';
+                    rekapRows += `<tr style="background:${bgRow};">
+                        <td style="padding:4px 5px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:700;">${s.absen || (idx+1)}</td>
+                        <td style="padding:4px 6px;border:1px solid #d1d5db;font-size:10px;font-weight:600;">${s.nama}</td>
+                        <td style="padding:4px 5px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#15803d;">${r.H}</td>
+                        <td style="padding:4px 5px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#b45309;">${r.S}</td>
+                        <td style="padding:4px 5px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#1d4ed8;">${r.I}</td>
+                        <td style="padding:4px 5px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#dc2626;">${r.A}</td>
+                        <td style="padding:4px 5px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:${pctClr};">${pct}%</td>
+                    </tr>`;
+                });
+                rekapRows += `<tr style="background:#f0fdf4;border-top:2px solid #16a34a;">
+                    <td colspan="2" style="padding:4px 6px;border:1px solid #d1d5db;font-size:10px;font-weight:900;text-align:center;color:#065f46;">TOTAL SEMESTER</td>
+                    <td style="padding:4px 5px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#15803d;">${rH}</td>
+                    <td style="padding:4px 5px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#b45309;">${rS}</td>
+                    <td style="padding:4px 5px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#1d4ed8;">${rI}</td>
+                    <td style="padding:4px 5px;border:1px solid #d1d5db;text-align:center;font-size:10px;font-weight:900;color:#dc2626;">${rA}</td>
+                    <td style="padding:4px 5px;border:1px solid #d1d5db;"></td>
+                </tr>`;
+
+                allPages += `
+                <div class="page-block">
+                    <div style="text-align:center;border-bottom:3px double #15803d;padding-bottom:8px;margin-bottom:10px;">
+                        <h2 style="font-size:14px;font-weight:900;text-transform:uppercase;margin:0 0 1px;">${namaSekolah}</h2>
+                        <h3 style="font-size:13px;font-weight:700;margin:0 0 2px;">REKAPITULASI ABSENSI SISWA</h3>
+                        <p style="font-size:10px;margin:1px 0;"><strong>${label}</strong></p>
+                        <p style="font-size:10px;margin:1px 0;">Kelas: <strong>${kelas}</strong> &nbsp;|&nbsp; Wali Kelas: <strong>${wali}</strong></p>
+                        <p style="font-size:9px;color:#555;margin-top:2px;">Dicetak: ${tglCetak}</p>
+                    </div>
+                    <p style="font-size:11px;font-weight:700;margin:0 0 8px;color:#065f46;border-left:4px solid #16a34a;padding-left:8px;">REKAP TOTAL SEMESTER</p>
+                    <table style="border-collapse:collapse;width:60%;min-width:340px;font-size:10px;">
+                        <thead>
+                            <tr style="background:#dcfce7;border-bottom:2px solid #16a34a;">
+                                <th style="padding:5px 5px;border:1px solid #d1d5db;text-align:center;font-size:10px;">No</th>
+                                <th style="padding:5px 6px;border:1px solid #d1d5db;text-align:left;font-size:10px;min-width:120px;">Nama Siswa</th>
+                                <th style="padding:5px 5px;border:1px solid #d1d5db;text-align:center;font-size:10px;color:#15803d;">Hadir</th>
+                                <th style="padding:5px 5px;border:1px solid #d1d5db;text-align:center;font-size:10px;color:#b45309;">Sakit</th>
+                                <th style="padding:5px 5px;border:1px solid #d1d5db;text-align:center;font-size:10px;color:#1d4ed8;">Izin</th>
+                                <th style="padding:5px 5px;border:1px solid #d1d5db;text-align:center;font-size:10px;color:#dc2626;">Alfa</th>
+                                <th style="padding:5px 5px;border:1px solid #d1d5db;text-align:center;font-size:10px;">%</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rekapRows}</tbody>
+                    </table>
+                    <div style="margin-top:20px;display:flex;justify-content:space-between;align-items:flex-end;font-size:9px;flex-wrap:wrap;gap:10px;">
+                        <div>
+                            <p style="margin:0 0 3px;font-weight:700;font-size:9px;">Keterangan:</p>
+                            <table style="border:none;font-size:9px;">
+                                <tr><td style="border:none;padding:1px 6px 1px 0;font-weight:900;color:#15803d;">H</td><td style="border:none;padding:1px 0;">=&nbsp;Hadir</td></tr>
+                                <tr><td style="border:none;padding:1px 6px 1px 0;font-weight:900;color:#b45309;">S</td><td style="border:none;padding:1px 0;">=&nbsp;Sakit</td></tr>
+                                <tr><td style="border:none;padding:1px 6px 1px 0;font-weight:900;color:#1d4ed8;">I</td><td style="border:none;padding:1px 0;">=&nbsp;Izin</td></tr>
+                                <tr><td style="border:none;padding:1px 6px 1px 0;font-weight:900;color:#dc2626;">A</td><td style="border:none;padding:1px 0;">=&nbsp;Alfa (Tanpa Keterangan)</td></tr>
+                            </table>
+                        </div>
+                        <div style="text-align:center;">
+                            <p style="margin:0 0 2px;font-size:9px;">Mengetahui,</p>
+                            <p style="margin:0 0 3px;font-size:9px;">Wali Kelas</p>
+                            <div style="width:140px;height:60px;margin:0 auto 2px;">
+                                ${ttdWali
+                                    ? `<img src="${ttdWali}" style="max-width:140px;max-height:60px;object-fit:contain;display:block;margin:0 auto;" />`
+                                    : `<div style="width:140px;height:60px;"></div>`}
+                            </div>
+                            <div style="border-top:1.5px solid #374151;width:140px;margin:0 auto 2px;"></div>
+                            <p style="margin:0;font-weight:700;text-decoration:underline;font-size:9px;">${wali}</p>
+                            ${nipWali ? `<p style="margin:2px 0 0;font-size:8px;color:#555;">NIP. ${nipWali}</p>` : ''}
+                        </div>
+                    </div>
+                    <p style="font-size:8px;color:#6b7280;text-align:right;margin:4px 0 0;">Halaman ${bulanKeys.length + 1} dari ${bulanKeys.length + 1} | ${label}</p>
+                </div>`;
+            }
 
             const printWin = window.open('', '_blank', 'width=1100,height=750');
             if (!printWin) return Swal.fire('Peringatan', 'Popup diblokir browser. Izinkan popup untuk mencetak.', 'warning');
@@ -14585,14 +14848,16 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
 <meta charset="UTF-8">
 <title>Rekap Absensi Harian - ${label}</title>
 <style>
-  @page { size: ${isLandscape ? 'A4 landscape' : 'A4 portrait'}; margin: 10mm 8mm 12mm 12mm; }
+  @page { size: A4 landscape; margin: 10mm 8mm 12mm 10mm; }
   * { box-sizing: border-box; }
   body { font-family: 'Times New Roman', Georgia, serif; font-size: 10px; color: #111; background: #fff; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   table { border-collapse: collapse; }
+  .page-block { page-break-after: always; }
+  .page-block:last-child { page-break-after: avoid; }
   @media print { body { margin: 0; } }
 </style>
 </head>
-<body>${htmlContent}
+<body>${allPages}
 <script>
 document.fonts.ready.then(function() { setTimeout(function() { window.print(); }, 400); });
 <\/script>
@@ -14601,7 +14866,7 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             printWin.document.close();
         }
         // ============================================================
-        // END CETAK PDF HARIAN
+        // END CETAK PDF HARIAN (1 BULAN PER HALAMAN)
         // ============================================================
 
         function exportRekapAbsensiCSV() {
