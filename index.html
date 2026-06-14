@@ -3561,18 +3561,29 @@
                     </span>
                 </div>
             </div>
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-center flex-wrap gap-2">
                 <p class="text-[10px] text-slate-500">Nilai 0–100. Status "Sudah" = tugas dikumpulkan & dinilai.</p>
-                <button onclick="katrolNilaiTugasMinKKM()" class="bg-amber-600/20 border border-amber-600/40 text-amber-300 hover:bg-amber-600 hover:text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
-                    <i class="fas fa-magic"></i> Katrol Nilai Kasih Sayang
-                </button>
+                <div class="flex gap-2 flex-wrap">
+                    <button id="btn-mode-ranking" onclick="toggleModeRanking()" class="bg-purple-600/20 border border-purple-600/40 text-purple-300 hover:bg-purple-600 hover:text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                        <i class="fas fa-sort-numeric-down"></i> Tandai Ranking Manual
+                    </button>
+                    <button id="btn-template-ranking" onclick="pakaiTemplateRanking()" class="hidden bg-indigo-600/20 border border-indigo-600/40 text-indigo-300 hover:bg-indigo-600 hover:text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                        <i class="fas fa-copy"></i> Pakai Urutan Ranking Sebelumnya
+                    </button>
+                    <button onclick="katrolNilaiTugasMinKKM()" class="bg-amber-600/20 border border-amber-600/40 text-amber-300 hover:bg-amber-600 hover:text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
+                        <i class="fas fa-magic"></i> Katrol Nilai Kasih Sayang
+                    </button>
+                </div>
             </div>
+            <!-- Progress bar ranking -->
+            <div id="ranking-progress-info" class="hidden bg-purple-900/20 border border-purple-800/30 rounded-lg px-3 py-2"></div>
             <div class="flex-1 overflow-y-auto border border-slate-800 rounded">
                 <table class="w-full text-left text-xs">
                     <thead class="bg-slate-950 border-b border-slate-800 sticky top-0">
                         <tr>
                             <th class="p-2 w-12 text-center text-slate-400">Abs</th>
                             <th class="p-2 text-slate-400">Nama Siswa</th>
+                            <th class="p-2 w-16 text-center text-purple-400">Rank</th>
                             <th class="p-2 w-32 text-center text-slate-400">Status</th>
                             <th class="p-2 w-28 text-slate-400">Nilai</th>
                             <th class="p-2 w-16 text-center text-slate-400">KTTP</th>
@@ -6203,17 +6214,36 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             else { tpInfo.classList.add('hidden'); }
 
             const kkm = mapel ? (parseFloat(mapel.kkm) || 75) : 75;
+            // Reset ranking state saat modal dibuka ulang
+            rankingState.active = false;
+            rankingState.order = [];
+            const btnRank = document.getElementById('btn-mode-ranking');
+            if (btnRank) {
+                btnRank.className = 'bg-purple-600/20 border border-purple-600/40 text-purple-300 hover:bg-purple-600 hover:text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition flex items-center gap-1.5';
+                btnRank.innerHTML = '<i class="fas fa-sort-numeric-down"></i> Tandai Ranking Manual';
+            }
+            const progEl = document.getElementById('ranking-progress-info');
+            if (progEl) progEl.classList.add('hidden');
+
+            // Tampilkan tombol "Pakai Urutan Ranking Sebelumnya" kalau ada template tersimpan
+            const btnTpl = document.getElementById('btn-template-ranking');
+            if (btnTpl) {
+                const tpl = getRankingTemplate();
+                btnTpl.classList.toggle('hidden', !(tpl && tpl.length));
+            }
+
             const b = document.getElementById('table-modal-tugas-body');
             b.innerHTML = db.siswa.map(s => {
                 const nt = db.nilaiTugas[`${s.id}_${id}`] || { status: 'Belum', nilai: '' };
                 const v = parseFloat(nt.nilai) || 0;
                 const pred = v > 0 ? getKTTPPredikat(v) : null;
                 const predHtml = pred ? `<span class="text-[9px] font-bold ${pred.color}">${pred.label}</span>` : '<span class="text-slate-600 text-[9px]">—</span>';
-                return `<tr>
+                return `<tr id="row-siswa-${s.id}" onclick="handleSiswaRankingClick('${s.id}')" style="transition:background 0.15s">
                     <td class="p-2 text-center text-slate-400">${s.absen}</td>
                     <td class="p-2 font-bold text-slate-100">${s.nama}</td>
+                    <td class="p-2 text-center" id="rank-badge-${s.id}"></td>
                     <td class="p-2">
-                        <select id="st-${s.id}" onchange="tglTgs('${s.id}','${id}')" class="bg-slate-950 border border-slate-700 rounded text-xs p-1 w-full outline-none focus:border-emerald-500">
+                        <select id="st-${s.id}" onchange="tglTgs('${s.id}','${id}')" onclick="event.stopPropagation()" class="bg-slate-950 border border-slate-700 rounded text-xs p-1 w-full outline-none focus:border-emerald-500">
                             <option value="Sudah" ${nt.status === 'Sudah' ? 'selected' : ''}>✅ Sudah</option>
                             <option value="Belum" ${nt.status === 'Belum' ? 'selected' : ''}>⏳ Belum</option>
                         </select>
@@ -6221,6 +6251,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                     <td class="p-2">
                         <input type="number" id="nl-${s.id}" min="0" max="100" value="${nt.nilai || ''}" ${nt.status === 'Belum' ? 'disabled' : ''}
                             oninput="updateKTTPBadge('${s.id}', '${id}', this.value)"
+                            onclick="event.stopPropagation()"
                             class="w-full bg-slate-950 border border-slate-700 rounded p-1 text-center font-bold outline-none focus:border-emerald-500 disabled:opacity-40">
                     </td>
                     <td class="p-2 text-center" id="kttp-badge-${s.id}">${predHtml}</td>
@@ -6246,6 +6277,463 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                 badge.innerHTML = '<span class="text-slate-600 text-[9px]">—</span>';
             }
         }
+
+        // ============================================================
+        // RANKING MANUAL → NILAI OTOMATIS
+        // Alur: guru klik siswa satu-satu = urutan ranking
+        //       lalu sistem kasih nilai acak tapi tetap urut
+        // ============================================================
+
+        // State ranking manual
+        const rankingState = {
+            order: [],      // array siswaId sesuai urutan klik (index 0 = rank 1)
+            active: false,  // apakah mode ranking sedang aktif
+        };
+
+        function toggleModeRanking() {
+            rankingState.active = !rankingState.active;
+            rankingState.order = [];
+            const btn = document.getElementById('btn-mode-ranking');
+            if (rankingState.active) {
+                btn.className = 'bg-purple-600 border border-purple-500 text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition flex items-center gap-1.5';
+                btn.innerHTML = '<i class="fas fa-times-circle"></i> Batalkan Mode Ranking';
+                Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Mode Ranking Aktif', html: 'Klik nama siswa sesuai urutan rank 1, 2, 3... dst', showConfirmButton: false, timer: 3000, background: '#1e293b', color: '#f8fafc' });
+            } else {
+                btn.className = 'bg-purple-600/20 border border-purple-600/40 text-purple-300 hover:bg-purple-600 hover:text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition flex items-center gap-1.5';
+                btn.innerHTML = '<i class="fas fa-sort-numeric-down"></i> Tandai Ranking Manual';
+            }
+            renderRankingBadges();
+            updateRankingProgress();
+        }
+
+        function handleSiswaRankingClick(sId) {
+            if (!rankingState.active) return;
+            const idx = rankingState.order.indexOf(sId);
+            if (idx !== -1) {
+                // Sudah ditandai → cabut dan semua setelahnya ikut geser
+                rankingState.order.splice(idx, 1);
+            } else {
+                // Belum ditandai → tambahkan di akhir antrian
+                rankingState.order.push(sId);
+            }
+            renderRankingBadges();
+            updateRankingProgress();
+            // Kalau semua siswa sudah diranking → tawarkan generate nilai
+            if (rankingState.order.length === db.siswa.length) {
+                setTimeout(() => terapkanNilaiDariRanking(), 300);
+            }
+        }
+
+        // ============================================================
+        // TEMPLATE RANKING — simpan & pakai ulang urutan ranking
+        // Supaya urutan ranking yang sama bisa dipakai untuk TP/tugas
+        // lain, tapi tetap bisa diedit manual sebelum diterapkan.
+        // ============================================================
+        const RANKING_TEMPLATE_KEY = 'erabot_ranking_template_v1';
+
+        function getRankingTemplate() {
+            try {
+                const raw = localStorage.getItem(RANKING_TEMPLATE_KEY);
+                if (!raw) return null;
+                const arr = JSON.parse(raw);
+                return Array.isArray(arr) ? arr : null;
+            } catch (e) { return null; }
+        }
+
+        function saveRankingTemplate(order) {
+            try { localStorage.setItem(RANKING_TEMPLATE_KEY, JSON.stringify(order)); } catch (e) {}
+        }
+
+        function pakaiTemplateRanking() {
+            const tpl = getRankingTemplate();
+            if (!tpl || !tpl.length) {
+                Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Belum ada urutan ranking tersimpan', showConfirmButton: false, timer: 2500, background: '#1e293b', color: '#f8fafc' });
+                return;
+            }
+            // Ambil urutan dari template, hanya siswa yang masih ada di kelas
+            const validIds = new Set(db.siswa.map(s => s.id));
+            let order = tpl.filter(id => validIds.has(id));
+            // Tambahkan siswa baru (yang belum ada di template) di akhir urutan
+            db.siswa.forEach(s => { if (!order.includes(s.id)) order.push(s.id); });
+
+            rankingState.order = order;
+            rankingState.active = true;
+            const btn = document.getElementById('btn-mode-ranking');
+            if (btn) {
+                btn.className = 'bg-purple-600 border border-purple-500 text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition flex items-center gap-1.5';
+                btn.innerHTML = '<i class="fas fa-times-circle"></i> Batalkan Mode Ranking';
+            }
+            renderRankingBadges();
+            updateRankingProgress();
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Urutan ranking sebelumnya dimuat', html: 'Klik nama siswa kalau mau ubah urutan, lalu klik <b>Generate Nilai</b> di bawah.', showConfirmButton: false, timer: 4000, background: '#1e293b', color: '#f8fafc' });
+        }
+
+        function renderRankingBadges() {
+            db.siswa.forEach(s => {
+                const badge = document.getElementById(`rank-badge-${s.id}`);
+                const row = document.getElementById(`row-siswa-${s.id}`);
+                if (!badge || !row) return;
+                const pos = rankingState.order.indexOf(s.id);
+                if (!rankingState.active) {
+                    badge.innerHTML = '';
+                    row.style.cursor = '';
+                    row.style.background = '';
+                    return;
+                }
+                row.style.cursor = 'pointer';
+                if (pos !== -1) {
+                    const rank = pos + 1;
+                    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '';
+                    const color = rank === 1 ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/40' :
+                                  rank === 2 ? 'bg-slate-400/20 text-slate-300 border-slate-400/40' :
+                                  rank === 3 ? 'bg-amber-700/20 text-amber-400 border-amber-700/40' :
+                                  'bg-slate-700/40 text-slate-400 border-slate-600/40';
+                    badge.innerHTML = `<span class="inline-flex items-center gap-1 border ${color} text-[9px] font-black px-1.5 py-0.5 rounded-full">${medal} #${rank}</span>`;
+                    row.style.background = 'rgba(124,58,237,0.06)';
+                } else {
+                    badge.innerHTML = `<span class="text-[9px] text-slate-600 border border-dashed border-slate-700 px-1.5 py-0.5 rounded-full">klik</span>`;
+                    row.style.background = '';
+                }
+            });
+        }
+
+        function updateRankingProgress() {
+            const el = document.getElementById('ranking-progress-info');
+            if (!el) return;
+            if (!rankingState.active) { el.classList.add('hidden'); return; }
+            el.classList.remove('hidden');
+            const done = rankingState.order.length;
+            const total = db.siswa.length;
+            const pct = Math.round((done / total) * 100);
+            el.innerHTML = `
+                <div class="flex items-center justify-between mb-1">
+                    <span class="text-[10px] text-purple-300 font-bold"><i class="fas fa-sort-numeric-down mr-1"></i>Sedang menandai ranking... (${done}/${total} siswa)</span>
+                    ${done > 0 ? `<button onclick="rankingState.order=[];renderRankingBadges();updateRankingProgress();" class="text-[9px] text-rose-400 hover:text-rose-300 underline">Reset</button>` : ''}
+                </div>
+                <div class="w-full bg-slate-800 rounded-full h-1.5">
+                    <div class="bg-purple-500 h-1.5 rounded-full transition-all" style="width:${pct}%"></div>
+                </div>
+                ${done === total ? `
+                    <p class="text-[9px] text-emerald-400 mt-1 font-bold">✅ Semua siswa sudah diranking!</p>
+                    <button onclick="terapkanNilaiDariRanking()" class="mt-1.5 w-full bg-purple-600 hover:bg-purple-500 text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition flex items-center justify-center gap-1.5">
+                        <i class="fas fa-magic"></i> Generate Nilai dari Urutan Ini
+                    </button>` : ''}
+            `;
+        }
+
+        // Generate n nilai dalam [minV, maxV], terurut menurun (non-increasing).
+        // Nilai boleh sama (seri) antar rank, terutama kalau rentang sempit
+        // dibanding jumlah siswa. Rank 1 selalu = maxV, rank terakhir = minV.
+        function generateNilaiRanking(n, minV, maxV) {
+            if (n <= 0) return [];
+            if (n === 1) return [maxV];
+            if (minV === maxV) return Array(n).fill(minV);
+            const range = maxV - minV;
+            const result = [];
+            for (let i = 0; i < n; i++) {
+                const t = i / (n - 1);
+                const base = maxV - t * range;
+                const jitter = (range / n) * 0.6;
+                let val = base + (Math.random() * 2 - 1) * jitter;
+                val = Math.round(Math.min(maxV, Math.max(minV, val)));
+                result.push(val);
+            }
+            // Urutkan menurun — nilai sama (seri) diperbolehkan
+            result.sort((a, b) => b - a);
+            // Pastikan rank 1 = nilai max & rank terakhir = nilai min
+            result[0] = maxV;
+            result[result.length - 1] = minV;
+            return result;
+        }
+
+        function terapkanNilaiDariRanking() {
+            const tId = document.getElementById('form-nilai-tugas-id').value;
+            const mId = document.getElementById('form-nilai-tugas-mapelid').value;
+            const mapel = db.mapel.find(m => m.id === mId);
+            const kkm = mapel ? (parseFloat(mapel.kkm) || 75) : 75;
+            const defaultMin = Math.max(kkm, 77);
+            const n = rankingState.order.length;
+
+            Swal.fire({
+                title: '<i class="fas fa-magic text-purple-400 mr-2"></i>Generate Nilai dari Ranking',
+                html: `
+                    <p class="text-sm text-slate-300 mb-3">Ranking sudah ditentukan. Atur rentang nilai, lalu sistem akan otomatis memberi nilai <b class="text-purple-300">acak tapi tetap urut</b> (rank 1 ≥ rank 2 ≥ ... dst). Kalau rentang sempit, beberapa siswa boleh mendapat nilai yang <b class="text-purple-300">sama</b>.</p>
+                    <div class="flex gap-3 mb-3">
+                        <div class="flex-1">
+                            <label class="text-xs text-slate-400 block mb-1">Nilai Minimum (Rank terakhir)</label>
+                            <input id="swal-min-nilai" type="number" min="0" max="100" value="${defaultMin}"
+                                class="w-full bg-slate-800 border border-slate-600 text-white text-center text-xl font-black rounded-xl px-3 py-2.5 focus:outline-none focus:border-purple-500">
+                        </div>
+                        <div class="flex items-center pt-5 text-slate-500 font-bold text-lg">–</div>
+                        <div class="flex-1">
+                            <label class="text-xs text-slate-400 block mb-1">Nilai Maksimum (Rank 1)</label>
+                            <input id="swal-max-nilai" type="number" min="0" max="100" value="95"
+                                class="w-full bg-slate-800 border border-slate-600 text-white text-center text-xl font-black rounded-xl px-3 py-2.5 focus:outline-none focus:border-purple-500">
+                        </div>
+                    </div>
+                    <div class="flex gap-2 text-[10px] flex-wrap mb-3">
+                        <button onclick="document.getElementById('swal-min-nilai').value='${defaultMin}';document.getElementById('swal-max-nilai').value='95'" class="flex-1 bg-slate-700 hover:bg-purple-700 text-slate-300 font-bold py-1.5 px-2 rounded-lg transition">${defaultMin}–95</button>
+                        <button onclick="document.getElementById('swal-min-nilai').value='80';document.getElementById('swal-max-nilai').value='95'" class="flex-1 bg-slate-700 hover:bg-purple-700 text-slate-300 font-bold py-1.5 px-2 rounded-lg transition">80–95</button>
+                        <button onclick="document.getElementById('swal-min-nilai').value='85';document.getElementById('swal-max-nilai').value='100'" class="flex-1 bg-slate-700 hover:bg-purple-700 text-slate-300 font-bold py-1.5 px-2 rounded-lg transition">85–100</button>
+                        <button onclick="document.getElementById('swal-min-nilai').value='75';document.getElementById('swal-max-nilai').value='90'" class="flex-1 bg-slate-700 hover:bg-purple-700 text-slate-300 font-bold py-1.5 px-2 rounded-lg transition">75–90</button>
+                    </div>
+                    <div class="bg-slate-800/60 rounded-lg px-3 py-2 text-[10px] text-slate-400 text-left">
+                        <i class="fas fa-info-circle text-purple-400 mr-1"></i>
+                        Nilai rank 1 = <b class="text-purple-300">nilai max</b>. Nilai rank ${n} = <b class="text-purple-300">nilai min</b>. Nilai antar rank tidak pernah naik (boleh sama jika rentang sempit).
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-magic mr-1"></i> Terapkan Nilai Sekarang',
+                cancelButtonText: 'Atur Ranking Ulang',
+                background: '#1e293b',
+                color: '#f8fafc',
+                confirmButtonColor: '#7c3aed',
+                cancelButtonColor: '#475569',
+                focusConfirm: false,
+                preConfirm: () => {
+                    const minV = parseInt(document.getElementById('swal-min-nilai').value);
+                    const maxV = parseInt(document.getElementById('swal-max-nilai').value);
+                    if (isNaN(minV) || isNaN(maxV)) { Swal.showValidationMessage('Isi rentang nilai!'); return false; }
+                    if (minV < 0 || maxV > 100) { Swal.showValidationMessage('Nilai harus antara 0–100!'); return false; }
+                    if (minV > maxV) { Swal.showValidationMessage('Minimum tidak boleh lebih besar dari maksimum!'); return false; }
+                    return { minV, maxV };
+                }
+            }).then(result => {
+                if (!result.isConfirmed) return;
+                const { minV, maxV } = result.value;
+
+                // Generate n nilai dalam [minV, maxV], terurut menurun (boleh ada nilai sama/seri
+                // kalau rentang sempit). Rank 1 = nilai max, rank terakhir = nilai min.
+                const chosen = generateNilaiRanking(n, minV, maxV);
+
+                // Terapkan ke masing-masing siswa sesuai urutan ranking
+                rankingState.order.forEach((sId, idx) => {
+                    const stEl = document.getElementById(`st-${sId}`);
+                    const nlEl = document.getElementById(`nl-${sId}`);
+                    if (!stEl || !nlEl) return;
+                    stEl.value = 'Sudah';
+                    nlEl.disabled = false;
+                    nlEl.value = chosen[idx];
+                    updateKTTPBadge(sId, tId, chosen[idx]);
+                });
+
+                // Simpan urutan ranking ini sebagai template, supaya bisa dipakai lagi
+                // untuk TP/tugas lain (urutan tetap bisa diedit manual sebelum diterapkan)
+                saveRankingTemplate(rankingState.order);
+
+                // Matikan mode ranking, refresh badge
+                rankingState.active = false;
+                rankingState.order = [];
+                const btn = document.getElementById('btn-mode-ranking');
+                if (btn) {
+                    btn.className = 'bg-purple-600/20 border border-purple-600/40 text-purple-300 hover:bg-purple-600 hover:text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition flex items-center gap-1.5';
+                    btn.innerHTML = '<i class="fas fa-sort-numeric-down"></i> Tandai Ranking Manual';
+                }
+                renderRankingBadges();
+                updateRankingProgress();
+                const btnTpl = document.getElementById('btn-template-ranking');
+                if (btnTpl) btnTpl.classList.remove('hidden');
+
+                Swal.fire({
+                    icon: 'success',
+                    title: '✅ Nilai Berhasil Diterapkan!',
+                    html: `<p class="text-sm text-slate-300">${n} siswa mendapat nilai urut antara <b class="text-purple-400">${minV}–${maxV}</b> (boleh ada yang sama kalau rentang sempit).</p>
+                           <p class="text-xs text-slate-500 mt-2">Klik <b>Simpan Nilai</b> untuk menyimpan ke database. Urutan ranking ini juga tersimpan, bisa dipakai lagi untuk TP/tugas lain lewat tombol <b>Pakai Urutan Ranking Sebelumnya</b>.</p>`,
+                    background: '#1e293b', color: '#f8fafc',
+                    confirmButtonText: 'OK', confirmButtonColor: '#059669',
+                    timer: 4000, showConfirmButton: false
+                });
+            });
+        }
+
+        // Fungsi lama tidak dipakai lagi, biarkan kosong agar tidak error jika ada panggilan lama
+        function formulaNilaiOtomatis() {
+            const tId = document.getElementById('form-nilai-tugas-id').value;
+            const mId = document.getElementById('form-nilai-tugas-mapelid').value;
+            const mapel = db.mapel.find(m => m.id === mId);
+            const kkm = mapel ? (parseFloat(mapel.kkm) || 75) : 75;
+            const defaultMin = Math.max(kkm, 77);
+
+            Swal.fire({
+                title: '<i class="fas fa-dice text-purple-400 mr-2"></i>Formula Nilai Otomatis',
+                html: `
+                    <p class="text-sm text-slate-300 mb-4">Sistem akan memilihkan nilai unik & acak untuk setiap siswa secara otomatis dalam rentang yang ditentukan.</p>
+                    <div class="flex flex-col gap-3 text-left">
+                        <div class="flex gap-3">
+                            <div class="flex-1">
+                                <label class="text-xs text-slate-400 block mb-1">Nilai Minimum</label>
+                                <input id="swal-min-nilai" type="number" min="0" max="100" value="${defaultMin}"
+                                    class="w-full bg-slate-800 border border-slate-600 text-white text-center text-xl font-black rounded-xl px-3 py-2.5 focus:outline-none focus:border-purple-500">
+                            </div>
+                            <div class="flex items-center pt-5 text-slate-500 font-bold">–</div>
+                            <div class="flex-1">
+                                <label class="text-xs text-slate-400 block mb-1">Nilai Maksimum</label>
+                                <input id="swal-max-nilai" type="number" min="0" max="100" value="95"
+                                    class="w-full bg-slate-800 border border-slate-600 text-white text-center text-xl font-black rounded-xl px-3 py-2.5 focus:outline-none focus:border-purple-500">
+                            </div>
+                        </div>
+                        <div class="bg-slate-800/60 rounded-lg px-3 py-2 text-[10px] text-slate-400">
+                            <i class="fas fa-info-circle text-purple-400 mr-1"></i>
+                            Setiap siswa akan mendapat nilai <b class="text-purple-300">berbeda-beda & acak</b> dalam rentang tersebut. Tidak ada dua siswa dengan nilai yang sama (jika rentang mencukupi). Semua status akan menjadi <b class="text-emerald-400">Sudah</b>.
+                        </div>
+                        <div class="flex gap-2 text-[10px] flex-wrap">
+                            <button onclick="document.getElementById('swal-min-nilai').value='${defaultMin}';document.getElementById('swal-max-nilai').value='95'" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-1.5 px-2 rounded-lg transition">77–95</button>
+                            <button onclick="document.getElementById('swal-min-nilai').value='80';document.getElementById('swal-max-nilai').value='95'" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-1.5 px-2 rounded-lg transition">80–95</button>
+                            <button onclick="document.getElementById('swal-min-nilai').value='85';document.getElementById('swal-max-nilai').value='100'" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-1.5 px-2 rounded-lg transition">85–100</button>
+                            <button onclick="document.getElementById('swal-min-nilai').value='75';document.getElementById('swal-max-nilai').value='90'" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-1.5 px-2 rounded-lg transition">75–90</button>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-dice mr-1"></i> Generate Nilai Otomatis',
+                cancelButtonText: 'Batal',
+                background: '#1e293b',
+                color: '#f8fafc',
+                confirmButtonColor: '#7c3aed',
+                cancelButtonColor: '#475569',
+                focusConfirm: false,
+                preConfirm: () => {
+                    const minV = parseFloat(document.getElementById('swal-min-nilai').value);
+                    const maxV = parseFloat(document.getElementById('swal-max-nilai').value);
+                    if (isNaN(minV) || isNaN(maxV)) { Swal.showValidationMessage('Isi rentang nilai!'); return false; }
+                    if (minV < 0 || maxV > 100) { Swal.showValidationMessage('Nilai harus antara 0–100!'); return false; }
+                    if (minV >= maxV) { Swal.showValidationMessage('Nilai minimum harus lebih kecil dari maksimum!'); return false; }
+                    const rentang = maxV - minV + 1;
+                    if (rentang < db.siswa.length) { Swal.showValidationMessage(`Rentang nilai terlalu sempit! Butuh minimal ${db.siswa.length} angka untuk ${db.siswa.length} siswa.`); return false; }
+                    return { minV, maxV };
+                }
+            }).then(result => {
+                if (!result.isConfirmed) return;
+                const { minV, maxV } = result.value;
+
+                // Generate nilai unik acak dalam rentang [minV, maxV]
+                const pool = [];
+                for (let i = Math.ceil(minV); i <= Math.floor(maxV); i++) pool.push(i);
+                // Fisher-Yates shuffle
+                for (let i = pool.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [pool[i], pool[j]] = [pool[j], pool[i]];
+                }
+                const nilaiUnik = pool.slice(0, db.siswa.length);
+
+                db.siswa.forEach((s, idx) => {
+                    const stEl = document.getElementById(`st-${s.id}`);
+                    const nlEl = document.getElementById(`nl-${s.id}`);
+                    if (!stEl || !nlEl) return;
+                    stEl.value = 'Sudah';
+                    nlEl.disabled = false;
+                    nlEl.value = nilaiUnik[idx];
+                    updateKTTPBadge(s.id, tId, nilaiUnik[idx]);
+                });
+
+                Swal.fire({
+                    icon: 'success',
+                    title: `✅ Nilai Otomatis Diterapkan!`,
+                    html: `<p class="text-sm text-slate-300">${db.siswa.length} siswa mendapat nilai acak unik antara <b class="text-purple-400">${minV}–${maxV}</b>.</p>
+                           <p class="text-xs text-slate-500 mt-2">Klik <b>Lihat Ranking</b> untuk melihat urutan nilai terbesar, atau <b>Simpan Nilai</b> untuk menyimpan.</p>`,
+                    background: '#1e293b', color: '#f8fafc',
+                    timer: 3000, showConfirmButton: false
+                });
+            });
+        }
+
+        function lihatRankingNilai() {
+            const tId = document.getElementById('form-nilai-tugas-id').value;
+            const judulEl = document.getElementById('modal-nilaitugas-title');
+            const judul = judulEl ? judulEl.textContent : 'Agenda Ini';
+
+            // Kumpulkan nilai dari input yang tampil di modal
+            const dataRanking = db.siswa.map(s => {
+                const stEl = document.getElementById(`st-${s.id}`);
+                const nlEl = document.getElementById(`nl-${s.id}`);
+                const status = stEl ? stEl.value : (db.nilaiTugas[`${s.id}_${tId}`]?.status || 'Belum');
+                const nilai = nlEl ? (parseFloat(nlEl.value) || 0) : (parseFloat(db.nilaiTugas[`${s.id}_${tId}`]?.nilai) || 0);
+                return { absen: s.absen, nama: s.nama, nilai, status };
+            }).filter(d => d.status === 'Sudah' && d.nilai > 0);
+
+            if (dataRanking.length === 0) {
+                return Swal.fire({ icon: 'info', title: 'Belum Ada Nilai', text: 'Generate nilai otomatis atau isi nilai siswa terlebih dahulu.', background: '#1e293b', color: '#f8fafc' });
+            }
+
+            // Sort dari terbesar ke terkecil, rank sama → nama alfabetis
+            dataRanking.sort((a, b) => b.nilai - a.nilai || a.nama.localeCompare(b.nama));
+
+            // Beri nomor ranking (yang sama nilainya → ranking sama)
+            let currentRank = 1;
+            dataRanking.forEach((d, idx) => {
+                if (idx === 0) { d.rank = 1; }
+                else if (d.nilai === dataRanking[idx - 1].nilai) { d.rank = dataRanking[idx - 1].rank; }
+                else { d.rank = idx + 1; }
+            });
+
+            const medalIcon = (r) => r === 1 ? '🥇' : r === 2 ? '🥈' : r === 3 ? '🥉' : `#${r}`;
+            const rowsHtml = dataRanking.map(d => {
+                const pred = getKTTPPredikat(d.nilai);
+                const predBadge = pred ? `<span class="text-[9px] font-bold ${pred.color}">${pred.label}</span>` : '';
+                const rankStyle = d.rank <= 3 ? 'font-black text-lg' : 'font-bold text-sm text-slate-400';
+                return `<tr class="border-b border-slate-800">
+                    <td class="py-2 px-3 text-center ${rankStyle}">${medalIcon(d.rank)}</td>
+                    <td class="py-2 px-3 text-[10px] text-slate-400 text-center">${d.absen}</td>
+                    <td class="py-2 px-3 font-bold text-sm text-slate-100">${d.nama}</td>
+                    <td class="py-2 px-3 text-center font-black text-lg ${d.rank === 1 ? 'text-yellow-400' : d.rank === 2 ? 'text-slate-300' : d.rank === 3 ? 'text-amber-600' : 'text-slate-200'}">${d.nilai}</td>
+                    <td class="py-2 px-3 text-center">${predBadge}</td>
+                </tr>`;
+            }).join('');
+
+            const nilaiList = dataRanking.map(d => d.nilai);
+            const avg = (nilaiList.reduce((a,b) => a+b, 0) / nilaiList.length).toFixed(1);
+            const highest = Math.max(...nilaiList);
+            const lowest = Math.min(...nilaiList);
+
+            Swal.fire({
+                title: `<i class="fas fa-trophy text-yellow-400 mr-2"></i>Ranking Nilai`,
+                html: `
+                    <p class="text-xs text-slate-400 mb-3">${judul}</p>
+                    <div class="flex gap-3 mb-4 text-center">
+                        <div class="flex-1 bg-slate-800 rounded-xl py-2 px-1">
+                            <div class="text-lg font-black text-emerald-400">${highest}</div>
+                            <div class="text-[9px] text-slate-500">Tertinggi</div>
+                        </div>
+                        <div class="flex-1 bg-slate-800 rounded-xl py-2 px-1">
+                            <div class="text-lg font-black text-blue-400">${avg}</div>
+                            <div class="text-[9px] text-slate-500">Rata-rata</div>
+                        </div>
+                        <div class="flex-1 bg-slate-800 rounded-xl py-2 px-1">
+                            <div class="text-lg font-black text-rose-400">${lowest}</div>
+                            <div class="text-[9px] text-slate-500">Terendah</div>
+                        </div>
+                        <div class="flex-1 bg-slate-800 rounded-xl py-2 px-1">
+                            <div class="text-lg font-black text-slate-300">${dataRanking.length}</div>
+                            <div class="text-[9px] text-slate-500">Siswa</div>
+                        </div>
+                    </div>
+                    <div style="max-height:320px;overflow-y:auto;border-radius:8px;border:1px solid #334155;">
+                        <table class="w-full text-left text-xs">
+                            <thead style="background:#0f172a;position:sticky;top:0;">
+                                <tr class="border-b border-slate-700">
+                                    <th class="py-2 px-3 text-center text-slate-400">Rank</th>
+                                    <th class="py-2 px-3 text-center text-slate-400">Abs</th>
+                                    <th class="py-2 px-3 text-slate-400">Nama Siswa</th>
+                                    <th class="py-2 px-3 text-center text-slate-400">Nilai</th>
+                                    <th class="py-2 px-3 text-center text-slate-400">KTTP</th>
+                                </tr>
+                            </thead>
+                            <tbody>${rowsHtml}</tbody>
+                        </table>
+                    </div>
+                `,
+                showCancelButton: false,
+                confirmButtonText: '<i class="fas fa-check mr-1"></i> Tutup',
+                background: '#1e293b',
+                color: '#f8fafc',
+                confirmButtonColor: '#059669',
+                width: '520px',
+            });
+        }
+
+        // ============================================================
+        // END FORMULA NILAI OTOMATIS
+        // ============================================================
 
         function katrolNilaiTugasMinKKM() {
             const tId = document.getElementById('form-nilai-tugas-id').value;
@@ -6331,6 +6819,196 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Nilai formatif tersimpan & TP diperbarui!', showConfirmButton: false, timer: 2000 });
         }
 
+        // ============================================================
+        // AGENDA FORMATIF — Fungsi Filter Mapel & Ekspor (FIX)
+        // ============================================================
+
+        function fmtPopulateMapelDropdown() {
+            const sel = document.getElementById('fmt-cetak-mapel');
+            if (!sel) return;
+            sel.innerHTML = '<option value="">-- Semua Mapel --</option>' +
+                db.mapel.map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
+        }
+
+        function fmtOnMapelChange() {
+            const mId = document.getElementById('fmt-cetak-mapel').value;
+            const b = document.getElementById('table-tugas-body');
+            if (!db.tugas.length) {
+                b.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-slate-500 italic">Belum ada agenda. Klik <b class="text-emerald-400">Buat Agenda</b> untuk memulai.</td></tr>';
+                return;
+            }
+            const filtered = mId ? db.tugas.filter(t => t.mapelId === mId) : db.tugas;
+            if (!filtered.length) {
+                b.innerHTML = '<tr><td colspan="6" class="text-center py-6 text-slate-500 italic">Tidak ada agenda untuk mapel ini.</td></tr>';
+                return;
+            }
+            b.innerHTML = filtered.map((t, i) => {
+                const m = db.mapel.find(x => x.id === t.mapelId);
+                const tp = t.tpId ? db.tp.find(x => x.id === t.tpId) : null;
+                const tpHtml = tp
+                    ? `<span class="bg-orange-900/30 text-orange-300 border border-orange-800/40 text-[9px] font-bold px-1.5 py-0.5 rounded">TP ${tp.nomor}</span><span class="text-slate-400 ml-1">${tp.materi}</span>`
+                    : `<span class="text-slate-600 italic text-[10px]">—</span>`;
+                const sudah = db.siswa.filter(s => db.nilaiTugas[`${s.id}_${t.id}`]?.status === 'Sudah').length;
+                const total = db.siswa.length;
+                const pct = total ? Math.round(sudah / total * 100) : 0;
+                const pctColor = pct >= 80 ? 'text-emerald-400' : pct >= 50 ? 'text-amber-400' : 'text-red-400';
+                return `<tr class="hover:bg-slate-800/30 transition">
+                    <td class="p-3 text-center text-slate-500">${i + 1}</td>
+                    <td class="p-3 font-bold text-amber-400 whitespace-nowrap">${m ? m.nama : '-'}</td>
+                    <td class="p-3">${tpHtml}</td>
+                    <td class="p-3 text-slate-100">${t.nama}</td>
+                    <td class="p-3 text-slate-400 whitespace-nowrap">${t.tenggat} <span class="${pctColor} font-bold text-[9px] ml-1">(${sudah}/${total})</span></td>
+                    <td class="p-3 text-center flex gap-1 justify-center">
+                        <button onclick="openModalNilaiTugas('${t.id}')" class="bg-emerald-600/20 text-emerald-400 border border-emerald-600/30 hover:bg-emerald-600 hover:text-white text-[10px] px-2 py-1 rounded transition font-bold"><i class="fas fa-pen mr-1"></i>Nilai</button>
+                        <button onclick="deleteTugas('${t.id}')" class="bg-red-900/30 text-red-400 hover:bg-red-600 hover:text-white text-[10px] px-2 py-1 rounded transition"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            }).join('');
+        }
+
+        function cetakFormatifPDF() {
+            const mId = document.getElementById('fmt-cetak-mapel').value;
+            const mapelNama = mId ? (db.mapel.find(m => m.id === mId)?.nama || 'Semua Mapel') : 'Semua Mapel';
+            const filtered = mId ? db.tugas.filter(t => t.mapelId === mId) : db.tugas;
+            if (!filtered.length) return Swal.fire('Info', 'Tidak ada agenda untuk dicetak.', 'info');
+
+            let rows = '';
+            filtered.forEach((t, i) => {
+                const m = db.mapel.find(x => x.id === t.mapelId);
+                const tp = t.tpId ? db.tp.find(x => x.id === t.tpId) : null;
+                const sudah = db.siswa.filter(s => db.nilaiTugas[`${s.id}_${t.id}`]?.status === 'Sudah').length;
+                const total = db.siswa.length;
+
+                // Header per agenda
+                rows += `<tr style="background:#f0fdf4;">
+                    <td style="padding:6px 8px;font-weight:bold;color:#065f46;" colspan="2">${i+1}. ${t.nama} — ${m ? m.nama : '-'}${tp ? ` (TP ${tp.nomor})` : ''}</td>
+                    <td style="padding:6px 8px;font-weight:bold;color:#065f46;">Tenggat: ${t.tenggat}</td>
+                    <td style="padding:6px 8px;font-weight:bold;color:#065f46;">${sudah}/${total} Sudah</td>
+                </tr>`;
+                db.siswa.forEach(s => {
+                    const nt = db.nilaiTugas[`${s.id}_${t.id}`] || { status: 'Belum', nilai: '' };
+                    rows += `<tr>
+                        <td style="padding:4px 8px;text-align:center;">${s.absen}</td>
+                        <td style="padding:4px 8px;">${s.nama}</td>
+                        <td style="padding:4px 8px;text-align:center;">${nt.status}</td>
+                        <td style="padding:4px 8px;text-align:center;font-weight:bold;">${nt.nilai || '—'}</td>
+                    </tr>`;
+                });
+            });
+
+            const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Agenda Formatif</title>
+            <style>body{font-family:Arial,sans-serif;font-size:11px;color:#1e293b;margin:16px}
+            h2{text-align:center;margin-bottom:4px}p{text-align:center;margin:0 0 12px}
+            table{width:100%;border-collapse:collapse}
+            th,td{border:1px solid #cbd5e1;padding:5px 8px}
+            th{background:#e2e8f0;font-weight:bold;text-align:center}</style></head>
+            <body><h2>Rekap Agenda Formatif</h2><p>${mapelNama}</p>
+            <table><thead><tr><th style="width:40px">No</th><th>Nama Siswa</th><th style="width:80px">Status</th><th style="width:60px">Nilai</th></tr></thead>
+            <tbody>${rows}</tbody></table></body></html>`;
+
+            const w = window.open('', '_blank');
+            w.document.write(html);
+            w.document.close();
+            w.focus();
+            setTimeout(() => { w.print(); }, 500);
+        }
+
+        function exportFormatifExcel() {
+            const mId = document.getElementById('fmt-cetak-mapel').value;
+            const filtered = mId ? db.tugas.filter(t => t.mapelId === mId) : db.tugas;
+            if (!filtered.length) return Swal.fire('Info', 'Tidak ada agenda untuk diekspor.', 'info');
+
+            // Buat CSV sederhana
+            let csv = 'No,Nama Siswa,Mapel,TP,Nama Agenda,Tenggat,Status,Nilai\n';
+            filtered.forEach(t => {
+                const m = db.mapel.find(x => x.id === t.mapelId);
+                const tp = t.tpId ? db.tp.find(x => x.id === t.tpId) : null;
+                db.siswa.forEach((s, idx) => {
+                    const nt = db.nilaiTugas[`${s.id}_${t.id}`] || { status: 'Belum', nilai: '' };
+                    csv += `${s.absen || idx+1},"${s.nama}","${m ? m.nama : ''}","${tp ? 'TP '+tp.nomor+' - '+tp.materi : '-'}","${t.nama}","${t.tenggat}","${nt.status}","${nt.nilai || ''}"\n`;
+                });
+            });
+
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Agenda_Formatif_${new Date().toLocaleDateString('id-ID').replace(/\//g,'-')}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'File CSV berhasil diunduh!', showConfirmButton: false, timer: 2000 });
+        }
+
+        function cetakUTSPDF() {
+            const mId = document.getElementById('fmt-cetak-mapel').value;
+            const mapelList = mId ? db.mapel.filter(m => m.id === mId) : db.mapel;
+            if (!db.siswa.length) return Swal.fire('Info', 'Data siswa belum ada.', 'info');
+
+            let headerMapel = mapelList.map(m => `<th style="padding:5px;border:1px solid #cbd5e1;">${m.nama}</th>`).join('');
+            let rows = db.siswa.map(s => {
+                const nilaiCells = mapelList.map(m => {
+                    const fmt = getNilaiFormatifAuto(s.id, m.id);
+                    const n = db.nilai[`${s.id}_${m.id}`] || {};
+                    const sts = parseFloat(n.sts) || 0;
+                    const fmtDisp = fmt ? fmt.toFixed(0) : '—';
+                    const stsDisp = sts || '—';
+                    return `<td style="padding:5px;border:1px solid #cbd5e1;text-align:center;">${fmtDisp} / ${stsDisp}</td>`;
+                }).join('');
+                return `<tr><td style="padding:5px;border:1px solid #cbd5e1;text-align:center;">${s.absen}</td>
+                    <td style="padding:5px;border:1px solid #cbd5e1;">${s.nama}</td>
+                    ${nilaiCells}</tr>`;
+            }).join('');
+
+            const sekolah = db.profil || {};
+            const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Nilai Formatif & STS</title>
+            <style>body{font-family:Arial,sans-serif;font-size:10px;color:#1e293b;margin:16px}
+            h2{text-align:center;margin:0}p{text-align:center;margin:2px 0 12px}
+            table{width:100%;border-collapse:collapse}th{background:#e2e8f0;font-weight:bold;}</style></head>
+            <body><h2>${sekolah.nama || 'REKAP NILAI FORMATIF & STS'}</h2>
+            <p>Semester ini &nbsp;|&nbsp; Format: Formatif / STS</p>
+            <table><thead><tr>
+                <th style="padding:5px;border:1px solid #cbd5e1;width:40px">No</th>
+                <th style="padding:5px;border:1px solid #cbd5e1;">Nama Siswa</th>
+                ${headerMapel}
+            </tr></thead><tbody>${rows}</tbody></table>
+            <p style="margin-top:12px;color:#64748b;">Dicetak: ${new Date().toLocaleDateString('id-ID')}</p>
+            </body></html>`;
+
+            const w = window.open('', '_blank');
+            w.document.write(html);
+            w.document.close();
+            w.focus();
+            setTimeout(() => { w.print(); }, 500);
+        }
+
+        function exportUTSExcel() {
+            const mId = document.getElementById('fmt-cetak-mapel').value;
+            const mapelList = mId ? db.mapel.filter(m => m.id === mId) : db.mapel;
+            if (!db.siswa.length) return Swal.fire('Info', 'Data siswa belum ada.', 'info');
+
+            // Header row
+            let header = 'No,Nama Siswa,' + mapelList.map(m => `"Fmt - ${m.nama}","STS - ${m.nama}"`).join(',') + '\n';
+            let rows = db.siswa.map(s => {
+                const cols = mapelList.map(m => {
+                    const fmt = getNilaiFormatifAuto(s.id, m.id);
+                    const n = db.nilai[`${s.id}_${m.id}`] || {};
+                    return `"${fmt ? fmt.toFixed(0) : ''}","${parseFloat(n.sts) || ''}"`;
+                }).join(',');
+                return `${s.absen},"${s.nama}",${cols}`;
+            }).join('\n');
+
+            const csv = header + rows;
+            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Nilai_Formatif_STS_${new Date().toLocaleDateString('id-ID').replace(/\//g,'-')}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'File CSV berhasil diunduh!', showConfirmButton: false, timer: 2000 });
+        }
+
+        // ============================================================
         // Keuangan
         function renderKasTable() { const b=document.getElementById('table-kas-body'); let t=0; const rows=[]; db.kas.forEach(k=>{ const s=db.siswa.find(x=>x.id===k.siswaId); t+=parseFloat(k.nominal); rows.push(`<tr><td class="p-2 font-mono">${k.tgl}</td><td class="p-2 font-bold truncate">${s?s.nama:'-'}</td><td class="p-2 text-emerald-400 text-right font-mono">${parseInt(k.nominal).toLocaleString('id-ID')}</td><td class="p-2 text-center flex gap-1 justify-center"><button onclick="tampilBuktiKas('${k.id}')" class="text-emerald-400 hover:text-emerald-300" title="Cetak Bukti"><i class="fas fa-print text-[11px]"></i></button><button onclick="deleteKas('${k.id}')" class="text-red-400 hover:text-red-300 ml-1" title="Hapus"><i class="fas fa-trash text-[11px]"></i></button></td></tr>`); }); b.innerHTML=rows.join(''); document.getElementById('total-kas-rp').textContent=`Rp ${t.toLocaleString('id-ID')}`; }
         function openModalKas() { document.getElementById('modal-kas').classList.remove('hidden'); let s=document.getElementById('form-kas-siswa'); s.innerHTML=db.siswa.map(x=>`<option value="${x.id}">${x.nama}</option>`).join(''); document.getElementById('form-kas-tgl').value=getTodayLocalStr(); document.getElementById('form-kas-nominal').value=''; document.getElementById('form-kas-sumber-wrap').innerHTML=renderSumberDanaPicker('kas', s.value); }
