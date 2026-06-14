@@ -269,6 +269,7 @@
                 <button title="Broadcast WA Ortu" onclick="switchTab('komunikasi')" id="btn-komunikasi" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-emerald-400 transition"><i class="fab fa-whatsapp w-5 text-center text-emerald-400"></i> <span class="nav-label">Broadcast WA Ortu</span></button>
                 <button title="Cetak Rapor AI" onclick="switchTab('progres_ortu')" id="btn-progres_ortu" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-emerald-400 transition"><i class="fas fa-file-pdf w-5 text-center text-red-400"></i> <span class="nav-label">Cetak Rapor AI</span></button>
                 <button title="Surat kepada Orang Tua" onclick="switchTab('surat_ortu')" id="btn-surat_ortu" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-blue-400 transition relative"><i class="fas fa-envelope-open-text w-5 text-center text-blue-400"></i> <span class="text-blue-300">Surat Ortu</span> <span class="absolute right-2 top-2 text-[8px] font-black text-white bg-blue-600 px-1.5 py-0.5 rounded-full">NEW</span></button>
+                <button title="Formulir Data Siswa Baru" onclick="switchTab('formulir_siswa')" id="btn-formulir_siswa" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-cyan-400 transition relative"><i class="fas fa-file-signature w-5 text-center text-cyan-400"></i> <span class="text-cyan-300">Formulir Siswa Baru</span> <span class="absolute right-2 top-2 text-[8px] font-black text-white bg-cyan-600 px-1.5 py-0.5 rounded-full">NEW</span></button>
                 <button title="Pengaturan Sistem" onclick="switchTab('pengaturan')" id="btn-pengaturan" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-emerald-400 transition"><i class="fas fa-cogs w-5 text-center"></i> <span class="nav-label">Pengaturan Sistem</span></button>
             </nav>
         </aside>
@@ -1372,9 +1373,10 @@
                         <div class="lg:col-span-2 bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col gap-4">
                             <div class="flex justify-between items-center flex-wrap gap-2">
                                 <div><h3 class="text-sm font-bold text-slate-100">Input Absensi Harian (Cepat)</h3></div>
-                                <div class="flex gap-2 w-full md:w-auto">
+                                <div class="flex gap-2 w-full md:w-auto flex-wrap">
                                     <button onclick="openModalFaceAttendance()" class="bg-violet-600/20 text-violet-300 border border-violet-600/50 hover:bg-violet-600 hover:text-white transition font-bold text-xs px-3 py-1.5 rounded-lg flex-1 md:flex-none whitespace-nowrap"><i class="fas fa-camera-retro mr-1"></i> Absen Wajah</button>
                                     <button onclick="setSemuaAbsensi('Hadir')" class="bg-emerald-600/20 text-emerald-400 border border-emerald-600/50 hover:bg-emerald-600 hover:text-white transition font-bold text-xs px-3 py-1.5 rounded-lg flex-1 md:flex-none whitespace-nowrap"><i class="fas fa-check-double mr-1"></i> Hadir Semua</button>
+                                    <button onclick="openModalResetAbsensi()" class="bg-red-900/30 text-red-400 border border-red-800/50 hover:bg-red-600 hover:text-white transition font-bold text-xs px-3 py-1.5 rounded-lg flex-1 md:flex-none whitespace-nowrap"><i class="fas fa-trash-alt mr-1"></i> Reset Absensi</button>
                                     <input type="date" id="input-absensi-tanggal" onchange="loadAbsensiHarian()" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold outline-none text-slate-100 flex-1 md:flex-none focus:border-emerald-500">
                                 </div>
                             </div>
@@ -1517,7 +1519,7 @@
                 </section>
 
                 <section id="tab-mapel-view" class="tab-content hidden space-y-4"><div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div class="bg-slate-900 p-5 rounded-xl border border-slate-800 space-y-4 h-fit"><h3 class="text-sm font-bold text-slate-100 border-b border-slate-800 pb-2">Pengaturan Bobot Akhir (%)</h3><div class="space-y-3"><div><label class="block text-[11px] text-slate-400 mb-1">Formatif</label><input type="number" id="input-bobot-formatif" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs font-bold text-slate-100 outline-none focus:border-emerald-500"></div><div><label class="block text-[11px] text-slate-400 mb-1">Sumatif Tengah Semester (STS)</label><input type="number" id="input-bobot-sts" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs font-bold text-slate-100 outline-none focus:border-emerald-500"></div><div><label class="block text-[11px] text-slate-400 mb-1">Sumatif Akhir Semester (SAS)</label><input type="number" id="input-bobot-sas" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs font-bold text-slate-100 outline-none focus:border-emerald-500"></div><button onclick="saveBobotNilai()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2 rounded-lg transition">Simpan Persentase</button></div></div><div class="lg:col-span-2 bg-slate-900 rounded-xl border border-slate-800 overflow-hidden flex flex-col"><div class="p-4 border-b border-slate-800 flex justify-between items-center"><h3 class="text-sm font-bold text-slate-100">Daftar Mata Pelajaran & KKM</h3><button onclick="openModalMapel()" class="bg-emerald-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg hover:bg-emerald-500"><i class="fas fa-plus"></i> Tambah Mapel</button></div><div class="overflow-x-auto flex-1"><table class="w-full text-left min-w-[400px]"><thead><tr class="bg-slate-950 border-b border-slate-800 text-xs font-bold text-slate-400 uppercase"><th class="p-3 text-center w-12">No</th><th class="p-3">Nama Mapel</th><th class="p-3 text-center w-24">KKM</th><th class="p-3 text-center w-24">Aksi</th></tr></thead><tbody id="table-mapel-body" class="divide-y divide-slate-800 text-xs text-slate-300"></tbody></table></div></div></div></section>
-                <section id="tab-nilai-view" class="tab-content hidden space-y-4"><div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col gap-3"><div class="flex flex-col md:flex-row gap-3 items-center justify-between"><select id="select-nilai-mapel" onchange="loadInputNilaiSiswa()" class="w-full md:w-72 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-bold text-slate-100 outline-none focus:border-emerald-500"></select><div class="flex gap-2 w-full md:w-auto flex-wrap"><label class="bg-blue-600/20 text-blue-400 border border-blue-600/50 hover:bg-blue-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg cursor-pointer flex-1 text-center whitespace-nowrap"><i class="fas fa-file-excel mr-1"></i> Import Excel <input type="file" id="import-excel-nilai" accept=".xlsx, .xls" onchange="importNilaiExcel(event)" class="hidden"></label><button onclick="exportFormatNilaiExcel()" class="bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition font-bold text-xs px-3 py-2 rounded-lg flex-1 whitespace-nowrap"><i class="fas fa-download mr-1"></i> Unduh Format</button></div></div><div class="bg-emerald-900/20 border border-emerald-800/30 rounded-lg px-3 py-2 text-[10px] text-emerald-300 flex items-start gap-2"><i class="fas fa-info-circle mt-0.5 shrink-0"></i><span><b>Alur nilai otomatis:</b> Agenda Formatif → Nilai TP (per TP) → Rata-rata TP × Bobot% = <b>Nilai Formatif</b> (terkunci). Input STS & SAS secara manual. Nilai Akhir = Formatif berbobot + STS berbobot + SAS berbobot.</span></div><div class="border-t border-slate-800 pt-3 flex flex-col sm:flex-row gap-2"><button onclick="hapusNilaiMapelIni()" class="flex-1 bg-red-900/30 text-red-400 border border-red-900/50 hover:bg-red-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-eraser mr-1"></i> Hapus Nilai Mapel Ini (Semua Siswa)</button><button onclick="hapusSemuaNilai()" class="flex-1 bg-red-950/50 text-red-500 border border-red-900/30 hover:bg-red-700 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-trash-alt mr-1"></i> Hapus SEMUA Nilai (Seluruh Mapel)</button><button onclick="bersihkanDataRemedial()" class="flex-1 bg-orange-900/30 text-orange-400 border border-orange-800/50 hover:bg-orange-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-broom mr-1"></i> Bersihkan Badge RMD</button><button onclick="restoreNilaiDariBackup()" class="flex-1 bg-emerald-900/30 text-emerald-400 border border-emerald-800/50 hover:bg-emerald-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-history mr-1"></i> Pulihkan dari Backup</button></div><div class="bg-emerald-950/30 border border-emerald-800/30 rounded-lg px-3 py-2 text-[10px] text-emerald-400 flex items-center gap-2 mt-1"><i class="fas fa-shield-alt shrink-0"></i><span><b>🔒 Nilai terlindungi:</b> Nilai hanya bisa dihapus manual. Sistem auto-backup setiap ada perubahan &amp; bisa dipulihkan kapan saja.</span></div></div><div class="bg-slate-900 rounded-xl border border-slate-800 overflow-x-auto shadow-sm"><table class="w-full text-left min-w-[800px]"><thead class="sticky top-0 bg-slate-950"><tr class="border-b border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider"><th class="p-3 w-12 text-center">Abs</th><th class="p-3">Nama</th><th class="p-3 text-center text-emerald-400 w-36">Formatif<br><span class="text-[9px] font-normal text-slate-500 normal-case">(dari TP × bobot) 🔒</span></th><th class="p-3 text-center text-blue-400 w-28">STS</th><th class="p-3 text-center text-indigo-400 w-28">SAS</th><th class="p-3 text-center text-amber-400 w-24">Nilai Akhir</th><th class="p-3 text-center text-red-400 w-20">Hapus</th></tr></thead><tbody id="table-nilai-body" class="divide-y divide-slate-800 text-xs text-slate-300"></tbody></table></div></section>
+                <section id="tab-nilai-view" class="tab-content hidden space-y-4"><div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col gap-3"><div class="flex flex-col md:flex-row gap-3 items-center justify-between"><select id="select-nilai-mapel" onchange="loadInputNilaiSiswa()" class="w-full md:w-72 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-bold text-slate-100 outline-none focus:border-emerald-500"></select><div class="flex gap-2 w-full md:w-auto flex-wrap"><label class="bg-blue-600/20 text-blue-400 border border-blue-600/50 hover:bg-blue-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg cursor-pointer flex-1 text-center whitespace-nowrap"><i class="fas fa-file-excel mr-1"></i> Import Excel <input type="file" id="import-excel-nilai" accept=".xlsx, .xls" onchange="importNilaiExcel(event)" class="hidden"></label><button onclick="exportFormatNilaiExcel()" class="bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition font-bold text-xs px-3 py-2 rounded-lg flex-1 whitespace-nowrap"><i class="fas fa-download mr-1"></i> Unduh Format</button></div></div><div class="bg-emerald-900/20 border border-emerald-800/30 rounded-lg px-3 py-2 text-[10px] text-emerald-300 flex items-start gap-2"><i class="fas fa-info-circle mt-0.5 shrink-0"></i><span><b>Alur nilai otomatis:</b> Agenda Formatif → Nilai TP (per TP) → Rata-rata TP × Bobot% = <b>Nilai Formatif</b> (terkunci). Input STS & SAS secara manual. Nilai Akhir = Formatif berbobot + STS berbobot + SAS berbobot.</span></div><div class="border-t border-slate-800 pt-3 flex flex-col sm:flex-row gap-2"><button onclick="hapusNilaiMapelIni()" class="flex-1 bg-red-900/30 text-red-400 border border-red-900/50 hover:bg-red-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-eraser mr-1"></i> Hapus Nilai Mapel Ini (Semua Siswa)</button><button onclick="hapusSemuaNilai()" class="flex-1 bg-red-950/50 text-red-500 border border-red-900/30 hover:bg-red-700 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-trash-alt mr-1"></i> Hapus SEMUA Nilai (Seluruh Mapel)</button><button onclick="bersihkanDataRemedial()" class="flex-1 bg-orange-900/30 text-orange-400 border border-orange-800/50 hover:bg-orange-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-broom mr-1"></i> Bersihkan Badge RMD</button><button onclick="restoreNilaiDariBackup()" class="flex-1 bg-emerald-900/30 text-emerald-400 border border-emerald-800/50 hover:bg-emerald-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-history mr-1"></i> Pulihkan dari Backup</button></div><div class="bg-emerald-950/30 border border-emerald-800/30 rounded-lg px-3 py-2 text-[10px] text-emerald-400 flex items-center gap-2 mt-1"><i class="fas fa-shield-alt shrink-0"></i><span><b>🔒 Nilai terlindungi:</b> Nilai hanya bisa dihapus manual. Sistem auto-backup setiap ada perubahan &amp; bisa dipulihkan kapan saja.</span></div></div><div class="bg-slate-900 rounded-xl border border-slate-800 overflow-x-auto shadow-sm"><div class="px-4 py-2.5 border-b border-slate-800 flex items-center gap-2 flex-wrap"><span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex-1"><i class="fas fa-lock-open text-amber-400 mr-1"></i>Kunci Nilai Siswa</span><button onclick="kunciSemuaNilai(true)" class="bg-amber-700/30 text-amber-400 border border-amber-700/50 hover:bg-amber-600 hover:text-white font-bold text-[10px] px-3 py-1 rounded-lg transition flex items-center gap-1.5"><i class="fas fa-lock"></i> Kunci Semua</button><button onclick="kunciSemuaNilai(false)" class="bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 hover:text-white font-bold text-[10px] px-3 py-1 rounded-lg transition flex items-center gap-1.5"><i class="fas fa-lock-open"></i> Buka Semua</button></div><table class="w-full text-left min-w-[880px]"><thead class="sticky top-0 bg-slate-950"><tr class="border-b border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider"><th class="p-3 w-12 text-center">Abs</th><th class="p-3">Nama</th><th class="p-3 text-center text-emerald-400 w-36">Formatif<br><span class="text-[9px] font-normal text-slate-500 normal-case">(dari TP × bobot) 🔒</span></th><th class="p-3 text-center text-blue-400 w-28">STS</th><th class="p-3 text-center text-indigo-400 w-28">SAS</th><th class="p-3 text-center text-amber-400 w-24">Nilai Akhir</th><th class="p-3 text-center text-amber-300 w-20">Kunci</th><th class="p-3 text-center text-red-400 w-20">Hapus</th></tr></thead><tbody id="table-nilai-body" class="divide-y divide-slate-800 text-xs text-slate-300"></tbody></table></div></section>
                 <section id="tab-tugas-view" class="tab-content hidden space-y-4">
                     <div class="bg-gradient-to-r from-emerald-900/30 to-slate-900 p-4 rounded-xl border border-emerald-800/30 flex flex-col gap-3">
                         <div class="flex flex-col md:flex-row md:items-center gap-3 justify-between">
@@ -3387,6 +3389,72 @@
                     </div>
                 </section>
 
+                <!-- ============================================
+                     FORMULIR DATA SISWA BARU (TAHUN AJARAN BARU)
+                     ============================================ -->
+                <section id="tab-formulir_siswa-view" class="tab-content hidden space-y-5">
+                    <!-- Header -->
+                    <div class="bg-gradient-to-r from-cyan-950/60 via-slate-900 to-slate-900 rounded-2xl p-6 border border-cyan-900/30 shadow-xl relative overflow-hidden">
+                        <div class="z-10 relative">
+                            <h3 class="text-xl font-black text-white flex items-center gap-2"><i class="fas fa-file-signature text-cyan-400"></i> Formulir Data Siswa Baru</h3>
+                            <p class="text-cyan-100/60 text-xs mt-1 max-w-2xl">Cetak formulir kosong untuk dibagikan ke orang tua/wali murid di awal tahun ajaran. Setelah formulir diisi & dikumpulkan, salin datanya ke menu <b>Data & Profil Siswa</b>.</p>
+                        </div>
+                        <i class="fas fa-clipboard-list absolute right-[-10px] bottom-[-20px] text-8xl text-cyan-500/10"></i>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                        <!-- Panel Kiri: Opsi Cetak -->
+                        <div class="lg:col-span-1 space-y-4">
+                            <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 space-y-3">
+                                <h4 class="font-bold text-slate-100 text-sm flex items-center gap-2"><i class="fas fa-sliders-h text-cyan-400"></i> Opsi Cetak</h4>
+
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Jumlah Salinan</label>
+                                    <input type="number" id="fsb-jumlah" min="1" max="60" value="1" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 outline-none focus:border-cyan-500">
+                                    <p class="text-[9px] text-slate-500 mt-1">Atau samakan dengan jumlah siswa di kelas untuk cetak sekaligus.</p>
+                                    <button onclick="document.getElementById('fsb-jumlah').value = (db.siswa.length || 1)" id="fsb-samakan-jumlah" class="mt-1 text-[10px] text-cyan-400 hover:text-cyan-300 underline">Samakan dengan jumlah siswa</button>
+                                </div>
+
+                                <div class="bg-slate-950/50 border border-slate-800 rounded-lg p-3 space-y-2">
+                                    <label class="block text-[10px] text-slate-400 font-bold uppercase">Bagian yang Dicetak</label>
+                                    <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer"><input type="checkbox" id="fsb-bagian-a" checked class="accent-cyan-500"> A. Identitas Siswa</label>
+                                    <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer"><input type="checkbox" id="fsb-bagian-b" checked class="accent-cyan-500"> B. Data Orang Tua / Wali</label>
+                                    <label class="flex items-center gap-2 text-xs text-slate-300 cursor-pointer"><input type="checkbox" id="fsb-bagian-c" checked class="accent-cyan-500"> C. Akademik & Lainnya</label>
+                                </div>
+
+                                <button onclick="previewFormulirSiswa()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-2">
+                                    <i class="fas fa-eye"></i> Preview Formulir
+                                </button>
+                                <button onclick="cetakFormulirSiswa()" class="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-2">
+                                    <i class="fas fa-print"></i> Cetak / Simpan PDF
+                                </button>
+                            </div>
+
+                            <div class="bg-cyan-900/10 border border-cyan-800/30 rounded-xl p-3 text-[10px] text-cyan-200/80 leading-relaxed">
+                                <i class="fas fa-lightbulb mr-1"></i> Kolom <b>No. Absen, NIS, & NISN</b> sengaja tidak dicetak di formulir ini karena biasanya diisi oleh operator sekolah, bukan orang tua. Wali kelas dapat menambahkannya saat input ke sistem.
+                            </div>
+                        </div>
+
+                        <!-- Panel Kanan: Preview Formulir -->
+                        <div class="lg:col-span-2">
+                            <div class="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+                                <div class="p-4 border-b border-slate-800 flex items-center justify-between">
+                                    <h4 class="font-bold text-slate-100 text-sm flex items-center gap-2"><i class="fas fa-file-alt text-cyan-400"></i> Preview Formulir</h4>
+                                    <span class="text-[10px] text-cyan-400 font-bold bg-cyan-900/20 px-2 py-1 rounded-lg">Formulir Kosong</span>
+                                </div>
+                                <div class="p-4 overflow-y-auto max-h-[700px]">
+                                    <div id="fsb-preview-area" class="bg-white text-black rounded-lg p-6 min-h-[400px] text-xs leading-relaxed" style="font-family:'Times New Roman',serif;font-size:12px;">
+                                        <div class="flex flex-col items-center justify-center h-48 text-gray-400">
+                                            <i class="fas fa-file-signature text-5xl mb-3 opacity-30"></i>
+                                            <p class="text-sm italic">Atur opsi di sebelah kiri, lalu klik <b>Preview Formulir</b></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
             </main>
         </div>
     </div>
@@ -4452,6 +4520,7 @@
             remedial: {}, // Remedial: {siswaId_mapelId_jenis: nilaiRemedial} — nilai remedial terkini (bisa berubah)
             remedialMax: {}, // Nilai remedial tertinggi yang pernah dicapai (tidak pernah turun) {siswaId_mapelId_jenis: nilaiMax}
             remedialHistory: {}, // Riwayat permanen pernah remedial: {siswaId_mapelId_jenis: true} - tidak pernah dihapus oleh "Bersihkan Badge RMD"
+            nilaiKunci: {}, // Kunci nilai per siswa per mapel: {siswaId_mapelId: true} — input dinonaktifkan saat dikunci
             raporSettings: { // Pengaturan cetak rapor format Kemenag
                 kemenag: 'KEMENTERIAN AGAMA REPUBLIK INDONESIA',
                 kelas: '', fase: '', semester: 'Ganjil', tahunajaran: '',
@@ -4498,6 +4567,7 @@
         db.remedial = db.remedial || {};
         db.remedialHistory = db.remedialHistory || {};
         db.remedialMax = db.remedialMax || {};
+        db.nilaiKunci = db.nilaiKunci || {};
         // Migrasi: tandai history dari data remedial yang sudah ada (untuk pengguna lama)
         // FIX: nilai 0 atau NaN tidak dianggap pernah remedial — harus ada nilai nyata (> 0)
         Object.keys(db.remedial).forEach(key => {
@@ -4891,6 +4961,7 @@
             if(tabId === 'agenda') { renderAgendaTab(); }
             if(tabId === 'remedial') { renderRemedialTab(); }
             if(tabId === 'surat_ortu') { initSuratModule(); }
+            if(tabId === 'formulir_siswa') { initFormulirSiswaModule(); }
             if(tabId === 'kalkulator_koreksi') { kalkorInit(); }
 
             
@@ -4915,6 +4986,7 @@
                 'tabungan':'Tabungan Siswa',
                 'remedial':'Remedial Siswa',
                 'surat_ortu':'Surat kepada Orang Tua Murid',
+                'formulir_siswa':'Formulir Data Siswa Baru',
                 'rekap_absensi':'Rekap Absensi Siswa',
                 'kalkulator_koreksi':'Kalkulator Koreksi Penilaian',
             };
@@ -5083,8 +5155,21 @@
             document.getElementById('input-hari-libur').value = ''; document.getElementById('input-ket-libur').value = '';
             Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Hari libur ditambahkan!', showConfirmButton: false, timer: 2000 });
         }
-        function hapusLibur(tgl) { 
-            db.libur = db.libur.filter(x => x.tgl !== tgl); saveDB(); renderLibur(); 
+        function hapusLibur(tgl) {
+            const libur = db.libur.find(x => x.tgl === tgl);
+            Swal.fire({
+                title: 'Hapus Hari Libur?',
+                html: `Yakin hapus libur <b class="text-amber-400">${tgl}</b>${libur?.ket ? ` — <i>${libur.ket}</i>` : ''}?`,
+                icon: 'warning', showCancelButton: true,
+                confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal',
+                background: '#1e293b', color: '#f8fafc'
+            }).then(r => {
+                if (r.isConfirmed) {
+                    db.libur = db.libur.filter(x => x.tgl !== tgl);
+                    saveDB(); renderLibur();
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Hari libur dihapus', showConfirmButton: false, timer: 1800 });
+                }
+            });
         }
         function hapusSemuaLibur() {
             Swal.fire({ title: 'Hapus Semua Libur?', text: 'Semua data hari libur yang tersimpan akan dihapus.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus Semua' }).then(r => {
@@ -5609,7 +5694,22 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
         function openModalMassal(){ document.getElementById('modal-massal').classList.remove('hidden'); document.getElementById('form-massal-input').value=''; }
         function closeModalMassal(){ document.getElementById('modal-massal').classList.add('hidden'); }
         function saveFormMassalSiswa(){ const ls=document.getElementById('form-massal-input').value.split('\n'); let ab=db.siswa.length+1; ls.forEach(l=>{let c=l.trim(); if(!c)return; let p=c.split(','); const uid='S_'+Date.now()+'_'+Math.random().toString(36).slice(2,7); if(p.length>=2){db.siswa.push({id:uid, absen:ab++, nis:p[0].trim(), nama:p[1].trim(), jk:'L', foto:'', ortu:'', wa:'', alamat:'', lksQty:1});} else {db.siswa.push({id:uid, absen:ab++, nis:20260+ab, nama:c, jk:'L', foto:'', ortu:'', wa:'', alamat:'', lksQty:1});} }); saveDB(); closeModalMassal(); renderSiswaTable(); }
-        function deleteSiswa(id){ db.siswa=db.siswa.filter(x=>x.id!==id); saveDB(); renderSiswaTable(); }
+        function deleteSiswa(id){
+            const siswa = db.siswa.find(x => x.id === id);
+            Swal.fire({
+                title: 'Hapus Siswa?',
+                html: `Yakin hapus data <b class="text-amber-400">${siswa?.nama || 'siswa ini'}</b>?<br><span class="text-xs text-slate-400">Semua data absensi & nilai siswa ini juga ikut terhapus.</span>`,
+                icon: 'warning', showCancelButton: true,
+                confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal',
+                background: '#1e293b', color: '#f8fafc'
+            }).then(r => {
+                if (r.isConfirmed) {
+                    db.siswa = db.siswa.filter(x => x.id !== id);
+                    saveDB(); renderSiswaTable();
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Siswa dihapus', showConfirmButton: false, timer: 1800 });
+                }
+            });
+        }
 
         // Fitur Import Excel (SheetJS)
         function exportFormatNilaiExcel() {
@@ -5807,7 +5907,22 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
         function openModalMapel(id='') { document.getElementById('modal-mapel').classList.remove('hidden'); if(id){ const m=db.mapel.find(x=>x.id===id); document.getElementById('form-mapel-id').value=m.id; document.getElementById('form-mapel-nama').value=m.nama; document.getElementById('form-mapel-kkm').value=m.kkm||75; }else{document.getElementById('form-mapel-id').value=''; document.getElementById('form-mapel-nama').value=''; document.getElementById('form-mapel-kkm').value=75;} }
         function closeModalMapel() { document.getElementById('modal-mapel').classList.add('hidden'); }
         function saveFormMapel() { const id=document.getElementById('form-mapel-id').value, nm=document.getElementById('form-mapel-nama').value, kkm=parseInt(document.getElementById('form-mapel-kkm').value)||75; if(!nm) return; if(id){let mx=db.mapel.find(x=>x.id===id); mx.nama=nm; mx.kkm=kkm;} else db.mapel.push({id:'M_'+Date.now(), nama:nm, kkm:kkm}); saveDB(); closeModalMapel(); renderMapelTable(); }
-        function deleteMapel(id) { db.mapel=db.mapel.filter(x=>x.id!==id); saveDB(); renderMapelTable(); }
+        function deleteMapel(id) {
+            const mapel = db.mapel.find(x => x.id === id);
+            Swal.fire({
+                title: 'Hapus Mata Pelajaran?',
+                html: `Yakin hapus mapel <b class="text-blue-400">${mapel?.nama || 'ini'}</b>?<br><span class="text-xs text-slate-400">Semua nilai & TP terkait mapel ini akan ikut terhapus.</span>`,
+                icon: 'warning', showCancelButton: true,
+                confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal',
+                background: '#1e293b', color: '#f8fafc'
+            }).then(r => {
+                if (r.isConfirmed) {
+                    db.mapel = db.mapel.filter(x => x.id !== id);
+                    saveDB(); renderMapelTable();
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Mapel dihapus', showConfirmButton: false, timer: 1800 });
+                }
+            });
+        }
 
         function loadInputNilaiSiswa() {
             const mId = document.getElementById('select-nilai-mapel').value, b = document.getElementById('table-nilai-body'); b.innerHTML = ''; if(!mId) return;
@@ -5817,6 +5932,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
 
             b.innerHTML = db.siswa.map(s => {
                 const n = db.nilai[`${s.id}_${mId}`] || { formatif: '', sts: '', sas: '' };
+                const isKunci = !!(db.nilaiKunci && db.nilaiKunci[`${s.id}_${mId}`]);
 
                 // ── FORMATIF ──────────────────────────────────────────────
                 // getNilaiFormatifAuto sudah include remedial formatif (ambil max)
@@ -5860,7 +5976,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                 } else {
                     formatifCell = `<td class="p-2">
                         <div class="flex flex-col items-center gap-0.5">
-                            <input type="number" value="${n.formatif}" oninput="saveSemuaNilaiSilent(this)" data-siswa="${s.id}" data-type="formatif" class="input-nilai w-full bg-slate-950 border border-slate-700 rounded p-1 text-center text-emerald-400 outline-none focus:border-emerald-500">
+                            <input type="number" value="${n.formatif}" oninput="saveSemuaNilaiSilent(this)" data-siswa="${s.id}" data-type="formatif" ${isKunci ? 'disabled' : ''} class="input-nilai w-full ${isKunci ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-slate-950 text-emerald-400'} border border-slate-700 rounded p-1 text-center outline-none focus:border-emerald-500">
                             ${hasRemFmt ? `<span class="text-[8px] text-amber-500 flex items-center gap-0.5"><i class="fas fa-redo-alt text-[7px]"></i> efektif: ${parseFloat(rataTP).toFixed(1)}</span>` : ''}
                         </div>
                     </td>`;
@@ -5880,7 +5996,8 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                 const stsCell = `<td class="p-2">
                     <div class="flex flex-col items-center gap-0.5">
                         <input type="number" value="${stsAsli !== null ? stsAsli : (n.sts || '')}" oninput="saveSemuaNilaiSilent(this)" data-siswa="${s.id}" data-type="sts"
-                            class="input-nilai w-full bg-slate-950 border ${hasRemSts ? 'border-amber-600/60' : belumUjianSts ? 'border-amber-800/50' : 'border-slate-700'} rounded p-1 text-center ${hasRemSts ? 'text-slate-400 text-[10px]' : 'text-blue-400'} outline-none focus:border-blue-500"
+                            ${isKunci ? 'disabled' : ''}
+                            class="input-nilai w-full ${isKunci ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : (hasRemSts ? 'text-slate-400 text-[10px] bg-slate-950' : 'bg-slate-950 text-blue-400')} border ${hasRemSts ? 'border-amber-600/60' : belumUjianSts ? 'border-amber-800/50' : 'border-slate-700'} rounded p-1 text-center outline-none focus:border-blue-500"
                             title="${hasRemSts ? 'Nilai asli STS: ' + (stsAsli !== null ? stsAsli : '-') + ' | Nilai remedial: ' + remStsNum.toFixed(1) + ' | Nilai efektif (yang masuk rapor): ' + (stsEfektif !== null ? stsEfektif.toFixed(1) : '-') : ''}">
                         ${hasRemSts ? `<span class="text-[9px] text-amber-400 font-black flex items-center gap-0.5 whitespace-nowrap"><i class="fas fa-redo-alt text-[7px]"></i> Efektif: ${stsEfektif !== null ? stsEfektif.toFixed(1) : '-'} <span class="text-slate-500 font-normal">(RMD:${remStsNum.toFixed(1)})</span></span>` : belumUjianSts ? `<span class="text-[8px] text-amber-600 font-bold flex items-center gap-0.5"><i class="fas fa-exclamation-triangle text-[7px]"></i> Belum ujian</span>` : ''}
                     </div>
@@ -5900,7 +6017,8 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                 const sasCell = `<td class="p-2">
                     <div class="flex flex-col items-center gap-0.5">
                         <input type="number" value="${sasAsli !== null ? sasAsli : (n.sas || '')}" oninput="saveSemuaNilaiSilent(this)" data-siswa="${s.id}" data-type="sas"
-                            class="input-nilai w-full bg-slate-950 border ${hasRemSas ? 'border-amber-600/60' : belumUjianSas ? 'border-amber-800/50' : 'border-slate-700'} rounded p-1 text-center ${hasRemSas ? 'text-slate-400 text-[10px]' : 'text-indigo-400'} outline-none focus:border-indigo-500"
+                            ${isKunci ? 'disabled' : ''}
+                            class="input-nilai w-full ${isKunci ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : (hasRemSas ? 'text-slate-400 text-[10px] bg-slate-950' : 'bg-slate-950 text-indigo-400')} border ${hasRemSas ? 'border-amber-600/60' : belumUjianSas ? 'border-amber-800/50' : 'border-slate-700'} rounded p-1 text-center outline-none focus:border-indigo-500"
                             title="${hasRemSas ? 'Nilai asli SAS: ' + (sasAsli !== null ? sasAsli : '-') + ' | Nilai remedial: ' + remSasNum.toFixed(1) + ' | Nilai efektif (yang masuk rapor): ' + (sasEfektif !== null ? sasEfektif.toFixed(1) : '-') : ''}">
                         ${hasRemSas ? `<span class="text-[9px] text-amber-400 font-black flex items-center gap-0.5 whitespace-nowrap"><i class="fas fa-redo-alt text-[7px]"></i> Efektif: ${sasEfektif !== null ? sasEfektif.toFixed(1) : '-'} <span class="text-slate-500 font-normal">(RMD:${remSasNum.toFixed(1)})</span></span>` : belumUjianSas ? `<span class="text-[8px] text-amber-600 font-bold flex items-center gap-0.5"><i class="fas fa-exclamation-triangle text-[7px]"></i> Belum ujian</span>` : ''}
                     </div>
@@ -5908,7 +6026,8 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
 
                 // ── NILAI AKHIR ───────────────────────────────────────────
                 const hasNilai = db.nilai[`${s.id}_${mId}`];
-                const hapusBtn = `<button onclick="hapusNilaiSiswaMapel('${s.id}')" title="Hapus nilai ${s.nama}" class="w-8 h-8 flex items-center justify-center rounded-lg transition ${hasNilai ? 'text-red-400 hover:bg-red-900/30' : 'text-slate-700 cursor-not-allowed'}" ${hasNilai ? '' : 'disabled'}><i class="fas fa-times text-xs"></i></button>`;
+                const hapusBtn = `<button onclick="hapusNilaiSiswaMapel('${s.id}')" title="${isKunci ? 'Buka kunci dulu sebelum menghapus' : 'Hapus nilai ' + s.nama}" class="w-8 h-8 flex items-center justify-center rounded-lg transition ${isKunci ? 'text-slate-700 cursor-not-allowed' : hasNilai ? 'text-red-400 hover:bg-red-900/30' : 'text-slate-700 cursor-not-allowed'}" ${isKunci || !hasNilai ? 'disabled' : ''}><i class="fas fa-times text-xs"></i></button>`;
+                const kunciBtn = `<button onclick="toggleKunciNilai('${s.id}')" title="${isKunci ? 'Klik untuk buka kunci nilai' : 'Klik untuk kunci nilai'}" class="w-8 h-8 flex items-center justify-center rounded-lg transition ${isKunci ? 'text-amber-400 bg-amber-900/30 hover:bg-amber-800/50' : 'text-slate-500 hover:bg-slate-800 hover:text-amber-400'}"><i class="fas fa-${isKunci ? 'lock' : 'lock-open'} text-xs"></i></button>`;
 
                 const nAkhir = hitungNilaiAkhirMapel(s.id, mId);
                 const adaBelumUjianFmt = !hasAgendaOrTP && (n.formatif === '' || n.formatif === undefined || n.formatif === null || parseFloat(n.formatif) === 0);
@@ -5929,13 +6048,14 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                         : `<div class="text-[8px] text-red-400 mt-0.5">Belum Tuntas</div>`;
 
                 const belumUjianAny = belumUjianSts || belumUjianSas;
-                return `<tr class="${showRmdBadge ? 'bg-amber-950/10' : belumUjianAny ? 'bg-amber-950/5' : ''}">
+                return `<tr class="${isKunci ? 'bg-amber-950/20 opacity-80' : showRmdBadge ? 'bg-amber-950/10' : belumUjianAny ? 'bg-amber-950/5' : ''}">
                     <td class="p-2 text-center font-mono">${s.absen}</td>
-                    <td class="p-2 font-bold">${s.nama}${showRmdBadge ? ' <span class="text-[8px] font-black text-amber-500 bg-amber-900/30 px-1 py-0.5 rounded ml-1"><i class="fas fa-redo-alt mr-0.5"></i>RMD</span>' : ''}</td>
+                    <td class="p-2 font-bold">${s.nama}${isKunci ? ' <span class="text-[8px] font-black text-amber-400 bg-amber-900/30 px-1 py-0.5 rounded ml-1"><i class="fas fa-lock mr-0.5"></i>Terkunci</span>' : ''}${showRmdBadge && !isKunci ? ' <span class="text-[8px] font-black text-amber-500 bg-amber-900/30 px-1 py-0.5 rounded ml-1"><i class="fas fa-redo-alt mr-0.5"></i>RMD</span>' : ''}</td>
                     ${formatifCell}
                     ${stsCell}
                     ${sasCell}
                     <td id="nakhir-${s.id}" class="p-2 text-center"><span class="font-black text-xs ${nAkhirColor}">${nAkhir > 0 ? Math.round(nAkhir) : '-'}</span>${statusAkhirBadge}</td>
+                    <td class="p-2 text-center">${kunciBtn}</td>
                     <td class="p-2 text-center">${hapusBtn}</td>
                 </tr>`;
             }).join('');
@@ -5981,6 +6101,73 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             saveDBDebounced();
         }
 
+        // === KUNCI NILAI PER SISWA ===
+        function toggleKunciNilai(sId) {
+            const mId = document.getElementById('select-nilai-mapel').value;
+            if (!mId) return;
+            if (!db.nilaiKunci) db.nilaiKunci = {};
+            const key = `${sId}_${mId}`;
+            const sedangKunci = !!db.nilaiKunci[key];
+            const siswa = db.siswa.find(s => s.id === sId);
+
+            if (sedangKunci) {
+                // Buka kunci — langsung tanpa konfirmasi
+                db.nilaiKunci[key] = false;
+                saveDB();
+                loadInputNilaiSiswa();
+                Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: `Kunci dibuka: ${siswa?.nama}`, showConfirmButton: false, timer: 1500 });
+            } else {
+                // Kunci — dengan konfirmasi singkat
+                Swal.fire({
+                    title: 'Kunci Nilai?',
+                    html: `Nilai <b class="text-amber-400">${siswa?.nama}</b> akan dikunci.<br><span class="text-xs text-slate-400">Input tidak bisa diubah sampai kunci dibuka kembali.</span>`,
+                    icon: 'question', showCancelButton: true,
+                    confirmButtonColor: '#d97706', confirmButtonText: '<i class="fas fa-lock mr-1"></i> Ya, Kunci',
+                    cancelButtonText: 'Batal', background: '#1e293b', color: '#f8fafc'
+                }).then(r => {
+                    if (r.isConfirmed) {
+                        db.nilaiKunci[key] = true;
+                        saveDB();
+                        loadInputNilaiSiswa();
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `Nilai ${siswa?.nama} dikunci`, showConfirmButton: false, timer: 1500 });
+                    }
+                });
+            }
+        }
+
+        function kunciSemuaNilai(kunci) {
+            const mId = document.getElementById('select-nilai-mapel').value;
+            if (!mId) return;
+            if (!db.nilaiKunci) db.nilaiKunci = {};
+            const mapel = db.mapel.find(m => m.id === mId);
+            const jumlahSiswa = db.siswa.length;
+            if (jumlahSiswa === 0) return Swal.fire('Info', 'Belum ada siswa.', 'info');
+
+            Swal.fire({
+                title: kunci ? `Kunci Semua Nilai?` : `Buka Kunci Semua?`,
+                html: kunci
+                    ? `Nilai <b class="text-amber-400">semua ${jumlahSiswa} siswa</b> untuk mapel <b class="text-blue-400">${mapel?.nama}</b> akan dikunci sekaligus.`
+                    : `Kunci nilai <b class="text-amber-400">semua ${jumlahSiswa} siswa</b> untuk mapel <b class="text-blue-400">${mapel?.nama}</b> akan dibuka.`,
+                icon: 'question', showCancelButton: true,
+                confirmButtonColor: kunci ? '#d97706' : '#475569',
+                confirmButtonText: kunci ? '<i class="fas fa-lock mr-1"></i> Ya, Kunci Semua' : '<i class="fas fa-lock-open mr-1"></i> Ya, Buka Semua',
+                cancelButtonText: 'Batal', background: '#1e293b', color: '#f8fafc'
+            }).then(r => {
+                if (r.isConfirmed) {
+                    db.siswa.forEach(s => {
+                        db.nilaiKunci[`${s.id}_${mId}`] = kunci;
+                    });
+                    saveDB();
+                    loadInputNilaiSiswa();
+                    Swal.fire({
+                        toast: true, position: 'top-end', icon: 'success',
+                        title: kunci ? `Semua nilai dikunci` : `Semua kunci dibuka`,
+                        showConfirmButton: false, timer: 1800
+                    });
+                }
+            });
+        }
+
         // === HAPUS NILAI ===
         function hapusNilaiSiswaMapel(sId) {
             // Hapus nilai 1 siswa pada mapel yang sedang aktif
@@ -6009,6 +6196,8 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                     if (db.remedialHistory) {
                         ['formatif','sts','sas'].forEach(j => { delete db.remedialHistory[`${sId}_${mId}_${j}`]; });
                     }
+                    // Hapus juga kunci nilai siswa ini
+                    if (db.nilaiKunci) delete db.nilaiKunci[`${sId}_${mId}`];
                     saveDB(); loadInputNilaiSiswa(); renderRekapitulasi();
                     Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `Nilai ${siswa?.nama} dihapus`, showConfirmButton: false, timer: 2000 });
                 }
@@ -6044,6 +6233,8 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                         if (db.remedialHistory) {
                             ['formatif','sts','sas'].forEach(j => { delete db.remedialHistory[`${s.id}_${mId}_${j}`]; });
                         }
+                        // Hapus juga kunci nilai siswa ini untuk mapel ini
+                        if (db.nilaiKunci) delete db.nilaiKunci[`${s.id}_${mId}`];
                     });
                     saveDB(); loadInputNilaiSiswa(); renderRekapitulasi();
                     Swal.fire('Selesai', `Semua nilai ${mapel?.nama} berhasil dihapus.`, 'success');
@@ -6081,6 +6272,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                             db.remedial = {};
                             db.remedialMax = {};
                             db.remedialHistory = {};
+                            db.nilaiKunci = {}; // Reset semua kunci nilai
                             saveDB(); loadInputNilaiSiswa(); renderRekapitulasi();
                             Swal.fire('Selesai', 'Semua data nilai berhasil dihapus.', 'success');
                         }
@@ -7080,7 +7272,23 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             w.focus();
             setTimeout(()=>{w.print();},600);
         }
-        function deleteKas(id) { db.kas=db.kas.filter(x=>x.id!==id); saveDB(); renderKasTable(); }
+        function deleteKas(id) {
+            const kas = db.kas.find(x => x.id === id);
+            const siswa = kas ? db.siswa.find(s => s.id === kas.siswaId) : null;
+            Swal.fire({
+                title: 'Hapus Data Kas?',
+                html: `Yakin hapus pembayaran kas <b class="text-emerald-400">${siswa?.nama || '-'}</b> tanggal <b>${kas?.tgl || '-'}</b>?`,
+                icon: 'warning', showCancelButton: true,
+                confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal',
+                background: '#1e293b', color: '#f8fafc'
+            }).then(r => {
+                if (r.isConfirmed) {
+                    db.kas = db.kas.filter(x => x.id !== id);
+                    saveDB(); renderKasTable();
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Data kas dihapus', showConfirmButton: false, timer: 1800 });
+                }
+            });
+        }
         function saveHargaLKS() { db.profil.hargaLks=document.getElementById('input-harga-lks').value; saveDB(); renderLksTable(); }
         function renderLksTable() { document.getElementById('input-harga-lks').value=db.profil.hargaLks; const b=document.getElementById('table-lks-body'); const h=parseFloat(db.profil.hargaLks)||0; b.innerHTML=db.siswa.map(s=>{ let qty=s.lksQty||1, tagihan=h*qty, trans=db.lks[s.id]||[], tot=trans.reduce((sum,tr)=>sum+parseFloat(tr.nominal),0); let stat=(tot>=tagihan&&tagihan>0)?'<span class="text-emerald-400 text-[10px]">LUNAS</span>':`<span class="text-red-400 text-[10px]">-${(tagihan-tot).toLocaleString('id-ID')}</span>`; if(qty===0) stat='<span class="text-slate-500">Tdk Beli</span>'; const lastId=trans.length>0?trans[trans.length-1].id:''; const cetakBtn=lastId?`<button onclick="tampilBuktiLKS('${s.id}','${lastId}')" class="bg-slate-800 text-emerald-400 px-2 py-1 rounded text-[10px] ml-1" title="Cetak Bukti Terakhir"><i class="fas fa-print"></i></button>`:''; return `<tr><td class="p-2 font-bold truncate">${s.nama}</td><td class="p-2 text-center cursor-pointer text-amber-400" onclick="openModalQtyLks('${s.id}')">${qty}</td><td class="p-2 text-right text-emerald-400 font-mono">${tot.toLocaleString('id-ID')}</td><td class="p-2 text-right font-mono">${tagihan.toLocaleString('id-ID')}</td><td class="p-2 text-center">${stat}</td><td class="p-2 text-center flex gap-1 justify-center"><button onclick="openModalLks('${s.id}')" class="bg-slate-800 text-amber-400 px-2 py-1 rounded text-[10px]"><i class="fas fa-plus"></i></button>${cetakBtn}</td></tr>`; }).join(''); }
         function openModalLks(sId) { const s=db.siswa.find(x=>x.id===sId); document.getElementById('lks-nama-siswa').textContent=s.nama; document.getElementById('form-lks-siswaId').value=sId; document.getElementById('form-lks-tgl').value=getTodayLocalStr(); document.getElementById('form-lks-nominal').value=''; document.getElementById('form-lks-sumber-wrap').innerHTML=renderSumberDanaPicker('lks', sId); document.getElementById('modal-lks').classList.remove('hidden'); }
@@ -7174,7 +7382,22 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
         function saveP5RASilent() { document.querySelectorAll('.p5ra-s').forEach(el=>{ const id=el.getAttribute('data-id'), dim=el.getAttribute('data-dim'); if(!db.p5ra[id]) db.p5ra[id]={}; db.p5ra[id][dim]=el.value; }); saveDB(); }
         function renderEkskulList() { const l=document.getElementById('list-ekskul-group'); l.innerHTML=db.ekskul.length?db.ekskul.map(e=>`<li class="bg-slate-950 border border-slate-700 px-3 py-1 rounded flex items-center gap-2">${e.nama} <button onclick="deleteEkskul('${e.id}')" class="text-red-400"><i class="fas fa-times"></i></button></li>`).join(''):'<li class="text-slate-500 italic">Kosong</li>'; }
         function saveFormEkskul() { const v=document.getElementById('form-ekskul-nama').value; if(v){db.ekskul.push({id:'E_'+Date.now(),nama:v}); saveDB(); document.getElementById('form-ekskul-nama').value=''; renderEkskulList(); renderEkskulPenilaianTable();} }
-        function deleteEkskul(id) { db.ekskul=db.ekskul.filter(x=>x.id!==id); saveDB(); renderEkskulList(); renderEkskulPenilaianTable(); }
+        function deleteEkskul(id) {
+            const ekskul = db.ekskul.find(x => x.id === id);
+            Swal.fire({
+                title: 'Hapus Ekskul?',
+                html: `Yakin hapus ekskul <b class="text-amber-400">${ekskul?.nama || 'ini'}</b>?<br><span class="text-xs text-slate-400">Data nilai ekskul semua siswa untuk ekskul ini akan terhapus.</span>`,
+                icon: 'warning', showCancelButton: true,
+                confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal',
+                background: '#1e293b', color: '#f8fafc'
+            }).then(r => {
+                if (r.isConfirmed) {
+                    db.ekskul = db.ekskul.filter(x => x.id !== id);
+                    saveDB(); renderEkskulList(); renderEkskulPenilaianTable();
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Ekskul dihapus', showConfirmButton: false, timer: 1800 });
+                }
+            });
+        }
         function renderEkskulPenilaianTable() { const b=document.getElementById('table-ekskul-body'); b.innerHTML=db.siswa.map(s=>{ const ne=db.nilaiEkskul[s.id]||{eId:'', p:'A', ket:''}; let opt='<option value="">- Tdk Ikut -</option>'+db.ekskul.map(e=>`<option value="${e.id}" ${ne.eId===e.id?'selected':''}>${e.nama}</option>`).join(''); return `<tr><td class="p-2 text-center">${s.absen||'-'}</td><td class="p-2 font-bold">${s.nama}</td><td class="p-2"><select id="ek-id-${s.id}" onchange="saveEkskulS()" class="bg-slate-950 border border-slate-700 rounded text-xs p-1 w-full outline-none">${opt}</select></td><td class="p-2"><select id="ek-p-${s.id}" onchange="saveEkskulS()" class="bg-slate-950 border border-slate-700 rounded text-xs p-1 w-full outline-none"><option value="A" ${ne.p==='A'?'selected':''}>A</option><option value="B" ${ne.p==='B'?'selected':''}>B</option><option value="C" ${ne.p==='C'?'selected':''}>C</option></select></td><td class="p-2"><input type="text" id="ek-kt-${s.id}" value="${ne.ket}" onchange="saveEkskulS()" placeholder="Capaian..." class="bg-slate-950 border border-slate-700 rounded text-xs p-1 w-full outline-none"></td></tr>`; }).join(''); }
 
         // ============================================================
@@ -15013,10 +15236,20 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             };
 
             window.hapusTTDWali = function() {
-                db.profil.ttdWali = '';
-                saveDB();
-                updateTTDPreview('');
-                Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Tanda tangan dihapus', showConfirmButton: false, timer: 1800 });
+                Swal.fire({
+                    title: 'Hapus Tanda Tangan?',
+                    text: 'Tanda tangan wali kelas akan dihapus. Yakin?',
+                    icon: 'warning', showCancelButton: true,
+                    confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal',
+                    background: '#1e293b', color: '#f8fafc'
+                }).then(r => {
+                    if (r.isConfirmed) {
+                        db.profil.ttdWali = '';
+                        saveDB();
+                        updateTTDPreview('');
+                        Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Tanda tangan dihapus', showConfirmButton: false, timer: 1800 });
+                    }
+                });
             };
 
             function saveTTDWali(dataUrl) {
@@ -15542,6 +15775,142 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
 
         // ============================================================
         // END SURAT KEPADA ORANG TUA MURID MODULE
+        // ============================================================
+
+        // ============================================================
+        // FORMULIR DATA SISWA BARU MODULE
+        // ============================================================
+        function initFormulirSiswaModule() {
+            // Tidak ada inisialisasi data khusus — opsi cetak sudah punya default di HTML
+        }
+
+        function buatHTMLFormulirSiswa() {
+            const tampilkanA = document.getElementById('fsb-bagian-a').checked;
+            const tampilkanB = document.getElementById('fsb-bagian-b').checked;
+            const tampilkanC = document.getElementById('fsb-bagian-c').checked;
+            const sekolah = db.profil?.sekolah || 'Nama Sekolah';
+            const wali = db.profil?.wali || '-';
+            const tahunAjaran = db.raporSettings?.tahunajaran || '';
+            const kelas = db.raporSettings?.kelas || '';
+
+            const garis = (lebar='100%') => `<span style="display:inline-block;border-bottom:1px dotted #000;width:${lebar};height:14px;vertical-align:bottom;"></span>`;
+
+            let html = `
+            <div style="text-align:center;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:14px;">
+                <h2 style="font-size:15px;font-weight:bold;margin:0;text-transform:uppercase;">${sekolah}</h2>
+                <p style="font-size:13px;font-weight:bold;margin:6px 0 0;text-decoration:underline;">FORMULIR DATA SISWA</p>
+                <p style="font-size:11px;margin:2px 0 0;">Tahun Ajaran ${tahunAjaran || '....................'} ${kelas ? '— Kelas ' + kelas : ''}</p>
+            </div>
+            <p style="margin-bottom:10px;">Mohon Bapak/Ibu Orang Tua/Wali murid mengisi formulir ini dengan lengkap dan benar, lalu menyerahkannya kembali kepada Wali Kelas.</p>
+            `;
+
+            if (tampilkanA) {
+                html += `
+                <p style="font-weight:bold;text-decoration:underline;margin-bottom:6px;">A. IDENTITAS SISWA</p>
+                <table style="width:100%;border-collapse:collapse;margin-bottom:10px;">
+                    <tr><td style="padding:4px 4px;width:42%;">1. Nama Lengkap Siswa</td><td style="padding:4px 0;width:2%;">:</td><td style="padding:4px 0;">${garis()}</td></tr>
+                    <tr><td style="padding:4px 4px;">2. Jenis Kelamin</td><td style="padding:4px 0;">:</td><td style="padding:4px 0;">☐ Laki-laki &nbsp;&nbsp;&nbsp; ☐ Perempuan</td></tr>
+                    <tr><td style="padding:4px 4px;">3. Tempat, Tanggal Lahir</td><td style="padding:4px 0;">:</td><td style="padding:4px 0;">${garis()}</td></tr>
+                    <tr><td style="padding:4px 4px;">4. Anak ke- dari jumlah saudara</td><td style="padding:4px 0;">:</td><td style="padding:4px 0;">Anak ke ${garis('60px')} dari ${garis('60px')} bersaudara</td></tr>
+                    <tr><td style="padding:4px 4px;vertical-align:top;">5. Alamat Tempat Tinggal</td><td style="padding:4px 0;vertical-align:top;">:</td><td style="padding:4px 0;">
+                        ${garis()}<br><br>${garis()}
+                    </td></tr>
+                </table>
+                `;
+            }
+
+            if (tampilkanB) {
+                html += `
+                <p style="font-weight:bold;text-decoration:underline;margin-bottom:6px;">B. DATA ORANG TUA / WALI</p>
+                <table style="width:100%;border-collapse:collapse;margin-bottom:10px;">
+                    <tr><td style="padding:4px 4px;width:42%;">1. Nama Ayah</td><td style="padding:4px 0;width:2%;">:</td><td style="padding:4px 0;">${garis()}</td></tr>
+                    <tr><td style="padding:4px 4px;">2. Pekerjaan Ayah</td><td style="padding:4px 0;">:</td><td style="padding:4px 0;">${garis()}</td></tr>
+                    <tr><td style="padding:4px 4px;">3. Nama Ibu</td><td style="padding:4px 0;">:</td><td style="padding:4px 0;">${garis()}</td></tr>
+                    <tr><td style="padding:4px 4px;">4. Pekerjaan Ibu</td><td style="padding:4px 0;">:</td><td style="padding:4px 0;">${garis()}</td></tr>
+                    <tr><td style="padding:4px 4px;">5. No. WhatsApp Aktif Orang Tua</td><td style="padding:4px 0;">:</td><td style="padding:4px 0;">${garis()}</td></tr>
+                    <tr><td style="padding:4px 4px;">6. Alamat Email Orang Tua</td><td style="padding:4px 0;">:</td><td style="padding:4px 0;">${garis()}</td></tr>
+                </table>
+                `;
+            }
+
+            if (tampilkanC) {
+                html += `
+                <p style="font-weight:bold;text-decoration:underline;margin-bottom:6px;">C. AKADEMIK & LAINNYA</p>
+                <table style="width:100%;border-collapse:collapse;margin-bottom:10px;">
+                    <tr><td style="padding:4px 4px;width:42%;">1. Cita-cita</td><td style="padding:4px 0;width:2%;">:</td><td style="padding:4px 0;">${garis()}</td></tr>
+                    <tr><td style="padding:4px 4px;">2. Hobi / Minat Ekstrakurikuler</td><td style="padding:4px 0;">:</td><td style="padding:4px 0;">${garis()}</td></tr>
+                </table>
+                `;
+            }
+
+            html += `
+            <p style="margin-bottom:30px;">Demikian data ini saya isi dengan sebenar-benarnya untuk dapat dipergunakan sebagaimana mestinya.</p>
+            <table style="width:100%;border-collapse:collapse;">
+                <tr>
+                    <td style="width:50%;"></td>
+                    <td style="width:50%;text-align:center;">
+                        ............................, ${garis('100px')}<br><br><br><br>
+                        Orang Tua/Wali Murid<br><br><br><br><br>
+                        ( ${garis('180px')} )
+                    </td>
+                </tr>
+            </table>
+            <p style="margin-top:20px;font-size:10px;color:#555;border-top:1px dashed #999;padding-top:6px;">
+                Formulir ini diterima oleh Wali Kelas: <b>${wali}</b> — Tanggal diterima: ${garis('120px')}
+            </p>
+            `;
+
+            return html;
+        }
+
+        function previewFormulirSiswa() {
+            const html = buatHTMLFormulirSiswa();
+            document.getElementById('fsb-preview-area').innerHTML = html;
+        }
+
+        function cetakFormulirSiswa() {
+            const html = buatHTMLFormulirSiswa();
+            const jumlah = Math.max(1, Math.min(100, parseInt(document.getElementById('fsb-jumlah').value) || 1));
+
+            let pages = '';
+            for (let i = 0; i < jumlah; i++) {
+                pages += `<div class="formulir-page">${html}</div>`;
+            }
+
+            const printWin = window.open('', '_blank', 'width=800,height=700');
+            if (!printWin) return Swal.fire('Peringatan', 'Popup diblokir browser. Izinkan popup untuk mencetak.', 'warning');
+            printWin.document.write(`<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Formulir Data Siswa Baru</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4 portrait; margin: 18mm 18mm 18mm 22mm; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Times New Roman', Georgia, serif; font-size: 12px; color: #111; background: #fff; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  p { margin: 0 0 8px 0; line-height: 1.7; }
+  .formulir-page { page-break-after: always; }
+  .formulir-page:last-child { page-break-after: auto; }
+  .no-print { position: sticky; top: 0; z-index: 999; background: #0f172a; padding: 10px 16px; text-align: center; }
+  .no-print button { background: #0891b2; color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: bold; font-family: sans-serif; cursor: pointer; }
+  @media print { body { margin: 0; } .no-print { display: none !important; } }
+</style>
+</head>
+<body>
+<div class="no-print"><button onclick="window.print()">🖨️ Cetak / Simpan PDF</button></div>
+${pages}
+<script>
+document.fonts.ready.then(function() { setTimeout(function() { window.print(); }, 500); }).catch(function(){ setTimeout(function(){ window.print(); }, 800); });
+<\/script>
+</body>
+</html>`);
+            printWin.document.close();
+            printWin.focus();
+            setTimeout(function(){ printWin.print(); }, 1000);
+        }
+        // ============================================================
+        // END FORMULIR DATA SISWA BARU MODULE
         // ============================================================
 
         // ============================================================
@@ -18157,6 +18526,241 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
     // ============================================================
     // END INPUT 1 TAP
     // ============================================================
+
+    // ============================================================
+    // RESET ABSENSI
+    // ============================================================
+    function openModalResetAbsensi() {
+        // Isi dropdown bulan
+        const bulanSel = document.getElementById('reset-abs-bulan');
+        const bulanNama = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+        bulanSel.innerHTML = bulanNama.map((b, i) => `<option value="${String(i+1).padStart(2,'0')}">${b}</option>`).join('');
+        // Set bulan & tahun sesuai sekarang
+        const now = new Date();
+        bulanSel.value = String(now.getMonth()+1).padStart(2,'0');
+        document.getElementById('reset-abs-tahun').value = now.getFullYear();
+        document.getElementById('reset-abs-tahun-semester').value = now.getFullYear();
+        // Set tanggal harian ke hari ini
+        document.getElementById('reset-abs-tanggal').value = now.toISOString().slice(0,10);
+        // Tampilkan modal
+        document.getElementById('modal-reset-absensi').classList.remove('hidden');
+        // Default aktifkan tab harian
+        switchResetAbsTab('harian');
+    }
+    function closeModalResetAbsensi() {
+        document.getElementById('modal-reset-absensi').classList.add('hidden');
+    }
+    function switchResetAbsTab(tab) {
+        ['harian','minggu','bulan','semester','semua'].forEach(t => {
+            const panel = document.getElementById(`rabs-panel-${t}`);
+            const btn = document.getElementById(`rabs-btn-${t}`);
+            if (panel) panel.classList.toggle('hidden', t !== tab);
+            if (btn) {
+                btn.className = t === tab
+                    ? 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-red-600 text-white'
+                    : 'px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-400 hover:bg-slate-700';
+            }
+        });
+    }
+    function eksekusiResetAbsensi(mode) {
+        let judul = '', pesan = '', targetKeys = [];
+        const allKeys = Object.keys(db.absensi || {});
+
+        if (mode === 'harian') {
+            const tgl = document.getElementById('reset-abs-tanggal').value;
+            if (!tgl) return Swal.fire('Peringatan', 'Pilih tanggal terlebih dahulu.', 'warning');
+            targetKeys = allKeys.filter(k => k === tgl);
+            judul = `Reset Absensi ${tgl}`;
+            pesan = targetKeys.length === 0
+                ? 'Tidak ada data absensi pada tanggal tersebut.'
+                : `Data absensi tanggal <b class="text-amber-400">${tgl}</b> akan dihapus.`;
+        } else if (mode === 'minggu') {
+            const mulai = document.getElementById('reset-abs-minggu-mulai').value;
+            const akhir = document.getElementById('reset-abs-minggu-akhir').value;
+            if (!mulai || !akhir) return Swal.fire('Peringatan', 'Isi rentang tanggal minggu.', 'warning');
+            if (mulai > akhir) return Swal.fire('Peringatan', 'Tanggal mulai harus sebelum tanggal akhir.', 'warning');
+            targetKeys = allKeys.filter(k => k >= mulai && k <= akhir);
+            judul = `Reset Absensi Minggu`;
+            pesan = targetKeys.length === 0
+                ? 'Tidak ada data absensi dalam rentang tersebut.'
+                : `Data absensi dari <b class="text-amber-400">${mulai}</b> s/d <b class="text-amber-400">${akhir}</b><br><span class="text-xs text-slate-400">(${targetKeys.length} hari)</span> akan dihapus.`;
+        } else if (mode === 'bulan') {
+            const bulan = document.getElementById('reset-abs-bulan').value;
+            const tahun = document.getElementById('reset-abs-tahun').value;
+            if (!tahun) return Swal.fire('Peringatan', 'Isi tahun terlebih dahulu.', 'warning');
+            const prefix = `${tahun}-${bulan}`;
+            targetKeys = allKeys.filter(k => k.startsWith(prefix));
+            const bulanNama = ['','Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+            judul = `Reset Absensi Bulan ${bulanNama[parseInt(bulan)]} ${tahun}`;
+            pesan = targetKeys.length === 0
+                ? `Tidak ada data absensi untuk bulan ${bulanNama[parseInt(bulan)]} ${tahun}.`
+                : `Data absensi bulan <b class="text-amber-400">${bulanNama[parseInt(bulan)]} ${tahun}</b><br><span class="text-xs text-slate-400">(${targetKeys.length} hari)</span> akan dihapus.`;
+        } else if (mode === 'semester') {
+            const sem = document.getElementById('reset-abs-semester').value;
+            const tahun = parseInt(document.getElementById('reset-abs-tahun-semester').value);
+            if (!tahun) return Swal.fire('Peringatan', 'Isi tahun terlebih dahulu.', 'warning');
+            let bulanRange;
+            if (sem === '1') {
+                // Semester 1: Jul–Des tahun berjalan
+                bulanRange = [`${tahun}-07`, `${tahun}-08`, `${tahun}-09`, `${tahun}-10`, `${tahun}-11`, `${tahun}-12`];
+            } else {
+                // Semester 2: Jan–Jun tahun berikutnya
+                bulanRange = [`${tahun+1}-01`, `${tahun+1}-02`, `${tahun+1}-03`, `${tahun+1}-04`, `${tahun+1}-05`, `${tahun+1}-06`];
+            }
+            targetKeys = allKeys.filter(k => bulanRange.some(b => k.startsWith(b)));
+            judul = `Reset Absensi Semester ${sem} TA ${tahun}/${tahun+1}`;
+            pesan = targetKeys.length === 0
+                ? 'Tidak ada data absensi pada semester tersebut.'
+                : `Data absensi <b class="text-amber-400">Semester ${sem} TA ${tahun}/${tahun+1}</b><br><span class="text-xs text-slate-400">(${targetKeys.length} hari)</span> akan dihapus.`;
+        } else if (mode === 'semua') {
+            targetKeys = allKeys;
+            judul = '⚠️ Reset SEMUA Absensi';
+            pesan = targetKeys.length === 0
+                ? 'Tidak ada data absensi yang tersimpan.'
+                : `<b class="text-red-400">SELURUH data absensi</b> siswa (${targetKeys.length} hari) akan dihapus permanen.<br><span class="text-xs text-red-300 font-bold">Tindakan ini tidak bisa dibatalkan!</span>`;
+        }
+
+        if (targetKeys.length === 0) return Swal.fire('Info', pesan.replace(/<[^>]+>/g,''), 'info');
+
+        Swal.fire({
+            title: judul,
+            html: pesan,
+            icon: mode === 'semua' ? 'error' : 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            confirmButtonText: `<i class="fas fa-trash mr-1"></i> Ya, Reset`,
+            cancelButtonText: 'Batal',
+            background: '#1e293b', color: '#f8fafc'
+        }).then(r => {
+            if (!r.isConfirmed) return;
+            // Untuk mode semua, minta konfirmasi kedua
+            if (mode === 'semua') {
+                Swal.fire({
+                    title: 'Konfirmasi Akhir',
+                    text: 'Ketik "RESET" untuk melanjutkan penghapusan semua absensi.',
+                    input: 'text', inputPlaceholder: 'Ketik RESET',
+                    showCancelButton: true, confirmButtonColor: '#dc2626', confirmButtonText: 'Hapus Sekarang',
+                    background: '#1e293b', color: '#f8fafc',
+                    preConfirm: (val) => {
+                        if (val !== 'RESET') Swal.showValidationMessage('Ketik "RESET" dengan huruf kapital');
+                        return val;
+                    }
+                }).then(r2 => {
+                    if (r2.isConfirmed) doResetAbsensi(targetKeys);
+                });
+            } else {
+                doResetAbsensi(targetKeys);
+            }
+        });
+    }
+    function doResetAbsensi(keys) {
+        keys.forEach(k => delete db.absensi[k]);
+        saveDB(); // saveDB() otomatis clear _absensiCache
+        loadAbsensiHarian();
+        renderChartAbsensi();
+        closeModalResetAbsensi();
+        Swal.fire({
+            toast: true, position: 'top-end', icon: 'success',
+            title: `${keys.length} hari absensi direset`, showConfirmButton: false, timer: 2500
+        });
+    }
+    // ============================================================
+    // END RESET ABSENSI
+    // ============================================================
     </script>
+
+    <!-- ============================================================
+         MODAL RESET ABSENSI
+         ============================================================ -->
+    <div id="modal-reset-absensi" class="fixed inset-0 z-[500] flex items-center justify-center bg-slate-950/80 hidden">
+        <div class="bg-slate-900 rounded-2xl border border-red-900/40 shadow-2xl w-full max-w-md mx-4 modal-enter">
+            <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+                <h3 class="font-black text-base text-white flex items-center gap-2"><i class="fas fa-undo-alt text-red-400"></i> Reset Absensi Siswa</h3>
+                <button onclick="closeModalResetAbsensi()" class="text-slate-500 hover:text-red-400 transition"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            <div class="p-5 space-y-4">
+                <!-- Tab Mode -->
+                <div class="flex flex-wrap gap-2">
+                    <button id="rabs-btn-harian" onclick="switchResetAbsTab('harian')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-red-600 text-white">Harian</button>
+                    <button id="rabs-btn-minggu" onclick="switchResetAbsTab('minggu')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-400 hover:bg-slate-700">Mingguan</button>
+                    <button id="rabs-btn-bulan" onclick="switchResetAbsTab('bulan')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-400 hover:bg-slate-700">Bulanan</button>
+                    <button id="rabs-btn-semester" onclick="switchResetAbsTab('semester')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-400 hover:bg-slate-700">Semester</button>
+                    <button id="rabs-btn-semua" onclick="switchResetAbsTab('semua')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-slate-800 text-slate-400 hover:bg-slate-700">Semua</button>
+                </div>
+
+                <!-- Panel Harian -->
+                <div id="rabs-panel-harian" class="space-y-3">
+                    <p class="text-xs text-slate-400">Hapus absensi pada satu tanggal tertentu.</p>
+                    <div>
+                        <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Tanggal</label>
+                        <input type="date" id="reset-abs-tanggal" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 outline-none focus:border-red-500">
+                    </div>
+                    <button onclick="eksekusiResetAbsensi('harian')" class="w-full bg-red-700 hover:bg-red-600 text-white font-bold text-xs py-2.5 rounded-lg transition flex items-center justify-center gap-2"><i class="fas fa-trash-alt"></i> Reset Absensi Hari Ini</button>
+                </div>
+
+                <!-- Panel Mingguan -->
+                <div id="rabs-panel-minggu" class="space-y-3 hidden">
+                    <p class="text-xs text-slate-400">Hapus absensi dalam rentang tanggal (satu minggu).</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Dari Tanggal</label>
+                            <input type="date" id="reset-abs-minggu-mulai" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 outline-none focus:border-red-500">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Sampai Tanggal</label>
+                            <input type="date" id="reset-abs-minggu-akhir" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 outline-none focus:border-red-500">
+                        </div>
+                    </div>
+                    <button onclick="eksekusiResetAbsensi('minggu')" class="w-full bg-red-700 hover:bg-red-600 text-white font-bold text-xs py-2.5 rounded-lg transition flex items-center justify-center gap-2"><i class="fas fa-trash-alt"></i> Reset Absensi Minggu Ini</button>
+                </div>
+
+                <!-- Panel Bulanan -->
+                <div id="rabs-panel-bulan" class="space-y-3 hidden">
+                    <p class="text-xs text-slate-400">Hapus semua absensi dalam satu bulan penuh.</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Bulan</label>
+                            <select id="reset-abs-bulan" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 outline-none focus:border-red-500"></select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Tahun</label>
+                            <input type="number" id="reset-abs-tahun" min="2020" max="2099" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 outline-none focus:border-red-500">
+                        </div>
+                    </div>
+                    <button onclick="eksekusiResetAbsensi('bulan')" class="w-full bg-red-700 hover:bg-red-600 text-white font-bold text-xs py-2.5 rounded-lg transition flex items-center justify-center gap-2"><i class="fas fa-trash-alt"></i> Reset Absensi Bulan Ini</button>
+                </div>
+
+                <!-- Panel Semester -->
+                <div id="rabs-panel-semester" class="space-y-3 hidden">
+                    <p class="text-xs text-slate-400">Hapus semua absensi dalam satu semester (Sem 1: Jul–Des, Sem 2: Jan–Jun).</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Semester</label>
+                            <select id="reset-abs-semester" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 outline-none focus:border-red-500">
+                                <option value="1">Semester 1 (Jul–Des)</option>
+                                <option value="2">Semester 2 (Jan–Jun)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Tahun Ajaran</label>
+                            <input type="number" id="reset-abs-tahun-semester" min="2020" max="2099" placeholder="misal: 2025" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs text-slate-100 outline-none focus:border-red-500">
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 bg-slate-800 px-3 py-2 rounded-lg"><i class="fas fa-info-circle mr-1 text-amber-400"></i> Tahun Ajaran = tahun mulai semester. Contoh: TA 2025/2026 → isi 2025.</p>
+                    <button onclick="eksekusiResetAbsensi('semester')" class="w-full bg-red-700 hover:bg-red-600 text-white font-bold text-xs py-2.5 rounded-lg transition flex items-center justify-center gap-2"><i class="fas fa-trash-alt"></i> Reset Absensi Semester Ini</button>
+                </div>
+
+                <!-- Panel Semua -->
+                <div id="rabs-panel-semua" class="space-y-3 hidden">
+                    <div class="bg-red-950/40 border border-red-800/50 rounded-xl p-4 text-center space-y-2">
+                        <i class="fas fa-exclamation-triangle text-2xl text-red-400"></i>
+                        <p class="text-sm font-bold text-red-300">Hapus SEMUA Data Absensi</p>
+                        <p class="text-xs text-slate-400">Seluruh rekap kehadiran siswa dari semua tanggal akan dihapus permanen. Tindakan ini tidak bisa dibatalkan!</p>
+                    </div>
+                    <button onclick="eksekusiResetAbsensi('semua')" class="w-full bg-red-800 hover:bg-red-700 text-white font-bold text-xs py-2.5 rounded-lg transition flex items-center justify-center gap-2 border border-red-600"><i class="fas fa-bomb"></i> Reset Semua Absensi</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
