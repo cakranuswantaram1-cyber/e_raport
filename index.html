@@ -1373,6 +1373,7 @@
                             <div class="flex justify-between items-center flex-wrap gap-2">
                                 <div><h3 class="text-sm font-bold text-slate-100">Input Absensi Harian (Cepat)</h3></div>
                                 <div class="flex gap-2 w-full md:w-auto">
+                                    <button onclick="openModalFaceAttendance()" class="bg-violet-600/20 text-violet-300 border border-violet-600/50 hover:bg-violet-600 hover:text-white transition font-bold text-xs px-3 py-1.5 rounded-lg flex-1 md:flex-none whitespace-nowrap"><i class="fas fa-camera-retro mr-1"></i> Absen Wajah</button>
                                     <button onclick="setSemuaAbsensi('Hadir')" class="bg-emerald-600/20 text-emerald-400 border border-emerald-600/50 hover:bg-emerald-600 hover:text-white transition font-bold text-xs px-3 py-1.5 rounded-lg flex-1 md:flex-none whitespace-nowrap"><i class="fas fa-check-double mr-1"></i> Hadir Semua</button>
                                     <input type="date" id="input-absensi-tanggal" onchange="loadAbsensiHarian()" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold outline-none text-slate-100 flex-1 md:flex-none focus:border-emerald-500">
                                 </div>
@@ -4063,6 +4064,60 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Absensi Wajah -->
+    <div id="modal-face-attendance" class="fixed inset-0 bg-slate-950/90 z-[80] hidden flex justify-center items-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-lg w-full p-5 space-y-3 modal-enter max-h-[95vh] overflow-y-auto">
+            <div class="flex items-center justify-between">
+                <h4 class="text-sm font-bold text-white"><i class="fas fa-camera-retro text-violet-400 mr-2"></i>Absensi via Wajah</h4>
+                <button onclick="closeModalFaceAttendance()" class="text-slate-400 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+
+            <div id="face-status-box" class="text-[11px] text-slate-400 bg-slate-950 border border-slate-800 rounded-lg p-2 leading-relaxed">
+                Menyiapkan kamera & model pengenalan wajah...
+            </div>
+
+            <div class="relative bg-black rounded-lg overflow-hidden border border-slate-800" style="aspect-ratio:4/3;">
+                <video id="face-video" autoplay muted playsinline class="w-full h-full object-cover"></video>
+                <canvas id="face-overlay" class="absolute inset-0 w-full h-full"></canvas>
+                <div id="face-loading-overlay" class="absolute inset-0 flex items-center justify-center bg-black/60">
+                    <i class="fas fa-spinner fa-spin text-3xl text-violet-400"></i>
+                </div>
+            </div>
+
+            <div id="face-detected-card" class="hidden bg-emerald-900/30 border border-emerald-700 rounded-lg p-3 flex items-center gap-3">
+                <img id="face-detected-photo" src="" class="w-12 h-12 rounded-full object-cover border-2 border-emerald-500">
+                <div class="flex-1">
+                    <p class="text-emerald-300 font-bold text-sm" id="face-detected-name">-</p>
+                    <p class="text-[10px] text-emerald-400/80" id="face-detected-sub">Hadir tercatat otomatis</p>
+                </div>
+                <i class="fas fa-check-circle text-emerald-400 text-2xl"></i>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2 text-center text-xs font-bold">
+                <div class="bg-emerald-900/20 text-emerald-400 p-2 rounded border border-emerald-900/50">
+                    <i class="fas fa-user-check mr-1"></i> Sudah Absen: <span id="face-count-hadir">0</span>/<span id="face-count-total">0</span>
+                </div>
+                <div class="bg-slate-800/50 text-slate-400 p-2 rounded border border-slate-700">
+                    <i class="fas fa-id-card mr-1"></i> Belum Terdaftar Wajah: <span id="face-count-no-foto">0</span>
+                </div>
+            </div>
+
+            <div id="face-belum-absen-wrap" class="text-[11px] text-slate-400">
+                <p class="font-bold text-slate-300 mb-1"><i class="fas fa-list mr-1"></i>Belum Absen:</p>
+                <div id="face-belum-absen-list" class="flex flex-wrap gap-1 max-h-20 overflow-y-auto"></div>
+            </div>
+
+            <p class="text-[10px] text-slate-500 leading-relaxed">
+                <i class="fas fa-info-circle mr-1"></i>Arahkan kamera ke wajah siswa satu per satu. Sistem mencocokkan wajah dengan foto profil siswa yang sudah diupload di menu Data Siswa. Jika wajah belum dikenali, pastikan foto profil siswa sudah diisi dan pencahayaan cukup. Jika ragu, gunakan absensi manual di tabel.
+            </p>
+
+            <div class="flex justify-end gap-2 pt-1 border-t border-slate-800">
+                <button onclick="closeModalFaceAttendance()" class="px-4 py-1.5 rounded bg-slate-800 text-xs text-slate-300 hover:bg-slate-700 font-bold"><i class="fas fa-check mr-1"></i>Selesai</button>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-cp" class="fixed inset-0 bg-slate-950/80 z-[70] hidden flex justify-center items-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-xl p-6 space-y-4 modal-enter w-full max-h-[90vh] overflow-y-auto">
             <h4 class="text-sm font-bold text-white" id="modal-cp-title"><i class="fas fa-graduation-cap text-violet-400 mr-2"></i>Tambah Capaian Pembelajaran</h4>
@@ -4285,6 +4340,7 @@
             });
         }
         const loadChartJS  = () => lazyLoad('https://cdn.jsdelivr.net/npm/chart.js', 'chart');
+        const loadFaceAPI  = () => lazyLoad('https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js', 'faceapi');
         const loadXLSX     = () => lazyLoad('https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js', 'xlsx');
         const loadHtml2pdf = () => lazyLoad('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js', 'html2pdf');
         const loadQRCode   = () => lazyLoad('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js', 'QRCode');
@@ -7653,7 +7709,193 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             });
         }
 
-        // Fitur AI Analisis
+        // ============================================
+        // ABSENSI VIA WAJAH (Face Recognition)
+        // Menggunakan face-api.js, semua proses di browser (tidak perlu API key)
+        // Mencocokkan wajah dengan foto profil siswa (db.siswa[].foto)
+        // ============================================
+        let _faceState = {
+            stream: null,
+            descriptors: [], // [{id, nama, foto, descriptor}]
+            detectInterval: null,
+            lastMarked: {}, // sId -> timestamp, cegah double-mark berturut-turut
+            modelsReady: false
+        };
+
+        async function openModalFaceAttendance() {
+            const tgl = document.getElementById('input-absensi-tanggal').value;
+            const liburInfo = isTanggalLibur(tgl);
+            if (liburInfo) return Swal.fire('Terkunci', 'Tidak bisa mengisi absensi, hari ini adalah hari libur.', 'warning');
+
+            document.getElementById('modal-face-attendance').classList.remove('hidden');
+            document.getElementById('face-detected-card').classList.add('hidden');
+            document.getElementById('face-loading-overlay').classList.remove('hidden');
+            document.getElementById('face-status-box').textContent = 'Memuat model pengenalan wajah (sekali saja, butuh koneksi internet)...';
+            _faceState.lastMarked = {};
+            updateFaceCounters();
+
+            try {
+                await loadFaceAPI();
+                await loadFaceApiModels();
+                await buildFaceDescriptors();
+                await startFaceCamera();
+                updateFaceCounters();
+                document.getElementById('face-loading-overlay').classList.add('hidden');
+                document.getElementById('face-status-box').innerHTML = '<i class="fas fa-search mr-1 text-violet-400"></i>Mencari wajah... arahkan kamera ke siswa.';
+                startFaceDetectionLoop();
+            } catch (err) {
+                console.error(err);
+                document.getElementById('face-loading-overlay').classList.add('hidden');
+                document.getElementById('face-status-box').innerHTML = `<span class="text-red-400"><i class="fas fa-exclamation-triangle mr-1"></i>Gagal memuat fitur absensi wajah: ${err.message || err}. Pastikan koneksi internet stabil dan izinkan akses kamera, atau gunakan absensi manual.</span>`;
+            }
+        }
+
+        async function loadFaceApiModels() {
+            if (_faceState.modelsReady) return;
+            const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model';
+            await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+            await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+            await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
+            _faceState.modelsReady = true;
+        }
+
+        // Hitung descriptor wajah dari foto profil siswa (di-cache, rebuild jika jumlah foto siswa berubah)
+        async function buildFaceDescriptors() {
+            const siswaWithFoto = db.siswa.filter(s => s.foto);
+            if (_faceState.descriptors.length === siswaWithFoto.length && _faceState.descriptors.length > 0) return; // cache masih valid
+            document.getElementById('face-status-box').textContent = 'Memproses foto profil siswa untuk pengenalan wajah...';
+            const results = [];
+            for (const s of siswaWithFoto) {
+                try {
+                    const img = await faceapi.fetchImage(s.foto);
+                    const det = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions())
+                        .withFaceLandmarks().withFaceDescriptor();
+                    if (det) results.push({ id: s.id, nama: s.nama, foto: s.foto, descriptor: det.descriptor });
+                } catch (e) { /* abaikan foto yang gagal diproses */ }
+            }
+            _faceState.descriptors = results;
+        }
+
+        async function startFaceCamera() {
+            const video = document.getElementById('face-video');
+            if (_faceState.stream) return;
+            _faceState.stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
+            video.srcObject = _faceState.stream;
+            await new Promise(res => { video.onloadedmetadata = () => res(); });
+        }
+
+        function startFaceDetectionLoop() {
+            const video = document.getElementById('face-video');
+            const overlay = document.getElementById('face-overlay');
+            if (_faceState.detectInterval) clearInterval(_faceState.detectInterval);
+
+            _faceState.detectInterval = setInterval(async () => {
+                if (video.paused || video.ended || !video.videoWidth) return;
+                overlay.width = video.clientWidth; overlay.height = video.clientHeight;
+                const ctx = overlay.getContext('2d');
+                ctx.clearRect(0, 0, overlay.width, overlay.height);
+
+                const detections = await faceapi.detectAllFaces(video, new faceapi.TinyFaceDetectorOptions())
+                    .withFaceLandmarks().withFaceDescriptors();
+                if (!detections.length) return;
+
+                const dims = faceapi.matchDimensions(overlay, { width: video.clientWidth, height: video.clientHeight }, true);
+                const resized = faceapi.resizeResults(detections, dims);
+
+                if (!_faceState.descriptors.length) {
+                    resized.forEach(d => drawFaceBox(ctx, d.detection.box, '#f59e0b', 'Wajah belum terdaftar'));
+                    return;
+                }
+
+                const matcher = new faceapi.FaceMatcher(_faceState.descriptors.map(d => new faceapi.LabeledFaceDescriptors(d.id, [d.descriptor])), 0.5);
+
+                resized.forEach((d, idx) => {
+                    const best = matcher.findBestMatch(detections[idx].descriptor);
+                    if (best.label !== 'unknown') {
+                        const siswa = _faceState.descriptors.find(x => x.id === best.label);
+                        drawFaceBox(ctx, d.detection.box, '#10b981', siswa ? siswa.nama : 'Dikenali');
+                        if (siswa) handleFaceMatched(siswa);
+                    } else {
+                        drawFaceBox(ctx, d.detection.box, '#f59e0b', 'Tidak dikenali');
+                    }
+                });
+            }, 700);
+        }
+
+        function drawFaceBox(ctx, box, color, label) {
+            ctx.strokeStyle = color; ctx.lineWidth = 2;
+            ctx.strokeRect(box.x, box.y, box.width, box.height);
+            ctx.fillStyle = color;
+            ctx.font = '12px sans-serif';
+            const textW = ctx.measureText(label).width;
+            ctx.fillRect(box.x, box.y - 16, textW + 8, 16);
+            ctx.fillStyle = '#0f172a';
+            ctx.fillText(label, box.x + 4, box.y - 4);
+        }
+
+        function handleFaceMatched(siswa) {
+            const now = Date.now();
+            const tgl = document.getElementById('input-absensi-tanggal').value;
+            const sudahHadir = db.absensi[tgl] && db.absensi[tgl][siswa.id] && db.absensi[tgl][siswa.id].status === 'Hadir';
+
+            // Tampilkan kartu konfirmasi setiap kali wajah terdeteksi (cooldown 4 detik agar tidak terlalu sering re-render)
+            if (!_faceState.lastMarked[siswa.id] || (now - _faceState.lastMarked[siswa.id]) > 4000) {
+                _faceState.lastMarked[siswa.id] = now;
+
+                if (!sudahHadir) {
+                    if (!db.absensi[tgl]) db.absensi[tgl] = {};
+                    if (!db.absensi[tgl][siswa.id]) db.absensi[tgl][siswa.id] = { status: 'Hadir', ket: '' };
+                    db.absensi[tgl][siswa.id].status = 'Hadir';
+                    saveDB();
+                    loadAbsensiHarian();
+                    _updateAbsensiSummaryToday(tgl);
+                    updateFaceCounters();
+                }
+
+                const card = document.getElementById('face-detected-card');
+                document.getElementById('face-detected-photo').src = siswa.foto;
+                document.getElementById('face-detected-name').textContent = siswa.nama;
+                document.getElementById('face-detected-sub').textContent = sudahHadir ? 'Sudah tercatat Hadir sebelumnya' : 'Hadir tercatat otomatis';
+                card.classList.remove('hidden');
+
+                const statusBox = document.getElementById('face-status-box');
+                statusBox.innerHTML = `<i class="fas fa-check-circle mr-1 text-emerald-400"></i>${siswa.nama} - ${sudahHadir ? 'sudah Hadir' : 'berhasil dicatat Hadir!'}`;
+            }
+        }
+
+        function updateFaceCounters() {
+            const tgl = document.getElementById('input-absensi-tanggal').value;
+            const total = db.siswa.length;
+            let hadirCount = 0;
+            const belumAbsen = [];
+            db.siswa.forEach(s => {
+                const rec = db.absensi[tgl] && db.absensi[tgl][s.id];
+                if (rec && rec.status === 'Hadir') hadirCount++;
+                else belumAbsen.push(s.nama);
+            });
+            const noFoto = db.siswa.filter(s => !s.foto).length;
+
+            document.getElementById('face-count-hadir').textContent = hadirCount;
+            document.getElementById('face-count-total').textContent = total;
+            document.getElementById('face-count-no-foto').textContent = noFoto;
+
+            const listEl = document.getElementById('face-belum-absen-list');
+            if (belumAbsen.length) {
+                listEl.innerHTML = belumAbsen.map(n => `<span class="bg-slate-800 border border-slate-700 rounded px-2 py-0.5">${n}</span>`).join('');
+            } else {
+                listEl.innerHTML = '<span class="text-emerald-400 italic">Semua siswa sudah tercatat hari ini 🎉</span>';
+            }
+        }
+
+        function closeModalFaceAttendance() {
+            document.getElementById('modal-face-attendance').classList.add('hidden');
+            if (_faceState.detectInterval) { clearInterval(_faceState.detectInterval); _faceState.detectInterval = null; }
+            if (_faceState.stream) { _faceState.stream.getTracks().forEach(t => t.stop()); _faceState.stream = null; }
+            const overlay = document.getElementById('face-overlay');
+            if (overlay) overlay.getContext('2d').clearRect(0, 0, overlay.width, overlay.height);
+        }
+
+
         function generateAIAnalysis(isDashboard = false) {
             const kC = document.getElementById(isDashboard ? 'dash-ai-notif' : 'ai-alert-kritis');
             const sC = document.getElementById('ai-alert-saran');
