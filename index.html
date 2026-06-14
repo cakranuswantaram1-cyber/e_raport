@@ -9890,10 +9890,13 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                         kkmNilai = mapelObj?(parseFloat(mapelObj.kkm)||75):75;
                     }
                     return { ...s, nilaiSAS: Math.round(nilaiSAS*10)/10, kkm: Math.round(kkmNilai) };
-                }).sort((a,b)=>b.nilaiSAS-a.nilaiSAS);
-                let rank=1, prev=null;
-                const wsData = [['Peringkat','No Absen','Nama Siswa','JK',`Nilai SAS (${mapelNama})`,'KKM','Status']];
-                data.forEach((s,i)=>{ if(prev!==null&&s.nilaiSAS<prev) rank=i+1; prev=s.nilaiSAS; wsData.push([rank,s.absen||'-',s.nama,s.jk||'-',s.nilaiSAS,s.kkm,s.nilaiSAS>=s.kkm?'Tuntas':'Belum Tuntas']); });
+                }).sort((a,b)=>(parseInt(a.absen)||0)-(parseInt(b.absen)||0));
+                // Hitung peringkat berdasarkan nilai (untuk kolom peringkat)
+                const dataForRank = [...data].sort((a,b)=>b.nilaiSAS-a.nilaiSAS);
+                const rankMap = {}; let rank=1, prev=null;
+                dataForRank.forEach((s,i)=>{ if(prev!==null&&s.nilaiSAS<prev) rank=i+1; prev=s.nilaiSAS; rankMap[s.id]=rank; });
+                const wsData = [['No Absen','Nama Siswa','JK',`Nilai SAS (${mapelNama})`,'KKM','Status','Peringkat']];
+                data.forEach((s)=>{ wsData.push([s.absen||'-',s.nama,s.jk||'-',s.nilaiSAS,s.kkm,s.nilaiSAS>=s.kkm?'Tuntas':'Belum Tuntas',rankMap[s.id]||'-']); });
                 const ws = XLSX.utils.aoa_to_sheet(wsData);
                 const wb = XLSX.utils.book_new();
                 XLSX.utils.book_append_sheet(wb, ws, 'Rekap SAS');
