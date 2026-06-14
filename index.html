@@ -2196,7 +2196,62 @@
 
                 <!-- SECTION KEUANGAN (original, tetap ada) -->
                 <section id="tab-keuangan-view" class="tab-content hidden space-y-6"><div class="grid grid-cols-1 lg:grid-cols-2 gap-6"><div class="bg-slate-900 rounded-xl border border-slate-800 flex flex-col"><div class="p-4 border-b border-slate-800 flex justify-between items-center"><h3 class="text-sm font-bold text-slate-100"><i class="fas fa-coins text-emerald-400 mr-1"></i> Kas Harian</h3><button onclick="openModalKas()" class="bg-emerald-600 text-white font-bold text-[10px] px-3 py-1.5 rounded hover:bg-emerald-500"><i class="fas fa-plus"></i> Setor</button></div><div class="overflow-x-auto max-h-64 flex-1"><table class="w-full text-left min-w-[300px]"><thead><tr class="bg-slate-950 border-b border-slate-800 text-[10px] font-bold text-slate-400 uppercase"><th class="p-2 w-24">Tgl</th><th class="p-2">Siswa</th><th class="p-2 text-right">Nominal</th><th class="p-2 text-center w-16">Aksi</th></tr></thead><tbody id="table-kas-body" class="divide-y divide-slate-800 text-xs text-slate-300"></tbody></table></div><div class="p-3 bg-slate-950 text-right border-t border-slate-800 text-xs font-bold text-emerald-400 shrink-0">Total: <span id="total-kas-rp">Rp 0</span></div></div><div class="bg-slate-900 rounded-xl border border-slate-800 flex flex-col"><div class="p-4 border-b border-slate-800"><h3 class="text-sm font-bold text-slate-100"><i class="fas fa-book-open text-amber-400 mr-1"></i> Pembayaran LKS</h3><div class="mt-2 text-[10px] text-slate-400 flex items-center gap-2">Harga /Buku: Rp <input type="number" id="input-harga-lks" onchange="saveHargaLKS()" class="bg-slate-950 border border-slate-700 rounded px-2 py-1 w-24 text-amber-400 font-bold outline-none focus:border-amber-500"></div></div><div class="overflow-x-auto max-h-[300px] flex-1"><table class="w-full text-left min-w-[500px]"><thead><tr class="bg-slate-950 border-b border-slate-800 text-[10px] font-bold text-slate-400 uppercase"><th class="p-2">Nama</th><th class="p-2 text-center w-16">Qty</th><th class="p-2 text-right">Bayar</th><th class="p-2 text-right">Tagihan</th><th class="p-2 text-center">Status</th><th class="p-2 text-center w-20">Aksi</th></tr></thead><tbody id="table-lks-body" class="divide-y divide-slate-800 text-xs text-slate-300"></tbody></table></div></div></div></section>
-                <section id="tab-aianalisis-view" class="tab-content hidden space-y-4"><div class="bg-gradient-to-r from-purple-900 to-slate-900 p-6 rounded-xl border border-purple-800/50 shadow-lg relative overflow-hidden"><i class="fas fa-network-wired absolute -right-4 -bottom-4 text-8xl text-purple-500/10"></i><h3 class="text-xl font-black text-white relative z-10">Sistem Deteksi Dini AI</h3><p class="text-purple-200 text-xs mt-1 relative z-10 max-w-2xl">AI memindai seluruh data nilai, absensi, dan keaktifan siswa untuk memberikan rekomendasi pendampingan kepada wali kelas. Data dianalisis secara real-time.</p></div><div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div class="bg-slate-900 rounded-xl border border-slate-800 p-4"><h4 class="text-sm font-bold text-red-400 mb-3 border-b border-slate-800 pb-2"><i class="fas fa-exclamation-triangle"></i> Peringatan Kritis (Nilai & Absen)</h4><div id="ai-alert-kritis" class="space-y-3 max-h-[350px] overflow-y-auto pr-1"></div></div><div class="bg-slate-900 rounded-xl border border-slate-800 p-4"><h4 class="text-sm font-bold text-blue-400 mb-3 border-b border-slate-800 pb-2"><i class="fas fa-lightbulb"></i> Rekomendasi Pendampingan</h4><div id="ai-alert-saran" class="space-y-3 max-h-[350px] overflow-y-auto pr-1"></div></div></div></section>
+                <section id="tab-aianalisis-view" class="tab-content hidden space-y-4">
+                  <!-- Header Banner -->
+                  <div class="bg-gradient-to-r from-purple-900 to-slate-900 p-5 rounded-xl border border-purple-800/50 shadow-lg relative overflow-hidden">
+                    <i class="fas fa-network-wired absolute -right-4 -bottom-4 text-8xl text-purple-500/10"></i>
+                    <h3 class="text-xl font-black text-white relative z-10">Sistem Deteksi Dini AI</h3>
+                    <p class="text-purple-200 text-xs mt-1 relative z-10 max-w-2xl">AI memindai seluruh data nilai, absensi, dan keaktifan siswa untuk memberikan rekomendasi pendampingan kepada wali kelas. Data dianalisis secara real-time.</p>
+                  </div>
+
+                  <!-- Ringkasan Cepat -->
+                  <div id="ai-summary-bar" class="grid grid-cols-3 gap-3">
+                    <div class="bg-red-900/20 border border-red-800/40 rounded-xl p-3 text-center">
+                      <div id="ai-sum-kkm" class="text-2xl font-black text-red-400">-</div>
+                      <div class="text-[10px] text-slate-400 mt-0.5">Siswa Nilai Merah</div>
+                    </div>
+                    <div class="bg-amber-900/20 border border-amber-800/40 rounded-xl p-3 text-center">
+                      <div id="ai-sum-alfa" class="text-2xl font-black text-amber-400">-</div>
+                      <div class="text-[10px] text-slate-400 mt-0.5">Siswa Banyak Alfa</div>
+                    </div>
+                    <div class="bg-emerald-900/20 border border-emerald-800/40 rounded-xl p-3 text-center">
+                      <div id="ai-sum-aman" class="text-2xl font-black text-emerald-400">-</div>
+                      <div class="text-[10px] text-slate-400 mt-0.5">Siswa Aman</div>
+                    </div>
+                  </div>
+
+                  <!-- Filter Threshold -->
+                  <div class="bg-slate-900 rounded-xl border border-slate-800 p-3 flex flex-wrap gap-3 items-center text-xs">
+                    <span class="text-slate-400 font-bold"><i class="fas fa-sliders-h mr-1 text-purple-400"></i> Filter:</span>
+                    <label class="flex items-center gap-1.5 text-slate-300">
+                      <input type="checkbox" id="ai-filter-kkm" checked onchange="generateAIAnalysis()" class="accent-red-500"> Nilai di bawah KKM
+                    </label>
+                    <label class="flex items-center gap-1.5 text-slate-300">
+                      <input type="checkbox" id="ai-filter-alfa" checked onchange="generateAIAnalysis()" class="accent-amber-500"> Alfa ≥
+                      <input type="number" id="ai-thresh-alfa" value="3" min="1" max="30" onchange="generateAIAnalysis()" class="w-10 bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-amber-300 font-bold text-center"> kali
+                    </label>
+                    <label class="flex items-center gap-1.5 text-slate-300">
+                      Min mapel merah ≥
+                      <input type="number" id="ai-thresh-kkm" value="1" min="1" max="20" onchange="generateAIAnalysis()" class="w-10 bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-red-300 font-bold text-center">
+                    </label>
+                    <button onclick="generateAIAnalysis()" class="ml-auto bg-purple-700 hover:bg-purple-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition"><i class="fas fa-sync-alt mr-1"></i> Refresh</button>
+                  </div>
+
+                  <!-- Dua kolom utama -->
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 flex flex-col">
+                      <h4 class="text-sm font-bold text-red-400 mb-3 border-b border-slate-800 pb-2 flex items-center justify-between">
+                        <span><i class="fas fa-exclamation-triangle mr-1"></i> Peringatan Kritis (Nilai &amp; Absen)</span>
+                        <span id="ai-badge-kritis" class="text-[10px] bg-red-700 text-white px-2 py-0.5 rounded-full hidden">0</span>
+                      </h4>
+                      <div id="ai-alert-kritis" class="space-y-2 overflow-y-auto pr-1 flex-1" style="max-height:420px"></div>
+                    </div>
+                    <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 flex flex-col">
+                      <h4 class="text-sm font-bold text-blue-400 mb-3 border-b border-slate-800 pb-2"><i class="fas fa-lightbulb mr-1"></i> Rekomendasi Pendampingan</h4>
+                      <div id="ai-alert-saran" class="space-y-2 overflow-y-auto pr-1 flex-1" style="max-height:420px"></div>
+                    </div>
+                  </div>
+                </section>
                 <section id="tab-komunikasi-view" class="tab-content hidden space-y-4"><div class="bg-slate-900 p-5 rounded-xl border border-slate-800 shadow-sm flex flex-col md:flex-row gap-6"><div class="flex-1 space-y-4"><div><h3 class="text-sm font-bold text-slate-100"><i class="fab fa-whatsapp text-emerald-500 mr-2"></i>WA Gateway Terpadu</h3><p class="text-[10px] text-slate-400 mt-1">Kirim pesan informasi ke nomor WA orang tua siswa langsung dari aplikasi.</p></div><div><label class="block text-xs font-bold text-slate-400 mb-1">Target Penerima</label><select id="wa-target" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 outline-none focus:border-emerald-500"><option value="all">Semua Orang Tua Siswa (Satu per satu)</option></select></div><div><label class="block text-xs font-bold text-slate-400 mb-1">Template Pesan (AI Generated)</label><select id="wa-template" onchange="loadWaTemplate()" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 outline-none focus:border-emerald-500"><option value="">-- Pilih Template --</option><option value="tugas">Pengingat Tugas / Ulangan</option><option value="libur">Pengumuman Libur / Kegiatan</option><option value="tagihan">Tagihan LKS / Kas</option><option value="panggilan">Panggilan Orang Tua</option></select></div><div><label class="block text-xs font-bold text-slate-400 mb-1">Isi Pesan Custom</label><textarea id="wa-pesan" rows="5" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 outline-none focus:border-emerald-500" placeholder="Ketik pesan Anda di sini... Gunakan [NAMA] untuk menyebut nama siswa otomatis."></textarea></div><button onclick="kirimWaBroadcast()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-3 rounded-lg transition shadow-lg"><i class="fas fa-paper-plane mr-2"></i> Buka WhatsApp & Kirim</button></div><div class="w-full md:w-1/3 bg-slate-950 border border-slate-800 rounded-xl p-4 flex flex-col"><h4 class="text-xs font-bold text-slate-400 mb-3 text-center uppercase tracking-wider">Preview Pesan HP</h4><div class="flex-1 bg-cover bg-center rounded-lg border border-slate-800 p-3 relative overflow-hidden" style="background-image: url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png');"><div class="absolute inset-0 bg-slate-900/80"></div><div class="relative z-10 bg-emerald-900/90 text-emerald-100 p-3 rounded-tr-xl rounded-bl-xl rounded-br-xl text-[10px] shadow-sm ml-2 border border-emerald-700/50" id="wa-preview-text">Pilih template atau ketik pesan untuk melihat preview...</div></div></div></div></section>
                 <!-- ============================================================
                      TAB: REKAP NILAI (GABUNGAN: AKADEMIK, SAS, STS, FORMATIF)
@@ -9352,6 +9407,18 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
         }
 
 
+        // Navigasi dari AI Analisis langsung ke Input Nilai mapel tertentu
+        function aiGoToNilai(mapelId) {
+            switchTab('nilai');
+            setTimeout(() => {
+                const sel = document.getElementById('select-nilai-mapel');
+                if (sel) { sel.value = mapelId; loadInputNilaiSiswa(); }
+                // Scroll ke tabel nilai
+                const tbl = document.getElementById('table-nilai-body');
+                if (tbl) tbl.closest('.bg-slate-900')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 120);
+        }
+
         function generateAIAnalysis(isDashboard = false) {
             const kC = document.getElementById(isDashboard ? 'dash-ai-notif' : 'ai-alert-kritis');
             const sC = document.getElementById('ai-alert-saran');
@@ -9359,58 +9426,167 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             kC.innerHTML = '';
             if(sC) sC.innerHTML = '';
 
-            // FIX #6: Tampilkan pesan informatif jika data belum ada
             if (!db.siswa.length || !db.mapel.length) {
                 kC.innerHTML = '<div class="text-slate-500 italic text-center py-4"><i class="fas fa-info-circle mr-2 text-sky-400"></i>Tambahkan data siswa dan mapel terlebih dahulu untuk melihat analisis AI.</div>';
                 if(sC) sC.innerHTML = '<div class="text-slate-500 italic text-center py-4">Belum ada data yang dapat dianalisis.</div>';
+                ['ai-sum-kkm','ai-sum-alfa','ai-sum-aman'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent='-'; });
                 return;
             }
-            
+
+            const filterKKM  = isDashboard ? true  : (document.getElementById('ai-filter-kkm')  ? document.getElementById('ai-filter-kkm').checked  : true);
+            const filterAlfa = isDashboard ? true  : (document.getElementById('ai-filter-alfa') ? document.getElementById('ai-filter-alfa').checked : true);
+            const threshAlfa = isDashboard ? 3     : parseInt((document.getElementById('ai-thresh-alfa') || {value:'3'}).value) || 3;
+            const threshKKM  = isDashboard ? 1     : parseInt((document.getElementById('ai-thresh-kkm')  || {value:'1'}).value) || 1;
+
             let kritisHtml = '';
-            let saranHtml = '';
+            let saranHtml  = '';
             let alertCount = 0;
+            let countKKM   = 0;
+            let countAlfa  = 0;
+            let countAman  = 0;
+
+            // Kumpulkan data per-mapel untuk saran (mapel mana paling banyak siswa merahnya)
+            const mapelMerahCount = {}; // mapelId -> count
 
             try {
                 const r = calculateSiswaRankings();
-                const absCache = getAbsensiCache(); // gunakan cache, bukan loop ulang
-                
+                const absCache = getAbsensiCache();
+
                 r.forEach(siswa => {
-                    let mapelMerah = [];
+                    // --- Hitung nilai per komponen setiap mapel ---
+                    let mapelMerahList = []; // {id, nama, kkm, nAkhir, fmt, sts, sas, kompMerah[]}
                     db.mapel.forEach(m => {
-                        const n = db.nilai[`${siswa.id}_${m.id}`] || {sts:0, sas:0};
-                        const fF = getNilaiFormatifAuto(siswa.id, m.id);
-                        const nAkhir = (fF * (db.bobot.formatif/100)) + (n.sts * (db.bobot.sts/100)) + (n.sas * (db.bobot.sas/100));
-                        if(nAkhir < m.kkm) mapelMerah.push(m.nama);
+                        const n    = db.nilai[`${siswa.id}_${m.id}`] || {sts:0, sas:0};
+                        const fmt  = getNilaiFormatifAuto(siswa.id, m.id);
+                        let sts    = parseFloat(n.sts) || 0;
+                        let sas    = parseFloat(n.sas) || 0;
+                        // Remedial max
+                        if (db.remedialMax) {
+                            const rS = db.remedialMax[`${siswa.id}_${m.id}_sts`];
+                            const rA = db.remedialMax[`${siswa.id}_${m.id}_sas`];
+                            if (rS > 0) sts = Math.max(sts, rS);
+                            if (rA > 0) sas = Math.max(sas, rA);
+                        }
+                        const nAkhir = (fmt * (db.bobot.formatif/100)) + (sts * (db.bobot.sts/100)) + (sas * (db.bobot.sas/100));
+                        if (nAkhir > 0 && nAkhir < m.kkm) {
+                            // Tentukan komponen mana yang merah (di bawah KKM)
+                            const kompMerah = [];
+                            if (fmt  > 0 && fmt  < m.kkm) kompMerah.push({ label: 'Formatif', val: Math.round(fmt*10)/10, color: 'text-emerald-300', bg: 'bg-emerald-950 border-emerald-700/50' });
+                            if (sts  > 0 && sts  < m.kkm) kompMerah.push({ label: 'STS',      val: Math.round(sts*10)/10, color: 'text-blue-300',    bg: 'bg-blue-950 border-blue-700/50' });
+                            if (sas  > 0 && sas  < m.kkm) kompMerah.push({ label: 'SAS',      val: Math.round(sas*10)/10, color: 'text-indigo-300',  bg: 'bg-indigo-950 border-indigo-700/50' });
+                            mapelMerahList.push({ id: m.id, nama: m.nama, kkm: m.kkm, nAkhir: Math.round(nAkhir*10)/10, fmt: Math.round(fmt*10)/10, sts: Math.round(sts*10)/10, sas: Math.round(sas*10)/10, kompMerah });
+                            mapelMerahCount[m.id] = (mapelMerahCount[m.id]||0) + 1;
+                        }
                     });
 
-                    const alfa = (absCache[siswa.id] || {a:0}).a;
-                    
-                    if(mapelMerah.length > 2) {
-                        kritisHtml += `<div class="bg-red-900/20 border border-red-900/50 p-3 rounded-lg"><b class="text-red-400 block mb-1"><i class="fas fa-times-circle mr-1"></i> ${siswa.nama}</b> <span class="text-slate-300">Memiliki ${mapelMerah.length} nilai di bawah KKM (${mapelMerah.slice(0,2).join(', ')}...).</span></div>`;
-                        saranHtml += `<div class="bg-blue-900/20 border border-blue-900/50 p-3 rounded-lg"><span class="text-slate-300">Beri remedial khusus untuk <b class="text-blue-400">${siswa.nama}</b> pada mapel prioritas. Panggil orang tua jika performa tidak membaik.</span></div>`;
-                        alertCount++;
+                    const alfaCount = (absCache[siswa.id] || {a:0}).a;
+                    const adaKKM    = filterKKM  && mapelMerahList.length >= threshKKM;
+                    const adaAlfa   = filterAlfa && alfaCount >= threshAlfa;
+
+                    if (!adaKKM && !adaAlfa) { countAman++; return; }
+                    if (adaKKM)  countKKM++;
+                    if (adaAlfa) countAlfa++;
+
+                    // --- Kartu kritis: detail per mapel dengan komponen nilai ---
+                    let mapelRowsHtml = '';
+                    if (adaKKM) {
+                        mapelRowsHtml = mapelMerahList.map(mp => {
+                            // Badge per komponen
+                            const kompBadges = [
+                                { label:'Formatif', val: mp.fmt, color:'text-emerald-300', dot:'bg-emerald-500' },
+                                { label:'STS',      val: mp.sts, color:'text-blue-300',    dot:'bg-blue-500' },
+                                { label:'SAS',      val: mp.sas, color:'text-indigo-300',  dot:'bg-indigo-500' },
+                            ].map(k => {
+                                const isMerah = k.val > 0 && k.val < mp.kkm;
+                                return `<span class="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded border ${isMerah ? 'bg-red-950 border-red-700/60 text-red-300' : 'bg-slate-800 border-slate-700 text-slate-400'}">
+                                    <span class="w-1.5 h-1.5 rounded-full ${isMerah ? 'bg-red-500' : k.dot} inline-block"></span>
+                                    ${k.label} <span class="${isMerah ? 'text-white' : ''}">${k.val > 0 ? k.val : '-'}</span>
+                                </span>`;
+                            }).join('');
+
+                            return `<div class="mt-1.5 bg-slate-950/60 rounded-lg p-2 border border-slate-800 cursor-pointer hover:border-purple-600/60 hover:bg-purple-950/20 transition group" onclick="aiGoToNilai('${mp.id}')" title="Klik untuk edit nilai ${mp.nama}">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[11px] font-bold text-slate-200">${mp.nama}</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="text-[9px] font-black text-red-300 bg-red-900/40 border border-red-700/40 px-1.5 py-0.5 rounded">Akhir: ${mp.nAkhir} <span class="text-red-500">/ ${mp.kkm}</span></span>
+                                        <span class="text-[9px] text-purple-400 group-hover:text-purple-300 transition"><i class="fas fa-pencil-alt"></i> Edit</span>
+                                    </div>
+                                </div>
+                                <div class="flex flex-wrap gap-1">${kompBadges}</div>
+                            </div>`;
+                        }).join('');
                     }
-                    if(alfa >= 3) {
-                        kritisHtml += `<div class="bg-amber-900/20 border border-amber-900/50 p-3 rounded-lg"><b class="text-amber-400 block mb-1"><i class="fas fa-user-times mr-1"></i> ${siswa.nama}</b> <span class="text-slate-300">Sering Alfa (${alfa} kali). Indikasi masalah kehadiran serius.</span></div>`;
-                        saranHtml += `<div class="bg-purple-900/20 border border-purple-900/50 p-3 rounded-lg"><span class="text-slate-300">Segera hubungi orang tua <b class="text-purple-400">${siswa.nama}</b> melalui fitur Broadcast WA terkait absensinya.</span></div>`;
-                        alertCount++;
+
+                    const badgeKKM  = adaKKM  ? `<span class="text-[9px] bg-red-700 text-white px-1.5 py-0.5 rounded-full">${mapelMerahList.length} mapel ↓KKM</span>` : '';
+                    const badgeAlfa = adaAlfa ? `<span class="text-[9px] bg-amber-700 text-white px-1.5 py-0.5 rounded-full">Alfa ${alfaCount}×</span>` : '';
+
+                    kritisHtml += `
+                      <div class="rounded-lg border p-3 ${adaKKM && adaAlfa ? 'bg-red-950/30 border-red-700/50' : adaKKM ? 'bg-red-900/20 border-red-900/50' : 'bg-amber-900/20 border-amber-800/50'}">
+                        <div class="flex items-start justify-between gap-2 mb-1">
+                          <b class="text-sm ${adaKKM ? 'text-red-300' : 'text-amber-300'}">
+                            <i class="fas fa-${adaKKM ? 'times-circle text-red-400' : 'user-clock text-amber-400'} mr-1"></i>${siswa.nama}
+                          </b>
+                          <div class="flex gap-1 flex-wrap justify-end">${badgeKKM}${badgeAlfa}</div>
+                        </div>
+                        ${mapelRowsHtml}
+                        ${adaAlfa ? `<div class="mt-2 text-[10px] text-amber-200 bg-amber-950/30 border border-amber-800/40 rounded px-2 py-1.5"><i class="fas fa-calendar-times mr-1 text-amber-500"></i>Tidak hadir (Alfa) sebanyak <b>${alfaCount} kali</b> — perlu tindak lanjut kehadiran.</div>` : ''}
+                      </div>`;
+
+                    // --- Saran ---
+                    const saranItems = [];
+                    if (adaKKM) {
+                        // Urutkan mapel dari nilai akhir terendah
+                        const sorted = [...mapelMerahList].sort((a,b) => a.nAkhir - b.nAkhir);
+                        sorted.forEach(mp => {
+                            // Tentukan komponen prioritas perbaikan
+                            const komp = [];
+                            if (mp.fmt > 0 && mp.fmt < mp.kkm) komp.push(`<span class="text-emerald-300">Formatif (${mp.fmt})</span>`);
+                            if (mp.sts > 0 && mp.sts < mp.kkm) komp.push(`<span class="text-blue-300">STS (${mp.sts})</span>`);
+                            if (mp.sas > 0 && mp.sas < mp.kkm) komp.push(`<span class="text-indigo-300">SAS (${mp.sas})</span>`);
+                            const kompStr = komp.length ? ` — perbaiki: ${komp.join(', ')}` : '';
+                            saranItems.push(`<span onclick="aiGoToNilai('${mp.id}')" class="cursor-pointer hover:text-purple-300 transition"><b class="text-amber-300">${mp.nama}</b>${kompStr} <i class="fas fa-external-link-alt text-[8px] text-purple-500"></i></span>`);
+                        });
+                        if (mapelMerahList.length >= 3) saranItems.push(`<span class="text-slate-400">Pertimbangkan <b class="text-orange-300">panggilan orang tua</b> jika tidak ada peningkatan.</span>`);
                     }
+                    if (adaAlfa) saranItems.push(`<span>Hubungi orang tua via <b class="text-emerald-400 cursor-pointer" onclick="switchTab('komunikasi')">Broadcast WA <i class='fas fa-external-link-alt text-[8px]'></i></b> terkait absensi.</span>`);
+
+                    saranHtml += `
+                      <div class="bg-blue-900/20 border border-blue-900/50 p-3 rounded-lg">
+                        <b class="text-blue-300 text-xs block mb-2"><i class="fas fa-user-graduate mr-1"></i>${siswa.nama}</b>
+                        <ul class="space-y-1.5">${saranItems.map(s=>`<li class="text-[11px] text-slate-300 flex gap-1.5 items-start"><i class="fas fa-arrow-right text-blue-500 mt-0.5 text-[8px] shrink-0"></i><span>${s}</span></li>`).join('')}</ul>
+                      </div>`;
+
+                    alertCount++;
                 });
+
             } catch(e) {
                 kC.innerHTML = '<div class="text-red-400 italic text-center py-4"><i class="fas fa-exclamation-triangle mr-2"></i>Terjadi kesalahan saat memuat analisis. Coba refresh halaman.</div>';
                 console.error('generateAIAnalysis error:', e);
                 return;
             }
 
-            if(!kritisHtml) kritisHtml = '<div class="text-slate-500 italic text-center py-4">Tidak ada peringatan kritis saat ini.</div>';
-            if(!saranHtml) saranHtml = '<div class="text-slate-500 italic text-center py-4">Kelas dalam kondisi baik dan kondusif.</div>';
+            if(!kritisHtml) kritisHtml = '<div class="text-slate-500 italic text-center py-6 text-sm"><i class="fas fa-check-circle text-emerald-400 text-2xl mb-2 block"></i>Tidak ada peringatan kritis. Kelas dalam kondisi baik!</div>';
+            if(!saranHtml)  saranHtml  = '<div class="text-slate-500 italic text-center py-6"><i class="fas fa-smile text-emerald-400 mr-2"></i>Semua siswa dalam kondisi aman.</div>';
 
             kC.innerHTML = kritisHtml;
             if(sC) sC.innerHTML = saranHtml;
 
+            // Update summary bar
+            const elKKM  = document.getElementById('ai-sum-kkm');
+            const elAlfa = document.getElementById('ai-sum-alfa');
+            const elAman = document.getElementById('ai-sum-aman');
+            if(elKKM)  elKKM.textContent  = countKKM;
+            if(elAlfa) elAlfa.textContent = countAlfa;
+            if(elAman) elAman.textContent = countAman;
+
+            // Badge kritis header
+            const badgeKritis = document.getElementById('ai-badge-kritis');
+            if(badgeKritis) { if(alertCount>0){badgeKritis.textContent=alertCount;badgeKritis.classList.remove('hidden');}else{badgeKritis.classList.add('hidden');} }
+
+            // Notif bell
             const badge = document.getElementById('notif-badge');
             if(badge) {
-                if(alertCount > 0) { badge.textContent = alertCount > 9 ? '9+' : alertCount; badge.classList.remove('hidden'); } 
+                if(alertCount > 0) { badge.textContent = alertCount > 9 ? '9+' : alertCount; badge.classList.remove('hidden'); }
                 else { badge.classList.add('hidden'); }
             }
         }
