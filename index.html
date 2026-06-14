@@ -4066,54 +4066,57 @@
     </div>
 
     <!-- Modal Absensi Wajah -->
-    <div id="modal-face-attendance" class="fixed inset-0 bg-slate-950/90 z-[80] hidden flex justify-center items-center p-4">
-        <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-lg w-full p-5 space-y-3 modal-enter max-h-[95vh] overflow-y-auto">
+    <div id="modal-face-attendance" class="fixed inset-0 bg-slate-950/95 z-[80] hidden flex justify-center items-center p-2">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl w-full max-w-xl p-3 space-y-2 modal-enter" style="max-height:98vh; overflow-y:auto;">
+            <!-- Header -->
             <div class="flex items-center justify-between">
                 <h4 class="text-sm font-bold text-white"><i class="fas fa-camera-retro text-violet-400 mr-2"></i>Absensi via Wajah</h4>
-                <button onclick="closeModalFaceAttendance()" class="text-slate-400 hover:text-white"><i class="fas fa-times"></i></button>
+                <button onclick="closeModalFaceAttendance()" class="text-slate-400 hover:text-white w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-700 transition"><i class="fas fa-times"></i></button>
             </div>
 
-            <div id="face-status-box" class="text-[11px] text-slate-400 bg-slate-950 border border-slate-800 rounded-lg p-2 leading-relaxed">
+            <!-- Status -->
+            <div id="face-status-box" class="text-[11px] text-slate-400 bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 leading-relaxed">
                 Menyiapkan kamera & model pengenalan wajah...
             </div>
 
-            <div class="relative bg-black rounded-lg overflow-hidden border border-slate-800" style="aspect-ratio:4/3;">
+            <!-- KAMERA DIPERBESAR - aspect ratio 3/4 portrait agar wajah lebih jelas -->
+            <div class="relative bg-black rounded-xl overflow-hidden border-2 border-violet-700/50 shadow-lg shadow-violet-900/30" style="aspect-ratio:3/4; max-height:55vh;">
                 <video id="face-video" autoplay muted playsinline class="w-full h-full object-cover"></video>
                 <canvas id="face-overlay" class="absolute inset-0 w-full h-full"></canvas>
-                <div id="face-loading-overlay" class="absolute inset-0 flex items-center justify-center bg-black/60">
-                    <i class="fas fa-spinner fa-spin text-3xl text-violet-400"></i>
+                <div id="face-loading-overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-black/70 gap-3">
+                    <i class="fas fa-spinner fa-spin text-4xl text-violet-400"></i>
+                    <p class="text-violet-300 text-xs font-bold">Memuat model AI...</p>
                 </div>
             </div>
 
-            <div id="face-detected-card" class="hidden bg-emerald-900/30 border border-emerald-700 rounded-lg p-3 flex items-center gap-3">
-                <img id="face-detected-photo" src="" class="w-12 h-12 rounded-full object-cover border-2 border-emerald-500">
-                <div class="flex-1">
-                    <p class="text-emerald-300 font-bold text-sm" id="face-detected-name">-</p>
+            <!-- Kartu siswa terdeteksi -->
+            <div id="face-detected-card" class="hidden bg-emerald-900/30 border border-emerald-700 rounded-lg p-2.5 flex items-center gap-3">
+                <img id="face-detected-photo" src="" class="w-10 h-10 rounded-full object-cover border-2 border-emerald-500 shrink-0">
+                <div class="flex-1 min-w-0">
+                    <p class="text-emerald-300 font-bold text-sm truncate" id="face-detected-name">-</p>
                     <p class="text-[10px] text-emerald-400/80" id="face-detected-sub">Hadir tercatat otomatis</p>
                 </div>
-                <i class="fas fa-check-circle text-emerald-400 text-2xl"></i>
+                <i class="fas fa-check-circle text-emerald-400 text-xl shrink-0"></i>
             </div>
 
-            <div class="grid grid-cols-2 gap-2 text-center text-xs font-bold">
-                <div class="bg-emerald-900/20 text-emerald-400 p-2 rounded border border-emerald-900/50">
-                    <i class="fas fa-user-check mr-1"></i> Sudah Absen: <span id="face-count-hadir">0</span>/<span id="face-count-total">0</span>
+            <!-- Counter & daftar belum absen (compact) -->
+            <div class="grid grid-cols-2 gap-2 text-center text-[11px] font-bold">
+                <div class="bg-emerald-900/20 text-emerald-400 px-2 py-1.5 rounded-lg border border-emerald-900/50">
+                    <i class="fas fa-user-check mr-1"></i>Sudah: <span id="face-count-hadir">0</span>/<span id="face-count-total">0</span>
                 </div>
-                <div class="bg-slate-800/50 text-slate-400 p-2 rounded border border-slate-700">
-                    <i class="fas fa-id-card mr-1"></i> Belum Terdaftar Wajah: <span id="face-count-no-foto">0</span>
+                <div class="bg-slate-800/50 text-slate-400 px-2 py-1.5 rounded-lg border border-slate-700">
+                    <i class="fas fa-id-card mr-1"></i>Blm Daftar: <span id="face-count-no-foto">0</span>
                 </div>
             </div>
 
-            <div id="face-belum-absen-wrap" class="text-[11px] text-slate-400">
+            <div id="face-belum-absen-wrap" class="text-[10px] text-slate-400">
                 <p class="font-bold text-slate-300 mb-1"><i class="fas fa-list mr-1"></i>Belum Absen:</p>
-                <div id="face-belum-absen-list" class="flex flex-wrap gap-1 max-h-20 overflow-y-auto"></div>
+                <div id="face-belum-absen-list" class="flex flex-wrap gap-1 max-h-16 overflow-y-auto"></div>
             </div>
 
-            <p class="text-[10px] text-slate-500 leading-relaxed">
-                <i class="fas fa-info-circle mr-1"></i>Arahkan kamera ke wajah siswa satu per satu. Sistem mencocokkan wajah dengan foto profil siswa yang sudah diupload di menu Data Siswa. Jika wajah belum dikenali, pastikan foto profil siswa sudah diisi dan pencahayaan cukup. Jika ragu, gunakan absensi manual di tabel.
-            </p>
-
-            <div class="flex justify-end gap-2 pt-1 border-t border-slate-800">
-                <button onclick="closeModalFaceAttendance()" class="px-4 py-1.5 rounded bg-slate-800 text-xs text-slate-300 hover:bg-slate-700 font-bold"><i class="fas fa-check mr-1"></i>Selesai</button>
+            <div class="flex items-center justify-between pt-1 border-t border-slate-800 gap-2">
+                <p class="text-[9px] text-slate-600 leading-relaxed flex-1"><i class="fas fa-info-circle mr-1"></i>Arahkan kamera ke wajah siswa. Pastikan pencahayaan cukup & foto profil sudah diupload.</p>
+                <button onclick="closeModalFaceAttendance()" class="px-4 py-1.5 rounded-lg bg-slate-800 text-xs text-slate-300 hover:bg-slate-700 font-bold whitespace-nowrap shrink-0"><i class="fas fa-check mr-1"></i>Selesai</button>
             </div>
         </div>
     </div>
@@ -7732,7 +7735,9 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             document.getElementById('face-loading-overlay').classList.remove('hidden');
             document.getElementById('face-status-box').textContent = 'Memuat model pengenalan wajah (sekali saja, butuh koneksi internet)...';
             _faceState.lastMarked = {};
+            _faceState._lastUnknownSpeak = 0;
             updateFaceCounters();
+            initFaceVoice(); // Siapkan suara sejak awal
 
             try {
                 await loadFaceAPI();
@@ -7817,6 +7822,13 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                         if (siswa) handleFaceMatched(siswa);
                     } else {
                         drawFaceBox(ctx, d.detection.box, '#f59e0b', 'Tidak dikenali');
+                        // 🔊 Suara: Wajah TIDAK dikenali (cooldown 5 detik agar tidak berulang terus)
+                        const nowUnknown = Date.now();
+                        if (!_faceState._lastUnknownSpeak || (nowUnknown - _faceState._lastUnknownSpeak) > 5000) {
+                            _faceState._lastUnknownSpeak = nowUnknown;
+                            playBeepFail();
+                            setTimeout(() => speakFace('Wajah tidak dikenali. Pastikan pencahayaan cukup.', 0.95, 0.9), 250);
+                        }
                     }
                 });
             }, 700);
@@ -7832,6 +7844,71 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             ctx.fillStyle = '#0f172a';
             ctx.fillText(label, box.x + 4, box.y - 4);
         }
+
+        // ============================================================
+        // SUARA ABSENSI WAJAH - Web Speech API (TTS)
+        // ============================================================
+        let _faceVoiceReady = false;
+        let _faceVoiceIndonesia = null;
+
+        function initFaceVoice() {
+            if (_faceVoiceReady) return;
+            const tryLoad = () => {
+                const voices = window.speechSynthesis.getVoices();
+                if (voices.length === 0) return;
+                // Cari suara Bahasa Indonesia, fallback ke suara default
+                _faceVoiceIndonesia = voices.find(v => v.lang.startsWith('id')) || voices[0];
+                _faceVoiceReady = true;
+            };
+            tryLoad();
+            window.speechSynthesis.onvoiceschanged = tryLoad;
+        }
+
+        function speakFace(text, rate = 1.05, pitch = 1.1) {
+            if (!window.speechSynthesis) return;
+            initFaceVoice();
+            window.speechSynthesis.cancel(); // hentikan suara sebelumnya
+            const utt = new SpeechSynthesisUtterance(text);
+            utt.lang = 'id-ID';
+            utt.rate = rate;
+            utt.pitch = pitch;
+            utt.volume = 1;
+            if (_faceVoiceIndonesia) utt.voice = _faceVoiceIndonesia;
+            window.speechSynthesis.speak(utt);
+        }
+
+        function playBeepSuccess() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(880, ctx.currentTime);
+                osc.frequency.setValueAtTime(1100, ctx.currentTime + 0.1);
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.4);
+            } catch(e) {}
+        }
+
+        function playBeepFail() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(440, ctx.currentTime);
+                osc.frequency.setValueAtTime(320, ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.5);
+            } catch(e) {}
+        }
+        // ============================================================
 
         function handleFaceMatched(siswa) {
             const now = Date.now();
@@ -7850,6 +7927,12 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                     loadAbsensiHarian();
                     _updateAbsensiSummaryToday(tgl);
                     updateFaceCounters();
+                    // 🔊 Suara: Absen BERHASIL (nama siswa + konfirmasi)
+                    playBeepSuccess();
+                    setTimeout(() => speakFace(`${siswa.nama}, hadir.`), 300);
+                } else {
+                    // 🔊 Suara: Sudah tercatat sebelumnya
+                    speakFace(`${siswa.nama}, sudah hadir.`);
                 }
 
                 const card = document.getElementById('face-detected-card');
@@ -7893,6 +7976,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             if (_faceState.stream) { _faceState.stream.getTracks().forEach(t => t.stop()); _faceState.stream = null; }
             const overlay = document.getElementById('face-overlay');
             if (overlay) overlay.getContext('2d').clearRect(0, 0, overlay.width, overlay.height);
+            if (window.speechSynthesis) window.speechSynthesis.cancel(); // hentikan suara saat modal ditutup
         }
 
 
