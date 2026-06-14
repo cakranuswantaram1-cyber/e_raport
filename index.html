@@ -267,6 +267,7 @@
                 <button title="Rekap Kolektif" onclick="switchTab('rekapitulasi')" id="btn-rekapitulasi" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-emerald-400 transition"><i class="fas fa-table w-5 text-center"></i> <span class="nav-label">Rekap Kolektif</span></button>
                 <button onclick="switchTab('rekap_sas')" id="btn-rekap_sas" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-violet-400 transition relative"><i class="fas fa-chart-bar w-5 text-center text-violet-400"></i> <span class="text-violet-300">Rekap Kolektif SAS</span> <span class="absolute right-2 top-2 text-[8px] font-black text-white bg-violet-600 px-1.5 py-0.5 rounded-full">NEW</span></button>
                 <button onclick="switchTab('rekap_sumatif')" id="btn-rekap_sumatif" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-blue-400 transition relative"><i class="fas fa-poll w-5 text-center text-blue-400"></i> <span class="text-blue-300">Rekap Kolektif Sumatif</span> <span class="absolute right-2 top-2 text-[8px] font-black text-white bg-blue-600 px-1.5 py-0.5 rounded-full">NEW</span></button>
+                <button onclick="switchTab('rekap_formatif')" id="btn-rekap_formatif" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-orange-400 transition relative"><i class="fas fa-tasks w-5 text-center text-orange-400"></i> <span class="text-orange-300">Rekap Kolektif Formatif</span> <span class="absolute right-2 top-2 text-[8px] font-black text-white bg-orange-600 px-1.5 py-0.5 rounded-full">NEW</span></button>
                 <button onclick="switchTab('rekap_lengkap')" id="btn-rekap_lengkap" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-emerald-400 transition"><i class="fas fa-clipboard-list w-5 text-center text-teal-400"></i> <span class="text-teal-400">Rekap Lengkap</span></button>
                 <button title="Broadcast WA Ortu" onclick="switchTab('komunikasi')" id="btn-komunikasi" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-emerald-400 transition"><i class="fab fa-whatsapp w-5 text-center text-emerald-400"></i> <span class="nav-label">Broadcast WA Ortu</span></button>
                 <button title="Cetak Rapor AI" onclick="switchTab('progres_ortu')" id="btn-progres_ortu" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-emerald-400 transition"><i class="fas fa-file-pdf w-5 text-center text-red-400"></i> <span class="nav-label">Cetak Rapor AI</span></button>
@@ -2317,6 +2318,113 @@
                     </div>
                 </section>
                 <!-- END TAB: REKAP KOLEKTIF NILAI SUMATIF -->
+
+                <!-- ============================================================
+                     TAB: REKAP KOLEKTIF AGENDA FORMATIF (GABUNGAN NILAI TP)
+                     ============================================================ -->
+                <section id="tab-rekap_formatif-view" class="tab-content hidden space-y-5">
+                    <!-- Header Banner -->
+                    <div class="bg-gradient-to-r from-orange-950/60 via-slate-900 to-slate-900 rounded-2xl p-6 border border-orange-900/30 shadow-xl relative overflow-hidden">
+                        <div class="z-10 relative">
+                            <div class="flex items-center gap-3 mb-1">
+                                <div class="w-10 h-10 rounded-xl bg-orange-500/20 border border-orange-700/40 flex items-center justify-center">
+                                    <i class="fas fa-tasks text-orange-400 text-xl"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-lg font-black text-white">Rekap Kolektif Agenda Formatif</h2>
+                                    <p class="text-[11px] text-orange-300/70">Gabungan Nilai TP per Mapel — seluruh siswa diranking berdasarkan rata-rata formatif</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter Panel -->
+                    <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 flex flex-wrap gap-4 items-end">
+                        <div class="flex-1 min-w-[160px]">
+                            <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Pilih Mapel</label>
+                            <select id="rekap-fmt-mapel" onchange="renderRekapFormatif()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-bold text-slate-100 outline-none focus:border-orange-500 transition">
+                                <option value="semua">-- Semua Mapel (Rata-rata Formatif) --</option>
+                            </select>
+                        </div>
+                        <div class="min-w-[130px]">
+                            <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Filter Jenis Kelamin</label>
+                            <select id="rekap-fmt-jk" onchange="renderRekapFormatif()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-bold text-slate-100 outline-none focus:border-orange-500 transition">
+                                <option value="semua">Semua</option>
+                                <option value="L">Laki-laki</option>
+                                <option value="P">Perempuan</option>
+                            </select>
+                        </div>
+                        <div class="flex gap-2">
+                            <button onclick="exportRekapFormatifCSV()" class="bg-slate-800 hover:bg-slate-700 text-green-400 font-bold text-xs px-3 py-2 rounded-lg border border-slate-700 transition flex items-center gap-1">
+                                <i class="fas fa-file-excel"></i> CSV
+                            </button>
+                            <button onclick="cetakRekapFormatif()" class="bg-red-900/30 hover:bg-red-600 text-red-400 hover:text-white font-bold text-xs px-3 py-2 rounded-lg border border-red-900/50 transition flex items-center gap-1">
+                                <i class="fas fa-file-pdf"></i> PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Statistik Cards -->
+                    <div class="grid grid-cols-2 lg:grid-cols-5 gap-3" id="fmt-stat-cards">
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center">
+                            <p class="text-[10px] text-slate-400 uppercase font-bold mb-1">Nilai Tertinggi</p>
+                            <p id="fmt-stat-max" class="text-2xl font-black text-emerald-400">—</p>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center">
+                            <p class="text-[10px] text-slate-400 uppercase font-bold mb-1">Nilai Terendah</p>
+                            <p id="fmt-stat-min" class="text-2xl font-black text-red-400">—</p>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center">
+                            <p class="text-[10px] text-slate-400 uppercase font-bold mb-1">Rata-rata Kelas</p>
+                            <p id="fmt-stat-avg" class="text-2xl font-black text-amber-400">—</p>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center">
+                            <p class="text-[10px] text-slate-400 uppercase font-bold mb-1">Tuntas KKM</p>
+                            <p id="fmt-stat-lulus" class="text-2xl font-black text-blue-400">—</p>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 text-center">
+                            <p class="text-[10px] text-slate-400 uppercase font-bold mb-1">Total TP</p>
+                            <p id="fmt-stat-tp" class="text-2xl font-black text-orange-400">—</p>
+                        </div>
+                    </div>
+
+                    <!-- Tabel Rekap -->
+                    <div class="bg-slate-900 rounded-xl border border-slate-800 overflow-x-auto shadow-sm" id="print-area-rekap-formatif">
+                        <div id="print-header-rekap-formatif" class="p-5 text-center border-b border-slate-800 hidden bg-slate-900 text-white">
+                            <h2 class="text-xl font-black uppercase" id="fmt-print-title">REKAP FORMATIF</h2>
+                            <p class="text-xs font-bold text-slate-400 mt-1" id="fmt-print-sub"></p>
+                        </div>
+                        <div class="p-3 border-b border-slate-800 flex items-center justify-between">
+                            <span class="text-xs font-black text-slate-300" id="rekap-fmt-table-title">Peringkat Nilai Formatif — Semua Mapel</span>
+                            <span class="text-[10px] text-red-400"><i class="fas fa-circle text-[6px] mr-1"></i>Merah = di bawah KKM</span>
+                        </div>
+                        <table class="w-full text-left min-w-[900px]" id="table-rekap-formatif">
+                            <thead>
+                                <tr class="bg-slate-950 border-b border-slate-800 text-[10px] font-bold text-slate-400 uppercase tracking-wider" id="rekap-fmt-header">
+                                    <th class="p-3 text-center w-10">Rank</th>
+                                    <th class="p-3 text-center w-10">No</th>
+                                    <th class="p-3">Nama Siswa</th>
+                                    <th class="p-3 text-center w-12">JK</th>
+                                    <th class="p-3 text-center text-orange-300" id="rekap-fmt-col-header">Nilai Formatif</th>
+                                    <th class="p-3 text-center w-16">KKM</th>
+                                    <th class="p-3 text-center w-20">Status</th>
+                                    <th class="p-3 text-center w-16">Predikat</th>
+                                    <th class="p-3 text-center" id="rekap-fmt-tp-cols">Detail TP</th>
+                                </tr>
+                            </thead>
+                            <tbody id="table-rekap-formatif-body" class="divide-y divide-slate-800 text-xs text-slate-300">
+                                <tr><td colspan="9" class="text-center py-8 text-slate-500 italic">Pilih mata pelajaran untuk melihat rekap nilai formatif</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Info Footer -->
+                    <div class="bg-slate-900/50 border border-slate-800/50 rounded-xl p-4 text-[11px] text-slate-500">
+                        <i class="fas fa-info-circle text-orange-400 mr-1"></i>
+                        Nilai formatif dihitung otomatis dari rata-rata semua <b class="text-orange-300">Tujuan Pembelajaran (TP)</b> yang terhubung ke agenda. Setiap TP dirata-rata dari nilai tugas yang sudah dinilai.
+                    </div>
+                </section>
+                <!-- END TAB: REKAP KOLEKTIF AGENDA FORMATIF -->
 
                 <section id="tab-progres_ortu-view" class="tab-content hidden space-y-4">
                     <!-- Kontrol Panel -->
@@ -5130,6 +5238,7 @@
             if(tabId === 'rekapitulasi') renderRekapitulasi();
             if(tabId === 'rekap_sas') { initRekapSASMapelDropdown(); renderRekapSAS(); }
             if(tabId === 'rekap_sumatif') { initRekapSTSMapelDropdown(); renderRekapSTS(); }
+            if(tabId === 'rekap_formatif') { initRekapFormatifMapelDropdown(); renderRekapFormatif(); }
             if(tabId === 'progres_ortu') { 
                 let s=document.getElementById('select-progres-siswa'); 
                 s.innerHTML='<option value="">- Pilih Siswa -</option>'+db.siswa.map(x=>`<option value="${x.id}">Abs ${x.absen||'-'} - ${x.nama}</option>`).join(''); 
@@ -5182,6 +5291,7 @@
                 'kalkulator_koreksi':'Kalkulator Koreksi Penilaian',
                 'rekap_sas':'Rekap Kolektif Nilai SAS',
                 'rekap_sumatif':'Rekap Kolektif Nilai Sumatif (STS)',
+                'rekap_formatif':'Rekap Kolektif Agenda Formatif',
             };
             const titleEl = document.getElementById('header-page-title');
             if(titleEl && tabLabels[tabId]) titleEl.textContent = tabLabels[tabId];
@@ -9488,6 +9598,278 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             const w = window.open('','_blank','width=700,height=900');
             if (w) { w.document.write(html); w.document.close(); }
         }
+
+        // =============================================
+        // REKAP KOLEKTIF AGENDA FORMATIF (GABUNGAN NILAI TP)
+        // =============================================
+
+        function initRekapFormatifMapelDropdown() {
+            const sel = document.getElementById('rekap-fmt-mapel');
+            if (!sel) return;
+            sel.innerHTML = '<option value="semua">-- Semua Mapel (Rata-rata Formatif) --</option>' +
+                db.mapel.map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
+        }
+
+        function renderRekapFormatif() {
+            const mId = document.getElementById('rekap-fmt-mapel') ? document.getElementById('rekap-fmt-mapel').value : 'semua';
+            const jkFilter = document.getElementById('rekap-fmt-jk') ? document.getElementById('rekap-fmt-jk').value : 'semua';
+            const titleEl = document.getElementById('rekap-fmt-table-title');
+            const colHeader = document.getElementById('rekap-fmt-col-header');
+            const tb = document.getElementById('table-rekap-formatif-body');
+            const headerRow = document.getElementById('rekap-fmt-header');
+            if (!tb) return;
+
+            const mapelObj = mId !== 'semua' ? db.mapel.find(m => m.id === mId) : null;
+            const mapelNama = mapelObj ? mapelObj.nama : 'Semua Mapel';
+            if (titleEl) titleEl.textContent = `Peringkat Nilai Formatif — ${mapelNama}`;
+            if (colHeader) colHeader.textContent = mId === 'semua' ? 'Rata-rata Formatif' : `Nilai Formatif ${mapelNama}`;
+
+            let siswaList = jkFilter === 'semua' ? [...db.siswa] : db.siswa.filter(s => s.jk === jkFilter);
+            if (!siswaList.length) {
+                tb.innerHTML = '<tr><td colspan="9" class="text-center py-8 text-slate-500 italic">Tidak ada data siswa.</td></tr>';
+                return;
+            }
+
+            // Ambil daftar TP untuk mapel yang dipilih (jika bukan semua)
+            const tpList = mId !== 'semua' ? getTPByMapel(mId) : [];
+
+            // Update header kolom TP jika mapel dipilih
+            if (headerRow) {
+                const tpCols = mId !== 'semua' && tpList.length
+                    ? tpList.map(tp => `<th class="p-3 text-center w-16 text-orange-200/70">TP ${tp.nomor}</th>`).join('')
+                    : '<th class="p-3 text-center text-slate-500">—</th>';
+                headerRow.innerHTML = `
+                    <th class="p-3 text-center w-10">Rank</th>
+                    <th class="p-3 text-center w-10">No</th>
+                    <th class="p-3">Nama Siswa</th>
+                    <th class="p-3 text-center w-12">JK</th>
+                    <th class="p-3 text-center text-orange-300" id="rekap-fmt-col-header">${colHeader ? colHeader.textContent : 'Nilai Formatif'}</th>
+                    <th class="p-3 text-center w-16">KKM</th>
+                    <th class="p-3 text-center w-20">Status</th>
+                    <th class="p-3 text-center w-16">Predikat</th>
+                    ${tpCols}
+                `;
+            }
+
+            // Hitung nilai formatif per siswa
+            const data = siswaList.map(s => {
+                let nilaiFmt = 0, kkmNilai = 0;
+                let tpValues = [];
+
+                if (mId === 'semua') {
+                    // Rata-rata formatif semua mapel (menggunakan hitungRataTP jika ada TP)
+                    let total = 0, count = 0;
+                    db.mapel.forEach(m => {
+                        const tpsMapel = getTPByMapel(m.id);
+                        if (tpsMapel.length) {
+                            const { rata } = hitungRataTP(s.id, m.id);
+                            if (rata > 0) { total += rata; count++; }
+                        } else {
+                            const n = db.nilai[`${s.id}_${m.id}`];
+                            let fmt = n ? (parseFloat(n.formatif) || 0) : 0;
+                            if (db.remedialMax) {
+                                const rm = db.remedialMax[`${s.id}_${m.id}_formatif`];
+                                if (rm && rm > 0) fmt = Math.max(fmt, rm);
+                            }
+                            if (fmt > 0) { total += fmt; count++; }
+                        }
+                    });
+                    nilaiFmt = count > 0 ? total / count : 0;
+                    kkmNilai = db.mapel.length > 0 ? db.mapel.reduce((sum, m) => sum + (parseFloat(m.kkm) || 75), 0) / db.mapel.length : 75;
+                } else {
+                    // Satu mapel spesifik — ambil dari TP
+                    if (tpList.length) {
+                        tpValues = tpList.map(tp => {
+                            const fromAgenda = hitungNilaiTPdariAgenda(s.id, tp.id);
+                            const val = fromAgenda !== null ? fromAgenda : (db.nilaiTP[`${s.id}_${tp.id}`] || null);
+                            return val !== null ? parseFloat(val) : null;
+                        });
+                        const { rata } = hitungRataTP(s.id, mId);
+                        nilaiFmt = rata;
+                    } else {
+                        // Tidak ada TP, pakai nilai formatif manual
+                        const n = db.nilai[`${s.id}_${mId}`];
+                        nilaiFmt = n ? (parseFloat(n.formatif) || 0) : 0;
+                        if (db.remedialMax) {
+                            const rm = db.remedialMax[`${s.id}_${mId}_formatif`];
+                            if (rm && rm > 0) nilaiFmt = Math.max(nilaiFmt, rm);
+                        }
+                    }
+                    kkmNilai = mapelObj ? (parseFloat(mapelObj.kkm) || 75) : 75;
+                }
+
+                return {
+                    ...s,
+                    nilaiFmt: Math.round(nilaiFmt * 10) / 10,
+                    kkm: Math.round(kkmNilai),
+                    tpValues
+                };
+            });
+
+            // Urutkan dari nilai terbesar
+            data.sort((a, b) => b.nilaiFmt - a.nilaiFmt);
+
+            // Statistik
+            const values = data.map(d => d.nilaiFmt);
+            const max = values.length ? Math.max(...values) : 0;
+            const min = values.length ? Math.min(...values) : 0;
+            const avg = values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+            const lulus = data.filter(d => d.nilaiFmt >= d.kkm).length;
+            const totalTP = mId !== 'semua' ? tpList.length : db.tp.length;
+
+            const statMax = document.getElementById('fmt-stat-max');
+            const statMin = document.getElementById('fmt-stat-min');
+            const statAvg = document.getElementById('fmt-stat-avg');
+            const statLulus = document.getElementById('fmt-stat-lulus');
+            const statTP = document.getElementById('fmt-stat-tp');
+            if (statMax) statMax.textContent = max.toFixed(1);
+            if (statMin) statMin.textContent = min.toFixed(1);
+            if (statAvg) statAvg.textContent = avg.toFixed(1);
+            if (statLulus) statLulus.textContent = `${lulus}/${data.length}`;
+            if (statTP) statTP.textContent = totalTP;
+
+            // Render tabel
+            let rank = 1, prevNilai = null;
+            const rows = data.map((s, i) => {
+                if (prevNilai !== null && s.nilaiFmt < prevNilai) rank = i + 1;
+                prevNilai = s.nilaiFmt;
+
+                const isLulus = s.nilaiFmt >= s.kkm;
+                const statusHtml = isLulus
+                    ? '<span class="bg-emerald-900/40 text-emerald-400 border border-emerald-700/40 text-[9px] font-black px-2 py-0.5 rounded-full">✓ Tuntas</span>'
+                    : '<span class="bg-red-900/40 text-red-400 border border-red-700/40 text-[9px] font-black px-2 py-0.5 rounded-full">✗ Belum</span>';
+                const pred = getPredikat(s.nilaiFmt, s.kkm);
+                const rankBadge = rank === 1 ? '🥇 1' : rank === 2 ? '🥈 2' : rank === 3 ? '🥉 3' : rank;
+                const rankColor = rank <= 3 ? 'font-black text-amber-400' : 'text-slate-400';
+                const nilaiColor = s.nilaiFmt < s.kkm ? 'text-red-400 font-black' : 'text-orange-300 font-black';
+
+                // Kolom nilai TP jika mapel spesifik dipilih
+                const tpCells = (mId !== 'semua' && tpList.length)
+                    ? s.tpValues.map(v => {
+                        if (v === null) return '<td class="p-2 text-center text-slate-600 text-xs">—</td>';
+                        const c = v >= 86 ? 'text-emerald-400' : v >= 71 ? 'text-blue-400' : v >= 46 ? 'text-amber-400' : 'text-red-400';
+                        return `<td class="p-2 text-center text-xs font-black ${c}">${v.toFixed(1)}</td>`;
+                    }).join('')
+                    : '<td class="p-2 text-center text-slate-600 text-xs">—</td>';
+
+                return `<tr class="hover:bg-slate-800/40 transition">
+                    <td class="p-3 text-center ${rankColor} text-sm">${rankBadge}</td>
+                    <td class="p-3 text-center text-slate-500 text-xs">${s.absen || i + 1}</td>
+                    <td class="p-3 font-bold text-slate-100">${s.nama}</td>
+                    <td class="p-3 text-center text-xs text-slate-400">${s.jk || '-'}</td>
+                    <td class="p-3 text-center text-lg ${nilaiColor}">${s.nilaiFmt > 0 ? s.nilaiFmt.toFixed(1) : '—'}</td>
+                    <td class="p-3 text-center text-xs text-slate-500">${s.kkm}</td>
+                    <td class="p-3 text-center">${statusHtml}</td>
+                    <td class="p-3 text-center"><span class="border text-[10px] font-black px-2 py-0.5 rounded-full ${pred.color}">${pred.label}</span></td>
+                    ${tpCells}
+                </tr>`;
+            });
+
+            tb.innerHTML = rows.join('') || '<tr><td colspan="9" class="text-center py-8 text-slate-500 italic">Belum ada data nilai formatif / TP.</td></tr>';
+        }
+
+        function exportRekapFormatifCSV() {
+            const mId = document.getElementById('rekap-fmt-mapel').value;
+            const jkFilter = document.getElementById('rekap-fmt-jk').value;
+            const mapelObj = mId !== 'semua' ? db.mapel.find(m => m.id === mId) : null;
+            const mapelNama = mapelObj ? mapelObj.nama : 'Semua Mapel';
+            const tpList = mId !== 'semua' ? getTPByMapel(mId) : [];
+
+            let siswaList = jkFilter === 'semua' ? [...db.siswa] : db.siswa.filter(s => s.jk === jkFilter);
+
+            const data = siswaList.map(s => {
+                let nilaiFmt = 0, tpValues = [];
+                if (mId === 'semua') {
+                    let total = 0, count = 0;
+                    db.mapel.forEach(m => {
+                        const tpsMapel = getTPByMapel(m.id);
+                        if (tpsMapel.length) { const { rata } = hitungRataTP(s.id, m.id); if (rata > 0) { total += rata; count++; } }
+                        else { const n = db.nilai[`${s.id}_${m.id}`]; let fmt = n ? (parseFloat(n.formatif)||0) : 0; if (fmt > 0) { total += fmt; count++; } }
+                    });
+                    nilaiFmt = count > 0 ? total / count : 0;
+                } else {
+                    if (tpList.length) {
+                        tpValues = tpList.map(tp => { const v = hitungNilaiTPdariAgenda(s.id, tp.id); return v !== null ? v : (db.nilaiTP[`${s.id}_${tp.id}`] || null); });
+                        const { rata } = hitungRataTP(s.id, mId); nilaiFmt = rata;
+                    } else { const n = db.nilai[`${s.id}_${mId}`]; nilaiFmt = n ? (parseFloat(n.formatif)||0) : 0; }
+                }
+                return { ...s, nilaiFmt: Math.round(nilaiFmt*10)/10, tpValues };
+            }).sort((a, b) => b.nilaiFmt - a.nilaiFmt);
+
+            const tpHeaders = tpList.map(tp => `TP ${tp.nomor}`).join(',');
+            const header = `Rank,No Absen,Nama,JK,Nilai Formatif,KKM,Status${tpList.length ? ',' + tpHeaders : ''}\n`;
+            let rank = 1, prev = null;
+            const rows = data.map((s, i) => {
+                if (prev !== null && s.nilaiFmt < prev) rank = i + 1; prev = s.nilaiFmt;
+                const kkm = mapelObj ? (parseFloat(mapelObj.kkm)||75) : 75;
+                const status = s.nilaiFmt >= kkm ? 'Tuntas' : 'Belum Tuntas';
+                const tpCols = s.tpValues.map(v => v !== null ? v.toFixed(1) : '').join(',');
+                return `${rank},${s.absen||''},${s.nama},${s.jk||''},${s.nilaiFmt.toFixed(1)},${Math.round(kkm)},${status}${tpList.length ? ',' + tpCols : ''}`;
+            }).join('\n');
+
+            const csv = '\uFEFF' + header + rows;
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `Rekap_Formatif_${mapelNama.replace(/\s+/g,'_')}.csv`;
+            a.click(); URL.revokeObjectURL(url);
+        }
+
+        function cetakRekapFormatif() {
+            const mId = document.getElementById('rekap-fmt-mapel').value;
+            const jkFilter = document.getElementById('rekap-fmt-jk').value;
+            const mapelObj = mId !== 'semua' ? db.mapel.find(m => m.id === mId) : null;
+            const mapelNama = mapelObj ? mapelObj.nama : 'Semua Mapel';
+            const sekolah = db.profil.sekolah || '-';
+            const wali = db.profil.wali || '-';
+            const kelas = db.raporSettings?.kelas || db.profil?.kelas || '-';
+            const tahun = db.raporSettings?.tahunajaran || '-';
+            const semester = db.raporSettings?.semester || '-';
+            const tpList = mId !== 'semua' ? getTPByMapel(mId) : [];
+
+            let siswaList = jkFilter === 'semua' ? [...db.siswa] : db.siswa.filter(s => s.jk === jkFilter);
+            const data = siswaList.map(s => {
+                let nilaiFmt = 0, tpValues = [], kkm = 75;
+                if (mId === 'semua') {
+                    let total = 0, count = 0;
+                    db.mapel.forEach(m => { const tpsM = getTPByMapel(m.id); if (tpsM.length) { const {rata} = hitungRataTP(s.id, m.id); if (rata>0){total+=rata;count++;} } else { const n=db.nilai[`${s.id}_${m.id}`]; let f=n?(parseFloat(n.formatif)||0):0; if(f>0){total+=f;count++;} } });
+                    nilaiFmt = count > 0 ? total / count : 0;
+                    kkm = db.mapel.length > 0 ? db.mapel.reduce((sum,m)=>sum+(parseFloat(m.kkm)||75),0)/db.mapel.length : 75;
+                } else {
+                    if (tpList.length) { tpValues = tpList.map(tp => { const v = hitungNilaiTPdariAgenda(s.id, tp.id); return v !== null ? v : (db.nilaiTP[`${s.id}_${tp.id}`] || null); }); const {rata} = hitungRataTP(s.id, mId); nilaiFmt = rata; }
+                    else { const n = db.nilai[`${s.id}_${mId}`]; nilaiFmt = n?(parseFloat(n.formatif)||0):0; }
+                    kkm = mapelObj ? (parseFloat(mapelObj.kkm)||75) : 75;
+                }
+                return { ...s, nilaiFmt: Math.round(nilaiFmt*10)/10, kkm: Math.round(kkm), tpValues };
+            }).sort((a,b) => b.nilaiFmt - a.nilaiFmt);
+
+            let rank = 1, prev = null;
+            const tpHeaderCols = tpList.length ? tpList.map(tp => `<th style="padding:5px 6px;background:#fff7ed;border:1px solid #fdba74;font-size:9px">TP ${tp.nomor}</th>`).join('') : '';
+            const rows = data.map((s, i) => {
+                if (prev !== null && s.nilaiFmt < prev) rank = i + 1; prev = s.nilaiFmt;
+                const lulus = s.nilaiFmt >= s.kkm;
+                const tpCells = tpList.length ? s.tpValues.map(v => `<td style="padding:4px 6px;text-align:center;font-size:10px;font-weight:bold;color:${v===null?'#94a3b8':v>=86?'#047857':v>=71?'#1d4ed8':v>=46?'#b45309':'#b91c1c'}">${v !== null ? parseFloat(v).toFixed(1) : '—'}</td>`).join('') : '';
+                return `<tr><td style="padding:5px 8px;text-align:center;font-weight:bold;font-size:11px">${rank}</td><td style="padding:5px 8px;text-align:center">${s.absen||i+1}</td><td style="padding:5px 8px;font-weight:bold">${s.nama}</td><td style="padding:5px 8px;text-align:center">${s.jk||'-'}</td><td style="padding:5px 8px;text-align:center;font-size:13px;font-weight:900;color:${lulus?'#ea580c':'#b91c1c'}">${s.nilaiFmt>0?s.nilaiFmt.toFixed(1):'—'}</td><td style="padding:5px 8px;text-align:center">${s.kkm}</td><td style="padding:5px 8px;text-align:center;font-weight:bold;color:${lulus?'#047857':'#b91c1c'}">${lulus?'Tuntas':'Belum Tuntas'}</td>${tpCells}</tr>`;
+            }).join('');
+
+            const html = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Rekap Formatif</title>
+            <style>body{font-family:Arial,sans-serif;font-size:11px;color:#1e293b;margin:16px} h2,h3{text-align:center;margin:4px 0} p.sub{text-align:center;font-size:10px;color:#475569;margin:2px 0 12px}
+            table{width:100%;border-collapse:collapse} th{background:#fff7ed;padding:6px 8px;border:1px solid #fed7aa;font-size:10px} td{border:1px solid #e2e8f0}</style></head>
+            <body>
+            <h2>REKAP KOLEKTIF AGENDA FORMATIF (GABUNGAN NILAI TP)</h2>
+            <h3>${sekolah}</h3>
+            <p class="sub">Kelas: ${kelas} | Semester: ${semester} | TA: ${tahun} | Wali Kelas: ${wali}</p>
+            <p class="sub">Mata Pelajaran: ${mapelNama} | Filter: ${jkFilter==='semua'?'Semua Siswa':jkFilter==='L'?'Laki-laki':'Perempuan'}</p>
+            <table><thead><tr><th>Peringkat</th><th>Absen</th><th>Nama Siswa</th><th>JK</th><th>Nilai Formatif</th><th>KKM</th><th>Status</th>${tpHeaderCols}</tr></thead><tbody>${rows}</tbody></table>
+            <p style="margin-top:16px;font-size:10px;color:#94a3b8">*Nilai formatif = rata-rata semua Tujuan Pembelajaran (TP) dari agenda yang sudah dinilai.</p>
+            <p style="font-size:10px;color:#94a3b8">Dicetak: ${new Date().toLocaleDateString('id-ID',{weekday:'long',day:'2-digit',month:'long',year:'numeric'})}</p>
+            <script>window.onload=()=>window.print();<\/script></body></html>`;
+            const w = window.open('','_blank','width=900,height=900');
+            if (w) { w.document.write(html); w.document.close(); }
+        }
+
+        // =============================================
+        // END REKAP KOLEKTIF AGENDA FORMATIF
+        // =============================================
 
         function exportRekapSASExcel() {
             loadXLSX().then(() => {
