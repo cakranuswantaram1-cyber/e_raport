@@ -1518,12 +1518,27 @@
                 <section id="tab-mapel-view" class="tab-content hidden space-y-4"><div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div class="bg-slate-900 p-5 rounded-xl border border-slate-800 space-y-4 h-fit"><h3 class="text-sm font-bold text-slate-100 border-b border-slate-800 pb-2">Pengaturan Bobot Akhir (%)</h3><div class="space-y-3"><div><label class="block text-[11px] text-slate-400 mb-1">Formatif</label><input type="number" id="input-bobot-formatif" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs font-bold text-slate-100 outline-none focus:border-emerald-500"></div><div><label class="block text-[11px] text-slate-400 mb-1">Sumatif Tengah Semester (STS)</label><input type="number" id="input-bobot-sts" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs font-bold text-slate-100 outline-none focus:border-emerald-500"></div><div><label class="block text-[11px] text-slate-400 mb-1">Sumatif Akhir Semester (SAS)</label><input type="number" id="input-bobot-sas" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs font-bold text-slate-100 outline-none focus:border-emerald-500"></div><button onclick="saveBobotNilai()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2 rounded-lg transition">Simpan Persentase</button></div></div><div class="lg:col-span-2 bg-slate-900 rounded-xl border border-slate-800 overflow-hidden flex flex-col"><div class="p-4 border-b border-slate-800 flex justify-between items-center"><h3 class="text-sm font-bold text-slate-100">Daftar Mata Pelajaran & KKM</h3><button onclick="openModalMapel()" class="bg-emerald-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg hover:bg-emerald-500"><i class="fas fa-plus"></i> Tambah Mapel</button></div><div class="overflow-x-auto flex-1"><table class="w-full text-left min-w-[400px]"><thead><tr class="bg-slate-950 border-b border-slate-800 text-xs font-bold text-slate-400 uppercase"><th class="p-3 text-center w-12">No</th><th class="p-3">Nama Mapel</th><th class="p-3 text-center w-24">KKM</th><th class="p-3 text-center w-24">Aksi</th></tr></thead><tbody id="table-mapel-body" class="divide-y divide-slate-800 text-xs text-slate-300"></tbody></table></div></div></div></section>
                 <section id="tab-nilai-view" class="tab-content hidden space-y-4"><div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col gap-3"><div class="flex flex-col md:flex-row gap-3 items-center justify-between"><select id="select-nilai-mapel" onchange="loadInputNilaiSiswa()" class="w-full md:w-72 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-bold text-slate-100 outline-none focus:border-emerald-500"></select><div class="flex gap-2 w-full md:w-auto flex-wrap"><label class="bg-blue-600/20 text-blue-400 border border-blue-600/50 hover:bg-blue-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg cursor-pointer flex-1 text-center whitespace-nowrap"><i class="fas fa-file-excel mr-1"></i> Import Excel <input type="file" id="import-excel-nilai" accept=".xlsx, .xls" onchange="importNilaiExcel(event)" class="hidden"></label><button onclick="exportFormatNilaiExcel()" class="bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition font-bold text-xs px-3 py-2 rounded-lg flex-1 whitespace-nowrap"><i class="fas fa-download mr-1"></i> Unduh Format</button></div></div><div class="bg-emerald-900/20 border border-emerald-800/30 rounded-lg px-3 py-2 text-[10px] text-emerald-300 flex items-start gap-2"><i class="fas fa-info-circle mt-0.5 shrink-0"></i><span><b>Alur nilai otomatis:</b> Agenda Formatif → Nilai TP (per TP) → Rata-rata TP × Bobot% = <b>Nilai Formatif</b> (terkunci). Input STS & SAS secara manual. Nilai Akhir = Formatif berbobot + STS berbobot + SAS berbobot.</span></div><div class="border-t border-slate-800 pt-3 flex flex-col sm:flex-row gap-2"><button onclick="hapusNilaiMapelIni()" class="flex-1 bg-red-900/30 text-red-400 border border-red-900/50 hover:bg-red-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-eraser mr-1"></i> Hapus Nilai Mapel Ini (Semua Siswa)</button><button onclick="hapusSemuaNilai()" class="flex-1 bg-red-950/50 text-red-500 border border-red-900/30 hover:bg-red-700 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-trash-alt mr-1"></i> Hapus SEMUA Nilai (Seluruh Mapel)</button><button onclick="bersihkanDataRemedial()" class="flex-1 bg-orange-900/30 text-orange-400 border border-orange-800/50 hover:bg-orange-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-broom mr-1"></i> Bersihkan Badge RMD</button><button onclick="restoreNilaiDariBackup()" class="flex-1 bg-emerald-900/30 text-emerald-400 border border-emerald-800/50 hover:bg-emerald-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-history mr-1"></i> Pulihkan dari Backup</button></div><div class="bg-emerald-950/30 border border-emerald-800/30 rounded-lg px-3 py-2 text-[10px] text-emerald-400 flex items-center gap-2 mt-1"><i class="fas fa-shield-alt shrink-0"></i><span><b>🔒 Nilai terlindungi:</b> Nilai hanya bisa dihapus manual. Sistem auto-backup setiap ada perubahan &amp; bisa dipulihkan kapan saja.</span></div></div><div class="bg-slate-900 rounded-xl border border-slate-800 overflow-x-auto shadow-sm"><table class="w-full text-left min-w-[800px]"><thead class="sticky top-0 bg-slate-950"><tr class="border-b border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider"><th class="p-3 w-12 text-center">Abs</th><th class="p-3">Nama</th><th class="p-3 text-center text-emerald-400 w-36">Formatif<br><span class="text-[9px] font-normal text-slate-500 normal-case">(dari TP × bobot) 🔒</span></th><th class="p-3 text-center text-blue-400 w-28">STS</th><th class="p-3 text-center text-indigo-400 w-28">SAS</th><th class="p-3 text-center text-amber-400 w-24">Nilai Akhir</th><th class="p-3 text-center text-red-400 w-20">Hapus</th></tr></thead><tbody id="table-nilai-body" class="divide-y divide-slate-800 text-xs text-slate-300"></tbody></table></div></section>
                 <section id="tab-tugas-view" class="tab-content hidden space-y-4">
-                    <div class="bg-gradient-to-r from-emerald-900/30 to-slate-900 p-4 rounded-xl border border-emerald-800/30 flex flex-col md:flex-row md:items-center gap-3 justify-between">
-                        <div>
-                            <h3 class="text-sm font-bold text-slate-100"><i class="fas fa-tasks text-emerald-400 mr-2"></i>Agenda Formatif (Penugasan per TP)</h3>
-                            <p class="text-[10px] text-slate-400 mt-1">Setiap agenda terhubung ke Tujuan Pembelajaran. Nilai tugas dikumpulkan otomatis menjadi nilai formatif.</p>
+                    <div class="bg-gradient-to-r from-emerald-900/30 to-slate-900 p-4 rounded-xl border border-emerald-800/30 flex flex-col gap-3">
+                        <div class="flex flex-col md:flex-row md:items-center gap-3 justify-between">
+                            <div>
+                                <h3 class="text-sm font-bold text-slate-100"><i class="fas fa-tasks text-emerald-400 mr-2"></i>Agenda Formatif (Penugasan per TP)</h3>
+                                <p class="text-[10px] text-slate-400 mt-1">Setiap agenda terhubung ke Tujuan Pembelajaran. Nilai tugas dikumpulkan otomatis menjadi nilai formatif.</p>
+                            </div>
+                            <button onclick="openModalTugas()" class="bg-emerald-600 text-white font-bold text-xs px-4 py-2 rounded-lg hover:bg-emerald-500 shadow transition whitespace-nowrap self-start md:self-auto"><i class="fas fa-plus mr-1"></i> Buat Agenda</button>
                         </div>
-                        <button onclick="openModalTugas()" class="bg-emerald-600 text-white font-bold text-xs px-4 py-2 rounded-lg hover:bg-emerald-500 shadow transition whitespace-nowrap"><i class="fas fa-plus mr-1"></i> Buat Agenda</button>
+                        <!-- Filter & Cetak Row -->
+                        <div class="flex flex-wrap gap-2 items-center border-t border-emerald-800/20 pt-3">
+                            <div class="flex items-center gap-2 flex-1 min-w-[180px]">
+                                <label class="text-[10px] text-slate-400 font-bold uppercase whitespace-nowrap">Pilih Mapel:</label>
+                                <select id="fmt-cetak-mapel" onchange="fmtOnMapelChange()" class="flex-1 bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-bold text-slate-100 outline-none focus:border-emerald-500">
+                                    <option value="">-- Semua Mapel --</option>
+                                </select>
+                            </div>
+                            <button onclick="cetakFormatifPDF()" class="bg-red-700 hover:bg-red-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition whitespace-nowrap shadow"><i class="fas fa-file-pdf mr-1"></i> Cetak PDF</button>
+                            <button onclick="exportFormatifExcel()" class="bg-teal-700 hover:bg-teal-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition whitespace-nowrap shadow"><i class="fas fa-file-excel mr-1"></i> Export Excel</button>
+                            <button onclick="cetakUTSPDF()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition whitespace-nowrap shadow"><i class="fas fa-file-pdf mr-1"></i> Cetak Nilai UTS</button>
+                            <button onclick="exportUTSExcel()" class="bg-blue-700 hover:bg-blue-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition whitespace-nowrap shadow"><i class="fas fa-file-excel mr-1"></i> Export UTS Excel</button>
+                        </div>
                     </div>
                     <div class="bg-slate-900 rounded-xl border border-slate-800 overflow-x-auto shadow-sm">
                         <table class="w-full text-left min-w-[800px]">
@@ -1545,6 +1560,8 @@
                         <p class="text-[10px] text-slate-400 leading-relaxed">Nilai semua agenda formatif per mapel akan dirata-rata otomatis menjadi <b class="text-emerald-300">Nilai Formatif</b>. Nilai Akhir Rapor = (Formatif × bobot%) + (STS × bobot%) + (SAS × bobot%). Gunakan tombol <b class="text-amber-300">Auto-Katrol</b> di menu Rekap untuk menaikkan nilai ke ≥ KKM.</p>
                     </div>
                 </section>
+
+
                 <section id="tab-p5ra-view" class="tab-content hidden space-y-4"><div class="bg-slate-900 p-4 rounded-xl border border-slate-800"><h3 class="text-sm font-bold text-slate-100">Penilaian P5RA (BB/MB/BSH/SB)</h3></div><div class="bg-slate-900 rounded-xl border border-slate-800 overflow-x-auto"><table class="w-full text-left min-w-[700px]"><thead class="sticky top-0 bg-slate-950 z-10"><tr class="border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase"><th class="p-3 w-12 text-center">Abs</th><th class="p-3">Nama Siswa</th><th class="p-3 text-center">Mandiri & Kreatif</th><th class="p-3 text-center">Gotong Royong</th><th class="p-3 text-center">Ta'addub</th><th class="p-3 text-center">Qudwah</th></tr></thead><tbody id="table-p5ra-body" class="divide-y divide-slate-800 text-xs text-slate-300"></tbody></table></div></section>
                 <section id="tab-ekskul-view" class="tab-content hidden space-y-4"><div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-wrap gap-4 justify-between md:items-center"><div><h3 class="text-sm font-bold text-slate-100">Ekstrakurikuler</h3></div><div class="flex gap-2"><input type="text" id="form-ekskul-nama" placeholder="Nama Ekskul..." class="bg-slate-950 border border-slate-700 rounded px-3 py-1.5 text-xs text-slate-100 outline-none w-48 focus:border-emerald-500"><button onclick="saveFormEkskul()" class="bg-emerald-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg hover:bg-emerald-500">Tambah</button></div></div><ul id="list-ekskul-group" class="flex gap-3 flex-wrap text-xs font-bold text-slate-300"></ul><div class="bg-slate-900 rounded-xl border border-slate-800 overflow-x-auto mt-2"><table class="w-full text-left min-w-[700px]"><thead><tr class="bg-slate-950 border-b border-slate-800 text-xs font-bold text-slate-400 uppercase"><th class="p-3 w-12 text-center">Abs</th><th class="p-3">Nama</th><th class="p-3 w-48">Pilih Ekskul</th><th class="p-3 w-28 text-center">Predikat</th><th class="p-3">Keterangan</th></tr></thead><tbody id="table-ekskul-body" class="divide-y divide-slate-800 text-xs text-slate-300"></tbody></table></div></section>
 
@@ -2552,6 +2569,7 @@
                                 <option value="">-- Pilih Mapel --</option>
                             </select>
                             <button onclick="openModalTP()" class="bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs px-3 py-2 rounded-lg shadow transition whitespace-nowrap"><i class="fas fa-plus mr-1"></i> Tambah TP</button>
+                            <button onclick="openModalTPMassal()" class="bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs px-3 py-2 rounded-lg shadow transition whitespace-nowrap"><i class="fas fa-bolt mr-1"></i> Input Cepat</button>
                         </div>
                     </div>
                     <!-- Filter Semester TP -->
@@ -3207,6 +3225,42 @@
                         <div class="bg-slate-900 p-4 rounded-xl border border-emerald-900/30 text-center">
                             <p class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Lulus Remedial</p>
                             <h4 id="rem-stat-lulus" class="text-2xl font-black text-emerald-400 mt-1">0</h4>
+                        </div>
+                    </div>
+
+                    <!-- INPUT KOLEKTIF: PENAMBAHAN NILAI -->
+                    <div class="bg-slate-900 rounded-xl border border-orange-800/40 overflow-hidden">
+                        <div class="p-3 bg-orange-950/40 border-b border-orange-800/30 flex items-center gap-2">
+                            <i class="fas fa-plus-circle text-orange-400 text-sm"></i>
+                            <span class="text-sm font-black text-orange-300">Tambah Nilai Kolektif</span>
+                            <span class="text-[10px] text-slate-400 ml-1">— nilai asli <b class="text-orange-400">+</b> tambahan = nilai remedial akhir</span>
+                        </div>
+                        <div class="p-4 space-y-3">
+                            <!-- Contoh preview -->
+                            <div class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-[11px] text-slate-400 flex items-center gap-2 flex-wrap">
+                                <i class="fas fa-info-circle text-orange-400 shrink-0"></i>
+                                <span>Contoh: Nilai asli <b class="text-white">28</b> + tambahan <b class="text-orange-300">50</b> = nilai remedial <b class="text-emerald-400">78</b>. Nilai maksimal tetap 100.</span>
+                            </div>
+                            <!-- Baris input -->
+                            <div class="flex flex-col sm:flex-row items-end gap-3">
+                                <div class="flex-1 space-y-1">
+                                    <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Nilai Tambahan (angka penambah)</label>
+                                    <input type="number" id="kolektif-tambah-input" min="0" max="100" placeholder="cth: 50"
+                                        class="w-full bg-slate-950 border border-orange-700/50 rounded-xl px-4 py-2.5 text-sm font-black text-orange-300 outline-none focus:border-orange-400 transition placeholder:text-slate-600">
+                                </div>
+                                <div class="flex-1 space-y-1">
+                                    <label class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Terapkan ke</label>
+                                    <select id="kolektif-target" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-xs font-bold text-slate-100 outline-none focus:border-orange-500 transition">
+                                        <option value="perlu">Di bawah KKM saja</option>
+                                        <option value="atas">Di atas KKM saja</option>
+                                        <option value="semua">Semua Siswa</option>
+                                    </select>
+                                </div>
+                                <button onclick="terapkanNilaiKolektif()"
+                                    class="bg-orange-600 hover:bg-orange-500 text-white font-black text-xs px-5 py-2.5 rounded-xl transition shadow-lg flex items-center gap-2 whitespace-nowrap">
+                                    <i class="fas fa-bolt"></i> Terapkan Semua
+                                </button>
+                            </div>
                         </div>
                     </div>
 
@@ -3974,7 +4028,41 @@
         </div>
     </div>
 
-    <!-- Modal Tambah/Edit CP -->
+    <!-- Modal Tambah TP Massal (Input Cepat) -->
+    <div id="modal-tp-massal" class="fixed inset-0 bg-slate-950/80 z-[70] hidden flex justify-center items-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-2xl p-6 space-y-3 modal-enter w-full max-h-[95vh] overflow-y-auto">
+            <h4 class="text-sm font-bold text-white"><i class="fas fa-bolt text-purple-400 mr-2"></i>Input TP Massal (Cepat)</h4>
+            <p class="text-[11px] text-slate-400 leading-relaxed">
+                Tempel/tulis beberapa TP sekaligus, <b class="text-slate-200">1 TP per baris</b>. Pisahkan setiap kolom dengan tanda
+                <code class="bg-slate-950 border border-slate-700 rounded px-1 text-purple-300">|</code> (pipe). Urutan kolom:
+            </p>
+            <div class="bg-slate-950 border border-slate-700 rounded p-2 text-[10px] text-slate-300 font-mono leading-relaxed">
+                Nomor | Tujuan Pembelajaran | Ruang Lingkup Materi | JP (opsional) | Semester (opsional, 1/2)
+            </div>
+            <p class="text-[10px] text-slate-500 leading-relaxed">
+                Kolom JP dan Semester boleh dikosongkan (cukup ketik <code class="bg-slate-950 border border-slate-700 rounded px-1">| |</code> atau langsung diakhiri). Contoh:
+            </p>
+            <div class="bg-slate-950 border border-slate-700 rounded p-2 text-[10px] text-emerald-300 font-mono leading-relaxed whitespace-pre-wrap">1 | Mengidentifikasi sistem pernapasan dan pencernaan manusia | Sistem pernapasan, sistem pencernaan | 8 | 2
+2 | Menganalisis kondisi geografis dan kekayaan alam Indonesia | Kondisi geografis, kekayaan alam | 6 | 2
+3 | Menjelaskan hak dan kewajiban sebagai warga masyarakat | Hak dan kewajiban warga | | 1</div>
+            <div>
+                <label class="block text-[10px] text-slate-400 mb-1">Mapel</label>
+                <select id="form-tpm-mapel" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white outline-none focus:border-purple-500"></select>
+            </div>
+            <div>
+                <label class="block text-[10px] text-slate-400 mb-1">Daftar TP (1 baris = 1 TP)</label>
+                <textarea id="form-tpm-text" rows="8" placeholder="1 | Tujuan pembelajaran... | Ruang lingkup materi... | 8 | 2" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-white outline-none focus:border-purple-500 font-mono resize-none"></textarea>
+            </div>
+            <div id="tpm-preview" class="hidden bg-slate-950 border border-slate-700 rounded p-2 text-[10px] text-slate-300 max-h-40 overflow-y-auto space-y-1"></div>
+            <div class="flex justify-between items-center gap-2 pt-2 border-t border-slate-800">
+                <button onclick="previewTPMassal()" class="px-3 py-1.5 rounded bg-slate-800 text-xs text-slate-300 hover:bg-slate-700"><i class="fas fa-eye mr-1"></i>Pratinjau</button>
+                <div class="flex gap-2">
+                    <button onclick="closeModalTPMassal()" class="px-4 py-1.5 rounded bg-slate-800 text-xs text-slate-400 hover:bg-slate-700">Batal</button>
+                    <button onclick="saveFormTPMassal()" class="px-4 py-1.5 rounded bg-purple-600 text-xs text-white font-bold hover:bg-purple-500">Simpan Semua</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <div id="modal-cp" class="fixed inset-0 bg-slate-950/80 z-[70] hidden flex justify-center items-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-xl p-6 space-y-4 modal-enter w-full max-h-[90vh] overflow-y-auto">
             <h4 class="text-sm font-bold text-white" id="modal-cp-title"><i class="fas fa-graduation-cap text-violet-400 mr-2"></i>Tambah Capaian Pembelajaran</h4>
@@ -4701,7 +4789,7 @@
             }
             if(tabId === 'mapel') { renderMapelTable(); document.getElementById('input-bobot-formatif').value = db.bobot.formatif; document.getElementById('input-bobot-sts').value = db.bobot.sts; document.getElementById('input-bobot-sas').value = db.bobot.sas; }
             if(tabId === 'nilai') { let s=document.getElementById('select-nilai-mapel'); s.innerHTML='<option value="">-- Pilih Mapel --</option>'+db.mapel.map(m=>`<option value="${m.id}">${m.nama}</option>`).join(''); loadInputNilaiSiswa(); }
-            if(tabId === 'tugas') renderTugasTable();
+            if(tabId === 'tugas') { fmtPopulateMapelDropdown(); renderTugasTable(); }
             if(tabId === 'keuangan') { renderKasTable(); renderLksTable(); }
             if(tabId === 'tabungan') { renderTabunganSiswaList(); renderTabunganRekap(); }
             if(tabId === 'absensi') { if(!document.getElementById('input-absensi-tanggal').value) document.getElementById('input-absensi-tanggal').value = getTodayLocalStr(); loadAbsensiHarian(); renderChartAbsensi(); }
@@ -4734,6 +4822,7 @@
             if(tabId === 'remedial') { renderRemedialTab(); }
             if(tabId === 'surat_ortu') { initSuratModule(); }
             if(tabId === 'kalkulator_koreksi') { kalkorInit(); }
+
             
             if(window.innerWidth < 768 && document.body.classList.contains('sidebar-open')) {
                 document.body.classList.remove('sidebar-open');
@@ -6104,28 +6193,60 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             const mId = document.getElementById('form-nilai-tugas-mapelid').value;
             const mapel = db.mapel.find(m => m.id === mId);
             const kkm = mapel ? (parseFloat(mapel.kkm) || 75) : 75;
-            let count = 0;
-            db.siswa.forEach(s => {
-                const stEl = document.getElementById(`st-${s.id}`);
-                const nlEl = document.getElementById(`nl-${s.id}`);
-                if (!stEl || !nlEl) return;
-                if (stEl.value === 'Sudah') {
-                    const cur = parseFloat(nlEl.value) || 0;
-                    if (cur < kkm) {
-                        nlEl.value = kkm;
-                        updateKTTPBadge(s.id, tId, kkm);
-                        count++;
+
+            Swal.fire({
+                title: '✏️ Katrol Nilai Kasih Sayang',
+                html: `
+                    <p class="text-sm text-slate-300 mb-4">Isi nilai yang ingin diberikan ke <b>semua siswa</b> sekaligus.<br><span class="text-slate-400 text-xs">KKM mapel ini: <b class="text-amber-400">${kkm}</b></span></p>
+                    <div class="flex flex-col gap-3">
+                        <div>
+                            <label class="text-xs text-slate-400 block mb-1 text-left">Nilai yang diinginkan (0–100):</label>
+                            <input id="swal-nilai-custom" type="number" min="0" max="100" value="${kkm}"
+                                class="w-full bg-slate-800 border border-slate-600 text-white text-center text-2xl font-black rounded-xl px-4 py-3 focus:outline-none focus:border-emerald-500"
+                                placeholder="Contoh: 85">
+                        </div>
+                        <div class="flex gap-2 text-xs">
+                            <button onclick="document.getElementById('swal-nilai-custom').value='${kkm}'" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-3 rounded-lg transition">KKM (${kkm})</button>
+                            <button onclick="document.getElementById('swal-nilai-custom').value='80'" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-3 rounded-lg transition">80</button>
+                            <button onclick="document.getElementById('swal-nilai-custom').value='85'" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-3 rounded-lg transition">85</button>
+                            <button onclick="document.getElementById('swal-nilai-custom').value='90'" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-3 rounded-lg transition">90</button>
+                            <button onclick="document.getElementById('swal-nilai-custom').value='100'" class="flex-1 bg-slate-700 hover:bg-slate-600 text-slate-300 font-bold py-2 px-3 rounded-lg transition">100</button>
+                        </div>
+                        <p class="text-[10px] text-slate-500 text-left">💡 Siswa yang statusnya "Belum" akan otomatis diubah jadi "Sudah".</p>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-magic mr-1"></i> Terapkan ke Semua Siswa',
+                cancelButtonText: 'Batal',
+                background: '#1e293b',
+                color: '#f8fafc',
+                confirmButtonColor: '#d97706',
+                cancelButtonColor: '#475569',
+                focusConfirm: false,
+                preConfirm: () => {
+                    const val = parseFloat(document.getElementById('swal-nilai-custom').value);
+                    if (isNaN(val) || val < 0 || val > 100) {
+                        Swal.showValidationMessage('Masukkan nilai antara 0 sampai 100!');
+                        return false;
                     }
-                } else {
-                    // Set "Belum" jadi "Sudah" dengan nilai KKM
+                    return val;
+                }
+            }).then(result => {
+                if (!result.isConfirmed) return;
+                const targetNilai = result.value;
+                let count = 0;
+                db.siswa.forEach(s => {
+                    const stEl = document.getElementById(`st-${s.id}`);
+                    const nlEl = document.getElementById(`nl-${s.id}`);
+                    if (!stEl || !nlEl) return;
                     stEl.value = 'Sudah';
                     nlEl.disabled = false;
-                    nlEl.value = kkm;
-                    updateKTTPBadge(s.id, tId, kkm);
+                    nlEl.value = targetNilai;
+                    updateKTTPBadge(s.id, tId, targetNilai);
                     count++;
-                }
+                });
+                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `✅ ${count} siswa diberi nilai ${targetNilai}!`, showConfirmButton: false, timer: 2500 });
             });
-            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: `${count} nilai dikatrol ke KKM (${kkm})`, showConfirmButton: false, timer: 2500 });
         }
 
         function closeModalNilaiTugas() { document.getElementById('modal-nilai-tugas').classList.add('hidden'); }
@@ -6623,11 +6744,122 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             }
         }
 
-        function simpanSemuaRemedial() {
+        function terapkanNilaiKolektif() {
             ensureRemedialDB();
             const mId = document.getElementById('select-remedial-mapel').value;
             const jenis = document.getElementById('select-remedial-jenis').value;
-            if (!mId) return Swal.fire('Peringatan', 'Pilih mapel terlebih dahulu.', 'warning');
+            if (!mId) return Swal.fire({ icon: 'warning', title: 'Pilih mapel dulu!', background: '#1e293b', color: '#f8fafc' });
+
+            const rawVal = document.getElementById('kolektif-tambah-input').value.trim();
+            if (rawVal === '' || isNaN(Number(rawVal)) || parseFloat(rawVal) <= 0) {
+                return Swal.fire({ icon: 'warning', title: 'Isi nilai tambahan!', text: 'Masukkan angka penambah lebih dari 0.', background: '#1e293b', color: '#f8fafc' });
+            }
+            const tambahan = parseFloat(rawVal);
+            const target = document.getElementById('kolektif-target').value;
+            const m = db.mapel.find(x => x.id == mId);
+            const jenisLabel = jenis === 'formatif' ? 'Formatif' : jenis === 'sts' ? 'STS' : 'SAS';
+            const kkmVal = parseFloat(m?.kkm) || 75;
+
+            // Kumpulkan siswa + hitung nilai remedial baru masing-masing (nilai asli + tambahan, max 100)
+            const hasilSiswa = [];
+            db.siswa.forEach(s => {
+                const inp = document.getElementById(`rem-input-${s.id}`);
+                if (!inp || inp.disabled) return;
+                const asli = getNilaiAsliRemedial(s.id, mId, jenis);
+                if (asli === null || asli === 0) return; // skip belum ujian
+                // Filter target
+                if (target === 'perlu' && asli >= kkmVal) return;
+                if (target === 'atas' && asli < kkmVal) return;
+                const nilaiRemedialBaru = Math.min(100, parseFloat((asli + tambahan).toFixed(1)));
+                hasilSiswa.push({ s, asli, nilaiRemedialBaru });
+            });
+
+            if (hasilSiswa.length === 0) {
+                return Swal.fire({ icon: 'info', title: 'Tidak ada siswa yang cocok', text: 'Tidak ditemukan siswa sesuai target yang dipilih.', background: '#1e293b', color: '#f8fafc' });
+            }
+
+            // Buat preview tabel ringkas
+            const targetLabel = target === 'perlu' ? 'Di bawah KKM' : target === 'atas' ? 'Di atas KKM' : 'Semua Siswa';
+            const contoh = hasilSiswa.slice(0, 3).map(x =>
+                `<tr><td style="padding:3px 8px;color:#cbd5e1">${x.s.nama}</td><td style="padding:3px 8px;color:#fbbf24;text-align:center">${x.asli}</td><td style="padding:3px 8px;color:#f97316;text-align:center">+${tambahan}</td><td style="padding:3px 8px;color:#34d399;text-align:center;font-weight:900">${x.nilaiRemedialBaru}</td></tr>`
+            ).join('');
+
+            Swal.fire({
+                icon: 'question',
+                title: 'Konfirmasi Penambahan Nilai',
+                html: `
+                    <div style="font-size:12px;color:#94a3b8;margin-bottom:8px;">
+                        Target: <b style="color:#f8fafc">${targetLabel}</b> &nbsp;|&nbsp;
+                        Mapel: <b style="color:#f8fafc">${m?.nama || ''}</b> &nbsp;|&nbsp;
+                        Jenis: <b style="color:#f8fafc">${jenisLabel}</b>
+                    </div>
+                    <table style="width:100%;border-collapse:collapse;font-size:11px;">
+                        <thead><tr style="color:#64748b;border-bottom:1px solid #334155">
+                            <th style="padding:4px 8px;text-align:left">Siswa</th>
+                            <th style="padding:4px 8px">Nilai Asli</th>
+                            <th style="padding:4px 8px">Tambah</th>
+                            <th style="padding:4px 8px">Hasil</th>
+                        </tr></thead>
+                        <tbody>${contoh}</tbody>
+                    </table>
+                    ${hasilSiswa.length > 3 ? `<div style="color:#64748b;font-size:11px;margin-top:6px">...dan ${hasilSiswa.length - 3} siswa lainnya</div>` : ''}
+                    <div style="margin-top:10px;color:#94a3b8;font-size:11px;">Total <b style="color:#f8fafc">${hasilSiswa.length} siswa</b> akan diproses. Nilai maksimal tetap 100.</div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-bolt mr-1"></i> Ya, Terapkan',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#ea580c',
+                background: '#1e293b', color: '#f8fafc',
+            }).then(result => {
+                if (!result.isConfirmed) return;
+
+                hasilSiswa.forEach(({ s, nilaiRemedialBaru }) => {
+                    const inp = document.getElementById(`rem-input-${s.id}`);
+                    if (!inp) return;
+
+                    // Isi input dengan nilai asli + tambahan
+                    inp.value = nilaiRemedialBaru;
+
+                    // Simpan ke DB
+                    const key = `${s.id}_${mId}_${jenis}`;
+                    db.remedial[key] = nilaiRemedialBaru;
+                    if (nilaiRemedialBaru > 0) {
+                        db.remedialHistory[key] = true;
+                        if (!db.remedialMax) db.remedialMax = {};
+                        if (db.remedialMax[key] === undefined || nilaiRemedialBaru > db.remedialMax[key]) {
+                            db.remedialMax[key] = nilaiRemedialBaru;
+                        }
+                    }
+
+                    // Live preview: update kolom Nilai Akhir & Hasil di tabel
+                    const nilaiAkhir = getNilaiAkhirSetelahRemedial(s.id, mId, jenis);
+                    const elAkhir = document.getElementById(`rem-akhir-${s.id}`);
+                    const elHasil = document.getElementById(`rem-hasil-${s.id}`);
+                    if (elAkhir) {
+                        elAkhir.textContent = nilaiAkhir !== null ? nilaiAkhir.toFixed(1) : '-';
+                        elAkhir.className = `text-sm ${nilaiAkhir !== null ? (nilaiAkhir >= kkmVal ? 'text-emerald-400 font-black' : 'text-amber-400 font-black') : 'text-slate-500'}`;
+                    }
+                    if (elHasil) {
+                        elHasil.innerHTML = nilaiAkhir === null ? '-' : nilaiAkhir >= kkmVal
+                            ? `<span class="text-[9px] px-2 py-0.5 rounded-full bg-emerald-900/40 text-emerald-300 border border-emerald-700/40 font-black">✓ Tuntas</span>`
+                            : `<span class="text-[9px] px-2 py-0.5 rounded-full bg-amber-900/40 text-amber-400 border border-amber-700/40">Belum Tuntas</span>`;
+                    }
+                });
+
+                saveDBDebounced();
+
+                Swal.fire({
+                    toast: true, position: 'top-end', icon: 'success',
+                    title: `+${tambahan} berhasil ditambahkan ke ${hasilSiswa.length} siswa!`,
+                    showConfirmButton: false, timer: 2500,
+                    background: '#1e293b', color: '#f8fafc'
+                });
+            });
+        }
+
+
+        function simpanSemuaRemedial() {
+            ensureRemedialDB();
 
             const jenisLabel = jenis === 'formatif' ? 'Formatif' : jenis === 'sts' ? 'STS' : 'SAS';
             const m = db.mapel.find(x => x.id == mId);
@@ -9456,6 +9688,104 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
                     Swal.fire({ toast:true, position:'top-end', icon:'success', title:'TP dihapus', showConfirmButton:false, timer:1800 });
                 }
             });
+        }
+
+        // =============================================
+        // FITUR BARU: INPUT TP MASSAL (CEPAT)
+        // Format per baris: Nomor | Tujuan | Materi | JP(opsional) | Semester(opsional)
+        // =============================================
+
+        function openModalTPMassal() {
+            const sel = document.getElementById('form-tpm-mapel');
+            sel.innerHTML = db.mapel.map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
+            const curMapel = document.getElementById('select-tp-mapel').value;
+            if (curMapel) sel.value = curMapel;
+            document.getElementById('form-tpm-text').value = '';
+            document.getElementById('tpm-preview').classList.add('hidden');
+            document.getElementById('tpm-preview').innerHTML = '';
+            document.getElementById('modal-tp-massal').classList.remove('hidden');
+        }
+
+        function closeModalTPMassal() { document.getElementById('modal-tp-massal').classList.add('hidden'); }
+
+        function parseTPMassalLines() {
+            const raw = document.getElementById('form-tpm-text').value;
+            const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length);
+            const rows = [];
+            const errors = [];
+            lines.forEach((line, idx) => {
+                const parts = line.split('|').map(p => p.trim());
+                const nomor = parts[0] || '';
+                const tujuan = parts[1] || '';
+                const materi = parts[2] || '';
+                const jp = parts[3] || '';
+                const semester = parts[4] || '';
+                if (!nomor || !tujuan || !materi) {
+                    errors.push(`Baris ${idx+1}: Nomor, Tujuan, dan Ruang Lingkup Materi wajib diisi.`);
+                    return;
+                }
+                if (semester && semester !== '1' && semester !== '2') {
+                    errors.push(`Baris ${idx+1}: Semester harus 1 atau 2 (kosongkan jika tidak ada).`);
+                    return;
+                }
+                rows.push({ nomor, tujuan, materi, jp, semester });
+            });
+            return { rows, errors };
+        }
+
+        function previewTPMassal() {
+            const { rows, errors } = parseTPMassalLines();
+            const box = document.getElementById('tpm-preview');
+            box.classList.remove('hidden');
+            if (!rows.length && !errors.length) {
+                box.innerHTML = '<p class="text-slate-500 italic">Belum ada baris yang valid.</p>';
+                return;
+            }
+            let html = '';
+            if (rows.length) {
+                html += `<p class="text-emerald-400 font-bold mb-1">${rows.length} TP siap disimpan:</p>`;
+                html += rows.map(r => `<div class="border-b border-slate-800 pb-1 mb-1">
+                    <span class="text-orange-400 font-bold">TP ${r.nomor}</span> — ${r.tujuan}
+                    <br><span class="text-sky-300">Materi:</span> ${r.materi}
+                    ${r.jp ? ` <span class="text-orange-300">(${r.jp} JP)</span>` : ''}
+                    ${r.semester ? ` <span class="text-amber-300">[Sem ${r.semester}]</span>` : ''}
+                </div>`).join('');
+            }
+            if (errors.length) {
+                html += `<p class="text-red-400 font-bold mt-2 mb-1">${errors.length} baris bermasalah:</p>`;
+                html += errors.map(e => `<div class="text-red-300">${e}</div>`).join('');
+            }
+            box.innerHTML = html;
+        }
+
+        function saveFormTPMassal() {
+            const mapelId = document.getElementById('form-tpm-mapel').value;
+            if (!mapelId) return Swal.fire('Peringatan', 'Pilih mapel terlebih dahulu.', 'warning');
+            const { rows, errors } = parseTPMassalLines();
+            if (!rows.length) return Swal.fire('Peringatan', errors.length ? errors.join('\n') : 'Belum ada data TP yang diisi.', 'warning');
+            if (errors.length) {
+                return Swal.fire({
+                    title: 'Ada baris tidak valid',
+                    html: `${rows.length} TP valid akan disimpan, namun ada masalah pada:<br><br>${errors.join('<br>')}`,
+                    icon: 'warning', showCancelButton: true,
+                    confirmButtonText: `Simpan ${rows.length} TP yang valid`, cancelButtonText: 'Batal, perbaiki dulu'
+                }).then(r => { if (r.isConfirmed) doSaveTPMassal(mapelId, rows); });
+            }
+            doSaveTPMassal(mapelId, rows);
+        }
+
+        function doSaveTPMassal(mapelId, rows) {
+            rows.forEach((r, i) => {
+                db.tp.push({
+                    id: 'tp_' + Date.now() + '_' + i,
+                    nomor: r.nomor, tujuan: r.tujuan, materi: r.materi, mapelId,
+                    cpId: '', materiId: '', jp: r.jp, semester: r.semester, profil: ''
+                });
+            });
+            saveDB();
+            document.getElementById('select-tp-mapel').value = mapelId;
+            closeModalTPMassal(); renderTPTable();
+            Swal.fire({ toast:true, position:'top-end', icon:'success', title:`${rows.length} TP berhasil ditambahkan!`, showConfirmButton:false, timer:2200 });
         }
 
         // =============================================
@@ -16670,6 +17000,10 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             }
         });
     }
+
+
+    // ============================================================
+    // ============================================================
 
     // ---- STUDENT PICKER MODAL ----
     function tapShowSiswaPickerModal() {
