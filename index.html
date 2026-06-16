@@ -1461,13 +1461,24 @@
                                     <input type="date" id="input-absensi-tanggal" onchange="loadAbsensiHarian()" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold outline-none text-slate-100 flex-1 md:flex-none focus:border-emerald-500">
                                 </div>
                             </div>
-                            <div class="border border-slate-800 rounded-lg overflow-x-auto flex-1">
-                                <table class="w-full text-left min-w-[700px]">
-                                    <thead class="bg-slate-950 sticky top-0">
-                                        <tr class="border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase"><th class="p-3 w-12 text-center">Abs</th><th class="p-3">Nama Siswa</th><th class="p-3 text-center w-48">Status (1-Klik)</th><th class="p-3">Keterangan Tambahan</th></tr>
-                                    </thead>
-                                    <tbody id="table-absensi-body" class="divide-y divide-slate-800 text-xs text-slate-300"></tbody>
-                                </table>
+                            <!-- MOBILE: Card List | DESKTOP: Table -->
+                            <div class="border border-slate-800 rounded-lg overflow-hidden flex-1">
+                                <!-- Desktop Table (hidden on mobile) -->
+                                <div class="hidden md:block overflow-x-auto">
+                                    <table class="w-full text-left">
+                                        <thead class="bg-slate-950 sticky top-0">
+                                            <tr class="border-b border-slate-800 text-[11px] font-bold text-slate-400 uppercase">
+                                                <th class="p-3 w-12 text-center">Abs</th>
+                                                <th class="p-3">Nama Siswa</th>
+                                                <th class="p-3 text-center w-56">Status (1-Klik)</th>
+                                                <th class="p-3">Keterangan</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="table-absensi-body" class="divide-y divide-slate-800 text-xs text-slate-300"></tbody>
+                                    </table>
+                                </div>
+                                <!-- Mobile Card List (hidden on desktop) -->
+                                <div class="md:hidden divide-y divide-slate-800" id="mobile-absensi-body"></div>
                             </div>
                         </div>
                         <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col h-full">
@@ -4025,6 +4036,46 @@
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
                         <!-- Panel Kiri: Pengaturan -->
                         <div class="lg:col-span-1 space-y-4">
+                            <!-- Identitas Sekolah: Logo & Alamat -->
+                            <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 space-y-3">
+                                <h4 class="font-bold text-slate-100 text-sm flex items-center gap-2"><i class="fas fa-image text-violet-400"></i> Identitas Sekolah</h4>
+
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Logo Sekolah</label>
+                                    <div class="flex items-center gap-3">
+                                        <div id="ttr-logo-preview-box" class="w-14 h-14 rounded-lg bg-slate-950 border border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
+                                            <img id="ttr-logo-preview" src="" class="w-full h-full object-contain hidden" alt="Logo">
+                                            <i id="ttr-logo-placeholder-icon" class="fas fa-image text-slate-600 text-lg"></i>
+                                        </div>
+                                        <div class="flex-1 space-y-1.5">
+                                            <input type="file" id="ttr-logo-file" accept="image/*" class="hidden" onchange="uploadLogoSekolah(event)">
+                                            <button onclick="document.getElementById('ttr-logo-file').click()" class="w-full bg-violet-600/20 text-violet-300 border border-violet-600/50 hover:bg-violet-600 hover:text-white transition font-bold text-[10px] py-1.5 rounded-lg">
+                                                <i class="fas fa-folder-open mr-1"></i> Browse / Upload Logo
+                                            </button>
+                                            <button onclick="hapusLogoSekolah()" class="w-full bg-slate-800 text-slate-400 hover:bg-red-900/40 hover:text-red-300 transition font-bold text-[10px] py-1.5 rounded-lg">
+                                                <i class="fas fa-trash mr-1"></i> Hapus Logo
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Posisi Logo</label>
+                                    <select id="ttr-logo-posisi" onchange="saveLogoSekolahSettings()" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 outline-none focus:border-violet-500">
+                                        <option value="kiri">Kiri (sebelum nama sekolah)</option>
+                                        <option value="kanan">Kanan (setelah nama sekolah)</option>
+                                        <option value="kiri-kanan">Kiri & Kanan (logo sama di kedua sisi)</option>
+                                        <option value="tengah-atas">Tengah, di atas nama sekolah</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Alamat Sekolah</label>
+                                    <input type="text" id="ttr-alamat-sekolah" oninput="saveLogoSekolahSettings()" placeholder="Jl. Nama Jalan No.01, Kecamatan, Kabupaten/Kota" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 outline-none focus:border-violet-500">
+                                    <p class="text-[9px] text-slate-500 mt-1">Tampil di bawah nama sekolah pada kop tanda terima. Diisi manual.</p>
+                                </div>
+                            </div>
+
                             <!-- Info Dokumen -->
                             <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 space-y-3">
                                 <h4 class="font-bold text-slate-100 text-sm flex items-center gap-2"><i class="fas fa-info-circle text-violet-400"></i> Info Dokumen</h4>
@@ -7241,9 +7292,8 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                 const m = db.mapel.find(x => x.id === t.mapelId);
                 const tp = t.tpId ? db.tp.find(x => x.id === t.tpId) : null;
                 const tpHtml = tp
-                    ? `<span class="bg-orange-900/30 text-orange-300 border border-orange-800/40 text-[9px] font-bold px-1.5 py-0.5 rounded">TP ${tp.nomor}</span><span class="text-slate-400 ml-1">${tp.materi}</span>`
+                    ? `<span class="bg-orange-900/30 text-orange-300 border border-orange-800/40 text-[9px] font-bold px-1.5 py-0.5 rounded">TP ${tp.nomor}</span><span class="text-slate-200 ml-1">${tp.tujuan || ''}</span>${tp.materi ? `<span class="block text-[9px] text-sky-400 mt-0.5">Ruang Lingkup: ${tp.materi}</span>` : ''}`
                     : `<span class="text-slate-600 italic text-[10px]">—</span>`;
-                // Hitung berapa siswa sudah kumpul
                 const sudah = db.siswa.filter(s => db.nilaiTugas[`${s.id}_${t.id}`]?.status === 'Sudah').length;
                 const total = db.siswa.length;
                 const pct = total ? Math.round(sudah / total * 100) : 0;
@@ -7946,7 +7996,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                 const m = db.mapel.find(x => x.id === t.mapelId);
                 const tp = t.tpId ? db.tp.find(x => x.id === t.tpId) : null;
                 const tpHtml = tp
-                    ? `<span class="bg-orange-900/30 text-orange-300 border border-orange-800/40 text-[9px] font-bold px-1.5 py-0.5 rounded">TP ${tp.nomor}</span><span class="text-slate-400 ml-1">${tp.materi}</span>`
+                    ? `<span class="bg-orange-900/30 text-orange-300 border border-orange-800/40 text-[9px] font-bold px-1.5 py-0.5 rounded">TP ${tp.nomor}</span><span class="text-slate-200 ml-1">${tp.tujuan || ''}</span>${tp.materi ? `<span class="block text-[9px] text-sky-400 mt-0.5">Ruang Lingkup: ${tp.materi}</span>` : ''}`
                     : `<span class="text-slate-600 italic text-[10px]">—</span>`;
                 const sudah = db.siswa.filter(s => db.nilaiTugas[`${s.id}_${t.id}`]?.status === 'Sudah').length;
                 const total = db.siswa.length;
@@ -7981,9 +8031,12 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
 
                 // Header per agenda
                 rows += `<tr style="background:#f0fdf4;">
-                    <td style="padding:6px 8px;font-weight:bold;color:#065f46;" colspan="2">${i+1}. ${t.nama} — ${m ? m.nama : '-'}${tp ? ` (TP ${tp.nomor})` : ''}</td>
-                    <td style="padding:6px 8px;font-weight:bold;color:#065f46;">Tenggat: ${t.tenggat}</td>
-                    <td style="padding:6px 8px;font-weight:bold;color:#065f46;">${sudah}/${total} Sudah</td>
+                    <td style="padding:6px 8px;font-weight:bold;color:#065f46;" colspan="4">${i+1}. ${t.nama} — ${m ? m.nama : '-'}${tp ? ` (TP ${tp.nomor}: ${tp.tujuan || ''})` : ''}${tp && tp.materi ? `<br><span style="font-weight:normal;color:#0369a1;">Ruang Lingkup Materi: ${tp.materi}</span>` : ''}</td>
+                </tr>
+                <tr style="background:#f0fdf4;">
+                    <td style="padding:2px 8px;font-weight:bold;color:#065f46;" colspan="2"></td>
+                    <td style="padding:2px 8px;font-weight:bold;color:#065f46;">Tenggat: ${t.tenggat}</td>
+                    <td style="padding:2px 8px;font-weight:bold;color:#065f46;">${sudah}/${total} Sudah</td>
                 </tr>`;
                 db.siswa.forEach(s => {
                     const nt = db.nilaiTugas[`${s.id}_${t.id}`] || { status: 'Belum', nilai: '' };
@@ -8018,25 +8071,37 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             const filtered = mId ? db.tugas.filter(t => t.mapelId === mId) : db.tugas;
             if (!filtered.length) return Swal.fire('Info', 'Tidak ada agenda untuk diekspor.', 'info');
 
-            // Buat CSV sederhana
-            let csv = 'No,Nama Siswa,Mapel,TP,Nama Agenda,Tenggat,Status,Nilai\n';
-            filtered.forEach(t => {
-                const m = db.mapel.find(x => x.id === t.mapelId);
-                const tp = t.tpId ? db.tp.find(x => x.id === t.tpId) : null;
-                db.siswa.forEach((s, idx) => {
-                    const nt = db.nilaiTugas[`${s.id}_${t.id}`] || { status: 'Belum', nilai: '' };
-                    csv += `${s.absen || idx+1},"${s.nama}","${m ? m.nama : ''}","${tp ? 'TP '+tp.nomor+' - '+tp.materi : '-'}","${t.nama}","${t.tenggat}","${nt.status}","${nt.nilai || ''}"\n`;
+            loadXLSX().then(() => {
+                const wsData = [['No','Nama Siswa','Mapel','TP','Tujuan Pembelajaran','Ruang Lingkup Materi','Nama Agenda','Tenggat','Status','Nilai']];
+                filtered.forEach(t => {
+                    const m = db.mapel.find(x => x.id === t.mapelId);
+                    const tp = t.tpId ? db.tp.find(x => x.id === t.tpId) : null;
+                    db.siswa.forEach((s, idx) => {
+                        const nt = db.nilaiTugas[`${s.id}_${t.id}`] || { status: 'Belum', nilai: '' };
+                        wsData.push([
+                            s.absen || idx + 1,
+                            s.nama,
+                            m ? m.nama : '',
+                            tp ? ('TP ' + tp.nomor) : '-',
+                            tp ? (tp.tujuan || '') : '-',
+                            tp ? (tp.materi || '') : '-',
+                            t.nama,
+                            t.tenggat,
+                            nt.status,
+                            nt.nilai || ''
+                        ]);
+                    });
                 });
+                const ws = XLSX.utils.aoa_to_sheet(wsData);
+                ws['!cols'] = [
+                    { wch: 5 }, { wch: 22 }, { wch: 16 }, { wch: 8 },
+                    { wch: 35 }, { wch: 28 }, { wch: 22 }, { wch: 12 }, { wch: 10 }, { wch: 8 }
+                ];
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, 'Agenda Formatif');
+                XLSX.writeFile(wb, `Agenda_Formatif_${new Date().toLocaleDateString('id-ID').replace(/\//g,'-')}.xlsx`);
+                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'File Excel berhasil diunduh!', showConfirmButton: false, timer: 2000 });
             });
-
-            const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `Agenda_Formatif_${new Date().toLocaleDateString('id-ID').replace(/\//g,'-')}.csv`;
-            a.click();
-            URL.revokeObjectURL(url);
-            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'File CSV berhasil diunduh!', showConfirmButton: false, timer: 2000 });
         }
 
         function cetakUTSPDF() {
@@ -9362,51 +9427,104 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
         function loadAbsensiHarian() {
             const tgl = document.getElementById('input-absensi-tanggal').value;
             const b = document.getElementById('table-absensi-body');
-            
+            const mb = document.getElementById('mobile-absensi-body');
+
             // Validasi Hari Libur (termasuk auto-Minggu)
             const liburInfo = isTanggalLibur(tgl);
             if (liburInfo) {
-                b.innerHTML = `<tr><td colspan="4" class="p-6 text-center bg-slate-900 border border-red-900/50"><i class="fas fa-calendar-times text-4xl text-red-500 mb-3 mt-2 block animate-pulse"></i><h4 class="text-slate-200 font-bold text-lg mb-1">Hari Libur Terkunci</h4><p class="text-amber-400 font-bold mb-2">${liburInfo.ket}</p><p class="text-slate-500 text-xs">Pengisian absensi dinonaktifkan pada hari libur nasional/sekolah.</p></td></tr>`;
+                const liburHtml = `<i class="fas fa-calendar-times text-4xl text-red-500 mb-3 mt-2 block animate-pulse"></i><h4 class="text-slate-200 font-bold text-lg mb-1">Hari Libur Terkunci</h4><p class="text-amber-400 font-bold mb-2">${liburInfo.ket}</p><p class="text-slate-500 text-xs">Pengisian absensi dinonaktifkan pada hari libur nasional/sekolah.</p>`;
+                b.innerHTML = `<tr><td colspan="4" class="p-6 text-center bg-slate-900 border border-red-900/50">${liburHtml}</td></tr>`;
+                if(mb) mb.innerHTML = `<div class="p-6 text-center">${liburHtml}</div>`;
                 return;
             }
 
-            const rows = db.siswa.map(s => {
-                let cur = (db.absensi[tgl] && db.absensi[tgl][s.id]) ? db.absensi[tgl][s.id] : {status: 'Hadir', ket: ''};
-                
-                // Active/Inactive Style Generator
-                const btnStyle = (tgt) => {
-                    if(cur.status === tgt) {
-                        return tgt === 'Hadir' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 ring-2 ring-emerald-400' 
-                             : tgt === 'Sakit' ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30 ring-2 ring-amber-300' 
-                             : tgt === 'Izin'  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30 ring-2 ring-blue-400' 
-                             : 'bg-red-600 text-white shadow-lg shadow-red-600/30 ring-2 ring-red-400';
-                    }
-                    return 'bg-slate-800 text-slate-400 hover:bg-slate-700';
-                };
+            // Helper: style tombol aktif/nonaktif
+            const btnStyle = (cur, tgt) => {
+                if(cur === tgt) {
+                    return tgt === 'Hadir' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 ring-2 ring-emerald-400'
+                         : tgt === 'Sakit' ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/30 ring-2 ring-amber-300'
+                         : tgt === 'Izin'  ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30 ring-2 ring-blue-400'
+                         : 'bg-red-600 text-white shadow-lg shadow-red-600/30 ring-2 ring-red-400';
+                }
+                return 'bg-slate-800 text-slate-400';
+            };
 
-                return `<tr class="hover:bg-slate-800/50 transition">
+            // Helper: badge status aktif (untuk mobile header)
+            const statusBadge = (status) => {
+                if(status === 'Hadir') return '<span class="text-[10px] font-black text-emerald-400 bg-emerald-900/40 px-2 py-0.5 rounded-full">✓ Hadir</span>';
+                if(status === 'Sakit') return '<span class="text-[10px] font-black text-amber-400 bg-amber-900/40 px-2 py-0.5 rounded-full">🤒 Sakit</span>';
+                if(status === 'Izin')  return '<span class="text-[10px] font-black text-blue-400 bg-blue-900/40 px-2 py-0.5 rounded-full">📝 Izin</span>';
+                if(status === 'Alfa')  return '<span class="text-[10px] font-black text-red-400 bg-red-900/40 px-2 py-0.5 rounded-full">✗ Alfa</span>';
+                return '<span class="text-[10px] font-black text-slate-400 bg-slate-800 px-2 py-0.5 rounded-full">○ Belum Absen</span>';
+            };
+
+            const rows = [], mobileCards = [];
+
+            db.siswa.forEach(s => {
+                let cur = (db.absensi[tgl] && db.absensi[tgl][s.id]) ? db.absensi[tgl][s.id] : {status: null, ket: ''};
+                const st = cur.status;
+
+                // ── Desktop row ──
+                rows.push(`<tr class="hover:bg-slate-800/50 transition">
                     <td class="p-3 text-center font-mono">${s.absen || '-'}</td>
                     <td class="p-3 font-bold text-slate-100">${s.nama}</td>
                     <td class="p-3">
                         <div class="flex gap-2 justify-center">
-                            <button onclick="setAbsensiSiswa('${s.id}', 'Hadir')" class="w-9 h-9 rounded-lg text-xs font-black transition-all ${btnStyle('Hadir')}" title="Hadir">H</button>
-                            <button onclick="setAbsensiSiswa('${s.id}', 'Sakit')" class="w-9 h-9 rounded-lg text-xs font-black transition-all ${btnStyle('Sakit')}" title="Sakit">S</button>
-                            <button onclick="setAbsensiSiswa('${s.id}', 'Izin')" class="w-9 h-9 rounded-lg text-xs font-black transition-all ${btnStyle('Izin')}" title="Izin">I</button>
-                            <button onclick="setAbsensiSiswa('${s.id}', 'Alfa')" class="w-9 h-9 rounded-lg text-xs font-black transition-all ${btnStyle('Alfa')}" title="Alfa">A</button>
+                            <button onclick="setAbsensiSiswa('${s.id}','Hadir')" class="w-9 h-9 rounded-lg text-xs font-black transition-all ${btnStyle(st,'Hadir')}" title="Hadir">H</button>
+                            <button onclick="setAbsensiSiswa('${s.id}','Sakit')" class="w-9 h-9 rounded-lg text-xs font-black transition-all ${btnStyle(st,'Sakit')}" title="Sakit">S</button>
+                            <button onclick="setAbsensiSiswa('${s.id}','Izin')"  class="w-9 h-9 rounded-lg text-xs font-black transition-all ${btnStyle(st,'Izin')}"  title="Izin">I</button>
+                            <button onclick="setAbsensiSiswa('${s.id}','Alfa')"  class="w-9 h-9 rounded-lg text-xs font-black transition-all ${btnStyle(st,'Alfa')}"  title="Alfa">A</button>
                         </div>
                     </td>
                     <td class="p-3">
                         <input type="text" id="abs-kt-${s.id}" value="${cur.ket}" onchange="saveKeteranganAbsensi('${s.id}')" placeholder="Keterangan opsional..." class="bg-slate-950 border border-slate-700 rounded-lg text-xs p-2 w-full outline-none focus:border-emerald-500 text-slate-300">
                     </td>
-                </tr>`;
+                </tr>`);
+
+                // ── Mobile card ──
+                mobileCards.push(`
+                <div class="p-3 bg-slate-900 hover:bg-slate-800/60 transition" id="mob-abs-card-${s.id}">
+                    <div class="flex items-center justify-between mb-2.5">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[11px] font-mono text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded">${s.absen || '-'}</span>
+                            <span class="text-sm font-bold text-slate-100">${s.nama}</span>
+                        </div>
+                        <span id="mob-abs-badge-${s.id}">${statusBadge(st)}</span>
+                    </div>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="setAbsensiSiswa('${s.id}','Hadir')" id="mob-btn-${s.id}-Hadir"
+                            class="flex flex-col items-center justify-center py-2.5 rounded-xl text-xs font-black transition-all active:scale-95 ${btnStyle(st,'Hadir')}">
+                            <i class="fas fa-check mb-1 text-sm"></i>Hadir
+                        </button>
+                        <button onclick="setAbsensiSiswa('${s.id}','Sakit')" id="mob-btn-${s.id}-Sakit"
+                            class="flex flex-col items-center justify-center py-2.5 rounded-xl text-xs font-black transition-all active:scale-95 ${btnStyle(st,'Sakit')}">
+                            <i class="fas fa-thermometer-half mb-1 text-sm"></i>Sakit
+                        </button>
+                        <button onclick="setAbsensiSiswa('${s.id}','Izin')" id="mob-btn-${s.id}-Izin"
+                            class="flex flex-col items-center justify-center py-2.5 rounded-xl text-xs font-black transition-all active:scale-95 ${btnStyle(st,'Izin')}">
+                            <i class="fas fa-file-alt mb-1 text-sm"></i>Izin
+                        </button>
+                        <button onclick="setAbsensiSiswa('${s.id}','Alfa')" id="mob-btn-${s.id}-Alfa"
+                            class="flex flex-col items-center justify-center py-2.5 rounded-xl text-xs font-black transition-all active:scale-95 ${btnStyle(st,'Alfa')}">
+                            <i class="fas fa-times mb-1 text-sm"></i>Alfa
+                        </button>
+                    </div>
+                    <div class="mt-2">
+                        <input type="text" id="abs-kt-mob-${s.id}" value="${cur.ket}" onchange="saveKeteranganAbsensi('${s.id}', true)"
+                            placeholder="Keterangan (opsional)..."
+                            class="bg-slate-950 border border-slate-700 rounded-lg text-xs p-2.5 w-full outline-none focus:border-emerald-500 text-slate-300">
+                    </div>
+                </div>`);
             });
+
             b.innerHTML = rows.join('');
+            if(mb) mb.innerHTML = mobileCards.join('');
         }
 
         function setAbsensiSiswa(sId, status) {
             const tgl = document.getElementById('input-absensi-tanggal').value;
             if(!db.absensi[tgl]) db.absensi[tgl] = {};
-            if(!db.absensi[tgl][sId]) db.absensi[tgl][sId] = { status: 'Hadir', ket: '' };
+            if(!db.absensi[tgl][sId]) db.absensi[tgl][sId] = { status: null, ket: '' };
             db.absensi[tgl][sId].status = status;
             saveDB();
             // Update tombol di baris siswa ini
@@ -9438,26 +9556,50 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
 
         function _updateAbsensiBtnRow(sId, activeStatus) {
             const statuses = ['Hadir','Sakit','Izin','Alfa'];
-            const styles = {
+            const activeStyles = {
                 'Hadir': 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/30 ring-2 ring-emerald-400',
                 'Sakit': 'bg-amber-500 text-white shadow-lg shadow-amber-500/30 ring-2 ring-amber-300',
                 'Izin':  'bg-blue-600 text-white shadow-lg shadow-blue-600/30 ring-2 ring-blue-400',
                 'Alfa':  'bg-red-600 text-white shadow-lg shadow-red-600/30 ring-2 ring-red-400'
             };
             const inactive = 'bg-slate-800 text-slate-400 hover:bg-slate-700';
+
+            // Update desktop table buttons (pakai onclick selector)
             statuses.forEach(s => {
-                const btn = document.querySelector(`button[onclick="setAbsensiSiswa('${sId}', '${s}')"]`);
-                if (!btn) return;
-                btn.className = `w-9 h-9 rounded-lg text-xs font-black transition-all ${s === activeStatus ? styles[s] : inactive}`;
+                const btn = document.querySelector(`button[onclick="setAbsensiSiswa('${sId}','${s}')"]`);
+                if (!btn || btn.id) return; // skip mobile buttons (mereka punya id)
+                btn.className = `w-9 h-9 rounded-lg text-xs font-black transition-all ${s === activeStatus ? activeStyles[s] : inactive}`;
             });
+
+            // Update mobile card buttons
+            statuses.forEach(s => {
+                const mobBtn = document.getElementById(`mob-btn-${sId}-${s}`);
+                if (!mobBtn) return;
+                const isActive = s === activeStatus;
+                mobBtn.className = `flex flex-col items-center justify-center py-2.5 rounded-xl text-xs font-black transition-all active:scale-95 ${isActive ? activeStyles[s] : inactive}`;
+            });
+
+            // Update mobile badge
+            const badge = document.getElementById(`mob-abs-badge-${sId}`);
+            if (badge) {
+                const badgeMap = {
+                    'Hadir': '<span class="text-[10px] font-black text-emerald-400 bg-emerald-900/40 px-2 py-0.5 rounded-full">✓ Hadir</span>',
+                    'Sakit': '<span class="text-[10px] font-black text-amber-400 bg-amber-900/40 px-2 py-0.5 rounded-full">🤒 Sakit</span>',
+                    'Izin':  '<span class="text-[10px] font-black text-blue-400 bg-blue-900/40 px-2 py-0.5 rounded-full">📝 Izin</span>',
+                    'Alfa':  '<span class="text-[10px] font-black text-red-400 bg-red-900/40 px-2 py-0.5 rounded-full">✗ Alfa</span>'
+                };
+                badge.innerHTML = badgeMap[activeStatus] || '';
+            }
         }
 
-        function saveKeteranganAbsensi(sId) {
+        function saveKeteranganAbsensi(sId, isMobile) {
             const tgl = document.getElementById('input-absensi-tanggal').value;
             if(!db.absensi[tgl]) db.absensi[tgl] = {};
             if(!db.absensi[tgl][sId]) db.absensi[tgl][sId] = { status: 'Hadir', ket: '' };
-            
-            db.absensi[tgl][sId].ket = document.getElementById(`abs-kt-${sId}`).value;
+            // Ambil dari input mobile atau desktop sesuai yg memanggil
+            const elId = isMobile ? `abs-kt-mob-${sId}` : `abs-kt-${sId}`;
+            const el = document.getElementById(elId);
+            if(el) db.absensi[tgl][sId].ket = el.value;
             saveDB();
         }
 
@@ -18349,7 +18491,83 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
                 inputKota.value = kota ? kota + ', ' + tglIndo : tglIndo;
             }
 
+            // Muat logo & alamat sekolah tersimpan
+            loadLogoSekolahSettings();
+
             syncOrtuDariDB();
+        }
+
+        // ── Logo Sekolah & Alamat (Tanda Terima Rapot) ──
+        function loadLogoSekolahSettings() {
+            const prof = db.profil || {};
+            const elPosisi = document.getElementById('ttr-logo-posisi');
+            const elAlamat = document.getElementById('ttr-alamat-sekolah');
+            if (elPosisi) elPosisi.value = prof.logoPosisi || 'kiri';
+            if (elAlamat && !elAlamat.value) elAlamat.value = prof.alamatSekolahLogo || db.raporSettings?.alamat || '';
+            _renderLogoPreview(prof.logoSekolah || '');
+        }
+
+        function _renderLogoPreview(dataUrl) {
+            const img = document.getElementById('ttr-logo-preview');
+            const icon = document.getElementById('ttr-logo-placeholder-icon');
+            if (!img) return;
+            if (dataUrl) {
+                img.src = dataUrl;
+                img.classList.remove('hidden');
+                if (icon) icon.classList.add('hidden');
+            } else {
+                img.src = '';
+                img.classList.add('hidden');
+                if (icon) icon.classList.remove('hidden');
+            }
+        }
+
+        function uploadLogoSekolah(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            if (!file.type.startsWith('image/')) {
+                return Swal.fire('Format Salah', 'Silakan pilih file gambar (PNG/JPG).', 'warning');
+            }
+            const reader = new FileReader();
+            reader.onload = event => {
+                const img = new Image();
+                img.src = event.target.result;
+                img.onload = () => {
+                    // Kompres agar ukuran data tetap kecil
+                    const canvas = document.createElement('canvas');
+                    const MAX = 300;
+                    let w = img.width, h = img.height;
+                    if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } }
+                    else { if (h > MAX) { w *= MAX / h; h = MAX; } }
+                    canvas.width = w; canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, w, h);
+                    const dataUrl = canvas.toDataURL('image/png');
+                    if (!db.profil) db.profil = {};
+                    db.profil.logoSekolah = dataUrl;
+                    saveDB();
+                    _renderLogoPreview(dataUrl);
+                    Swal.fire({ icon: 'success', title: 'Logo berhasil diunggah', timer: 1200, showConfirmButton: false, toast: true, position: 'top-end' });
+                };
+            };
+            reader.readAsDataURL(file);
+            e.target.value = '';
+        }
+
+        function hapusLogoSekolah() {
+            if (!db.profil) db.profil = {};
+            db.profil.logoSekolah = '';
+            saveDB();
+            _renderLogoPreview('');
+        }
+
+        function saveLogoSekolahSettings() {
+            if (!db.profil) db.profil = {};
+            const posisi = document.getElementById('ttr-logo-posisi')?.value || 'kiri';
+            const alamat = document.getElementById('ttr-alamat-sekolah')?.value || '';
+            db.profil.logoPosisi = posisi;
+            db.profil.alamatSekolahLogo = alamat;
+            saveDBDebounced();
         }
 
         function syncOrtuDariDB() {
@@ -18432,6 +18650,47 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             const tglKembali  = document.getElementById('ttr-tanggal-kembali')?.value ? formatTglIndo(document.getElementById('ttr-tanggal-kembali').value) : '';
             const tglBuat     = document.getElementById('ttr-tanggal-buat')?.value ? formatTglIndo(document.getElementById('ttr-tanggal-buat').value) : formatTglIndo(new Date().toISOString().slice(0,10));
 
+            const logoSekolah   = db.profil?.logoSekolah || '';
+            const logoPosisi    = db.profil?.logoPosisi || 'kiri';
+            const alamatSekolah = document.getElementById('ttr-alamat-sekolah')?.value || db.profil?.alamatSekolahLogo || '';
+            const labelAtas     = db.raporSettings?.kemenag || '';
+
+            const logoImgTag = (size) => logoSekolah ? `<img src="${logoSekolah}" style="height:${size}px;width:${size}px;object-fit:contain;flex-shrink:0;" alt="Logo Sekolah">` : '';
+
+            // Susun kop sesuai posisi logo yang dipilih
+            let kopHtml;
+            const namaAlamatBlok = `
+                ${labelAtas ? `<div style="font-size:12px;font-weight:700;text-transform:uppercase;">${labelAtas}</div>` : ''}
+                <div style="font-size:19px;font-weight:900;text-transform:uppercase;letter-spacing:0.3px;margin-top:1px;">${namaSekolah}</div>
+                ${alamatSekolah ? `<div style="font-size:11px;font-weight:normal;margin-top:3px;">${alamatSekolah}</div>` : ''}
+            `;
+
+            if (!logoSekolah) {
+                kopHtml = `<div style="text-align:center;">${namaAlamatBlok}</div>`;
+            } else if (logoPosisi === 'tengah-atas') {
+                kopHtml = `<div style="text-align:center;">
+                    <div style="margin-bottom:4px;">${logoImgTag(80)}</div>
+                    ${namaAlamatBlok}
+                </div>`;
+            } else if (logoPosisi === 'kiri-kanan') {
+                kopHtml = `<div style="display:flex;align-items:center;gap:10px;">
+                    ${logoImgTag(85)}
+                    <div style="flex:1;text-align:center;">${namaAlamatBlok}</div>
+                    ${logoImgTag(85)}
+                </div>`;
+            } else if (logoPosisi === 'kanan') {
+                kopHtml = `<div style="display:flex;align-items:center;gap:10px;">
+                    <div style="flex:1;text-align:center;">${namaAlamatBlok}</div>
+                    ${logoImgTag(85)}
+                </div>`;
+            } else {
+                // default: kiri
+                kopHtml = `<div style="display:flex;align-items:center;gap:10px;">
+                    ${logoImgTag(85)}
+                    <div style="flex:1;text-align:center;">${namaAlamatBlok}</div>
+                </div>`;
+            }
+
             const rows = _ttrDataOrtu.map((s, i) => `
                 <tr style="page-break-inside:avoid;break-inside:avoid;">
                     <td style="border:1px solid #333;padding:5px 7px;text-align:center;font-size:11px;height:70px;vertical-align:middle;">${s.absen || (i+1)}</td>
@@ -18447,9 +18706,10 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             return `
             <div style="font-family:'Times New Roman',Georgia,serif;font-size:12px;color:#111;padding:12mm 14mm;min-width:600px;">
                 <!-- KOP -->
-                <div style="text-align:center;border-bottom:3px double #111;padding-bottom:8px;margin-bottom:10px;">
-                    <div style="font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:0.5px;">${namaSekolah}</div>
+                <div style="border-bottom:4px solid #111;padding-bottom:6px;margin-bottom:2px;">
+                    ${kopHtml}
                 </div>
+                <div style="border-bottom:1px solid #111;margin-bottom:10px;"></div>
 
                 <!-- Judul -->
                 <div style="text-align:center;margin:8px 0 12px 0;">
