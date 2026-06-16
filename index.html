@@ -337,9 +337,15 @@
                             <span class="nav-label text-blue-300">Surat Ortu</span>
                             <span class="absolute right-2 top-1.5 text-[8px] font-black text-white bg-blue-600 px-1.5 py-0.5 rounded-full">NEW</span>
                         </button>
+                        <button title="Tanda Terima Rapot" onclick="switchTab('tanda_terima_rapot'); closeOrtuMenu();" id="btn-tanda_terima_rapot" class="nav-link w-full flex items-center gap-3 px-3 py-2 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-violet-400 transition text-[12px] relative">
+                            <i class="fas fa-file-signature w-5 text-center text-violet-400"></i>
+                            <span class="nav-label text-violet-300">Tanda Terima Rapot</span>
+                            <span class="absolute right-2 top-1.5 text-[8px] font-black text-white bg-violet-600 px-1.5 py-0.5 rounded-full">NEW</span>
+                        </button>
                     </div>
                 </div>
                 <button title="Formulir Data Siswa Baru" onclick="switchTab('formulir_siswa')" id="btn-formulir_siswa" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-cyan-400 transition relative"><i class="fas fa-file-signature w-5 text-center text-cyan-400"></i> <span class="text-cyan-300">Formulir Siswa Baru</span> <span class="absolute right-2 top-2 text-[8px] font-black text-white bg-cyan-600 px-1.5 py-0.5 rounded-full">NEW</span></button>
+                <button title="Hari Efektif Semester" onclick="switchTab('hari_efektif')" id="btn-hari_efektif" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-sky-400 transition relative"><i class="fas fa-calendar-day w-5 text-center text-sky-400"></i> <span class="nav-label text-sky-300">Hari Efektif</span> <span class="absolute right-2 top-2 text-[8px] font-black text-white bg-sky-600 px-1.5 py-0.5 rounded-full">NEW</span></button>
                 <button title="Pengaturan Sistem" onclick="switchTab('pengaturan')" id="btn-pengaturan" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-emerald-400 transition"><i class="fas fa-cogs w-5 text-center"></i> <span class="nav-label">Pengaturan Sistem</span></button>
             </nav>
         </aside>
@@ -1422,7 +1428,9 @@
                 <section id="tab-siswa-view" class="tab-content hidden space-y-4">
                     <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-900 p-4 rounded-xl border border-slate-800">
                         <div><h3 class="text-sm font-bold text-slate-100">Database Siswa Lengkap</h3><p class="text-[10px] text-slate-400 mt-1">Simpan profil, kontak ortu, dan alamat.</p></div>
-                        <div class="flex gap-2">
+                        <div class="flex gap-2 flex-wrap">
+                            <button onclick="openModalKolomKustom()" class="bg-violet-700/30 hover:bg-violet-600 text-violet-300 hover:text-white font-bold text-xs px-4 py-2 rounded-lg border border-violet-700/50 transition"><i class="fas fa-columns mr-1"></i> Kelola Kolom</button>
+                            <button onclick="openModalIsiMassal()" class="bg-sky-700/30 hover:bg-sky-600 text-sky-300 hover:text-white font-bold text-xs px-4 py-2 rounded-lg border border-sky-700/50 transition"><i class="fas fa-paste mr-1"></i> Isi Massal Kolom</button>
                             <button onclick="openModalMassal()" class="bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs px-4 py-2 rounded-lg border border-slate-700 transition"><i class="fas fa-file-import mr-1"></i> Paste Massal</button>
                             <label class="bg-blue-700/30 hover:bg-blue-600 text-blue-300 hover:text-white font-bold text-xs px-4 py-2 rounded-lg border border-blue-700/50 transition cursor-pointer"><i class="fas fa-file-excel mr-1"></i> Upload Template RDM <input type="file" id="upload-rdm-siswa" accept=".xlsx,.xls" onchange="importSiswaDariRDM(event)" class="hidden"></label>
                             <button onclick="openModalSiswa()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-4 py-2 rounded-lg transition shadow-md shadow-emerald-900/20"><i class="fas fa-user-plus mr-1"></i> Tambah Siswa</button>
@@ -1431,7 +1439,7 @@
                     <div class="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden shadow-sm">
                         <div class="overflow-x-auto max-h-[60vh]">
                             <table class="w-full text-left min-w-[900px]">
-                                <thead class="sticky top-0 bg-slate-950 z-10"><tr class="border-b border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider"><th class="px-4 py-3 w-16 text-center">Abs</th><th class="px-4 py-3 w-20">Foto</th><th class="px-4 py-3">NISN / Nama Siswa</th><th class="px-4 py-3">Data Orang Tua & WA</th><th class="px-4 py-3 w-48">Alamat Singkat</th><th class="px-4 py-3 text-center w-24">Aksi</th></tr></thead>
+                                <thead class="sticky top-0 bg-slate-950 z-10" id="siswa-table-head"><tr class="border-b border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider"><th class="px-4 py-3 w-16 text-center">Abs</th><th class="px-4 py-3 w-20">Foto</th><th class="px-4 py-3">NISN / Nama Siswa</th><th class="px-4 py-3">Data Orang Tua & WA</th><th class="px-4 py-3 w-48">Alamat Singkat</th><th id="siswa-custom-cols-head" class="px-4 py-3"></th><th class="px-4 py-3 text-center w-24">Aksi</th></tr></thead>
                                 <tbody id="table-siswa-body" class="divide-y divide-slate-800 text-xs text-slate-300"></tbody>
                             </table>
                         </div>
@@ -1589,7 +1597,7 @@
                 </section>
 
                 <section id="tab-mapel-view" class="tab-content hidden space-y-4"><div class="grid grid-cols-1 lg:grid-cols-3 gap-6"><div class="bg-slate-900 p-5 rounded-xl border border-slate-800 space-y-4 h-fit"><h3 class="text-sm font-bold text-slate-100 border-b border-slate-800 pb-2">Pengaturan Bobot Akhir (%)</h3><div class="space-y-3"><div><label class="block text-[11px] text-slate-400 mb-1">Formatif</label><input type="number" id="input-bobot-formatif" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs font-bold text-slate-100 outline-none focus:border-emerald-500"></div><div><label class="block text-[11px] text-slate-400 mb-1">Sumatif Tengah Semester (STS)</label><input type="number" id="input-bobot-sts" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs font-bold text-slate-100 outline-none focus:border-emerald-500"></div><div><label class="block text-[11px] text-slate-400 mb-1">Sumatif Akhir Semester (SAS)</label><input type="number" id="input-bobot-sas" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs font-bold text-slate-100 outline-none focus:border-emerald-500"></div><button onclick="saveBobotNilai()" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs py-2 rounded-lg transition">Simpan Persentase</button></div></div><div class="lg:col-span-2 bg-slate-900 rounded-xl border border-slate-800 overflow-hidden flex flex-col"><div class="p-4 border-b border-slate-800 flex justify-between items-center"><h3 class="text-sm font-bold text-slate-100">Daftar Mata Pelajaran & KKM</h3><button onclick="openModalMapel()" class="bg-emerald-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg hover:bg-emerald-500"><i class="fas fa-plus"></i> Tambah Mapel</button></div><div class="overflow-x-auto flex-1"><table class="w-full text-left min-w-[400px]"><thead><tr class="bg-slate-950 border-b border-slate-800 text-xs font-bold text-slate-400 uppercase"><th class="p-3 text-center w-12">No</th><th class="p-3">Nama Mapel</th><th class="p-3 text-center w-24">KKM</th><th class="p-3 text-center w-24">Aksi</th></tr></thead><tbody id="table-mapel-body" class="divide-y divide-slate-800 text-xs text-slate-300"></tbody></table></div></div></div></section>
-                <section id="tab-nilai-view" class="tab-content hidden space-y-4"><div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col gap-3"><div class="flex flex-col md:flex-row gap-3 items-center justify-between"><select id="select-nilai-mapel" onchange="loadInputNilaiSiswa()" class="w-full md:w-72 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-bold text-slate-100 outline-none focus:border-emerald-500"></select><div class="flex gap-2 w-full md:w-auto flex-wrap"><label class="bg-blue-600/20 text-blue-400 border border-blue-600/50 hover:bg-blue-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg cursor-pointer flex-1 text-center whitespace-nowrap"><i class="fas fa-file-excel mr-1"></i> Import Excel <input type="file" id="import-excel-nilai" accept=".xlsx, .xls" onchange="importNilaiExcel(event)" class="hidden"></label><button onclick="exportFormatNilaiExcel()" class="bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition font-bold text-xs px-3 py-2 rounded-lg flex-1 whitespace-nowrap"><i class="fas fa-download mr-1"></i> Unduh Format</button></div></div><div class="bg-emerald-900/20 border border-emerald-800/30 rounded-lg px-3 py-2 text-[10px] text-emerald-300 flex items-start gap-2"><i class="fas fa-info-circle mt-0.5 shrink-0"></i><span><b>Alur nilai otomatis:</b> Agenda Formatif → Nilai TP (per TP) → Rata-rata TP × Bobot% = <b>Nilai Formatif</b> (terkunci). Input STS & SAS secara manual. Nilai Akhir = Formatif berbobot + STS berbobot + SAS berbobot.</span></div><div class="border-t border-slate-800 pt-3 flex flex-col sm:flex-row gap-2"><button onclick="hapusNilaiMapelIni()" class="flex-1 bg-red-900/30 text-red-400 border border-red-900/50 hover:bg-red-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-eraser mr-1"></i> Hapus Nilai Mapel Ini (Semua Siswa)</button><button onclick="hapusSemuaNilai()" class="flex-1 bg-red-950/50 text-red-500 border border-red-900/30 hover:bg-red-700 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-trash-alt mr-1"></i> Hapus SEMUA Nilai (Seluruh Mapel)</button><button onclick="bersihkanDataRemedial()" class="flex-1 bg-orange-900/30 text-orange-400 border border-orange-800/50 hover:bg-orange-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-broom mr-1"></i> Bersihkan Badge RMD</button><button onclick="restoreNilaiDariBackup()" class="flex-1 bg-emerald-900/30 text-emerald-400 border border-emerald-800/50 hover:bg-emerald-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-history mr-1"></i> Pulihkan dari Backup</button></div><div class="bg-emerald-950/30 border border-emerald-800/30 rounded-lg px-3 py-2 text-[10px] text-emerald-400 flex items-center gap-2 mt-1"><i class="fas fa-shield-alt shrink-0"></i><span><b>🔒 Nilai terlindungi:</b> Nilai hanya bisa dihapus manual. Sistem auto-backup setiap ada perubahan &amp; bisa dipulihkan kapan saja.</span></div></div><div class="bg-slate-900 rounded-xl border border-slate-800 overflow-x-auto shadow-sm"><div class="px-4 py-2.5 border-b border-slate-800 flex items-center gap-2 flex-wrap"><span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex-1"><i class="fas fa-lock-open text-amber-400 mr-1"></i>Kunci Nilai Siswa</span><button onclick="kunciSemuaNilai(true)" class="bg-amber-700/30 text-amber-400 border border-amber-700/50 hover:bg-amber-600 hover:text-white font-bold text-[10px] px-3 py-1 rounded-lg transition flex items-center gap-1.5"><i class="fas fa-lock"></i> Kunci Semua</button><button onclick="kunciSemuaNilai(false)" class="bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 hover:text-white font-bold text-[10px] px-3 py-1 rounded-lg transition flex items-center gap-1.5"><i class="fas fa-lock-open"></i> Buka Semua</button></div><table class="w-full text-left min-w-[880px]"><thead class="sticky top-0 bg-slate-950"><tr class="border-b border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider"><th class="p-3 w-12 text-center">Abs</th><th class="p-3">Nama</th><th class="p-3 text-center text-emerald-400 w-36">Formatif<br><span class="text-[9px] font-normal text-slate-500 normal-case">(dari TP × bobot) 🔒</span></th><th class="p-3 text-center text-blue-400 w-28">STS</th><th class="p-3 text-center text-indigo-400 w-28">SAS</th><th class="p-3 text-center text-amber-400 w-24">Nilai Akhir</th><th class="p-3 text-center text-amber-300 w-20">Kunci</th><th class="p-3 text-center text-red-400 w-20">Hapus</th></tr></thead><tbody id="table-nilai-body" class="divide-y divide-slate-800 text-xs text-slate-300"></tbody></table></div></section>
+                <section id="tab-nilai-view" class="tab-content hidden space-y-4"><div class="bg-slate-900 p-4 rounded-xl border border-slate-800 flex flex-col gap-3"><div class="flex flex-col md:flex-row gap-3 items-center justify-between"><select id="select-nilai-mapel" onchange="loadInputNilaiSiswa()" class="w-full md:w-72 bg-slate-950 border border-slate-700 rounded-lg px-3 py-2 text-xs font-bold text-slate-100 outline-none focus:border-emerald-500"></select><div class="flex gap-2 w-full md:w-auto flex-wrap"><label class="bg-blue-600/20 text-blue-400 border border-blue-600/50 hover:bg-blue-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg cursor-pointer flex-1 text-center whitespace-nowrap"><i class="fas fa-file-excel mr-1"></i> Import Excel <input type="file" id="import-excel-nilai" accept=".xlsx, .xls" onchange="importNilaiExcel(event)" class="hidden"></label><button onclick="exportFormatNilaiExcel()" class="bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 transition font-bold text-xs px-3 py-2 rounded-lg flex-1 whitespace-nowrap"><i class="fas fa-download mr-1"></i> Unduh Format</button></div></div><div class="bg-emerald-900/20 border border-emerald-800/30 rounded-lg px-3 py-2 text-[10px] text-emerald-300 flex items-start gap-2"><i class="fas fa-info-circle mt-0.5 shrink-0"></i><span><b>Alur nilai otomatis:</b> Agenda Formatif → Nilai TP (per TP) → Rata-rata TP × Bobot% = <b>Nilai Formatif</b> (terkunci). Input STS & SAS secara manual. Nilai Akhir = Formatif berbobot + STS berbobot + SAS berbobot.</span></div><div class="border-t border-slate-800 pt-3 flex flex-col sm:flex-row gap-2"><button onclick="hapusNilaiMapelIni()" class="flex-1 bg-red-900/30 text-red-400 border border-red-900/50 hover:bg-red-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-eraser mr-1"></i> Hapus Nilai Mapel Ini (Semua Siswa)</button><button onclick="hapusSemuaNilai()" class="flex-1 bg-red-950/50 text-red-500 border border-red-900/30 hover:bg-red-700 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-trash-alt mr-1"></i> Hapus SEMUA Nilai (Seluruh Mapel)</button><button onclick="bersihkanDataRemedial()" class="flex-1 bg-orange-900/30 text-orange-400 border border-orange-800/50 hover:bg-orange-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-broom mr-1"></i> Bersihkan Badge RMD</button><button onclick="restoreNilaiDariBackup()" class="flex-1 bg-emerald-900/30 text-emerald-400 border border-emerald-800/50 hover:bg-emerald-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap"><i class="fas fa-history mr-1"></i> Pulihkan dari Backup</button></div><div class="border-t border-slate-800 pt-3 flex flex-col sm:flex-row gap-2"><button onclick="openModalInputMassal('sts')" class="flex-1 bg-blue-900/40 text-blue-300 border border-blue-700/50 hover:bg-blue-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap flex items-center justify-center gap-1.5"><i class="fas fa-bolt"></i> Input Massal STS</button><button onclick="openModalInputMassal('sas')" class="flex-1 bg-indigo-900/40 text-indigo-300 border border-indigo-700/50 hover:bg-indigo-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap flex items-center justify-center gap-1.5"><i class="fas fa-bolt"></i> Input Massal SAS</button><button onclick="openModalInputMassal('keduanya')" class="flex-1 bg-violet-900/40 text-violet-300 border border-violet-700/50 hover:bg-violet-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg whitespace-nowrap flex items-center justify-center gap-1.5"><i class="fas fa-layer-group"></i> Input STS &amp; SAS Sekaligus</button></div><div class="bg-emerald-950/30 border border-emerald-800/30 rounded-lg px-3 py-2 text-[10px] text-emerald-400 flex items-center gap-2 mt-1"><i class="fas fa-shield-alt shrink-0"></i><span><b>🔒 Nilai terlindungi:</b> Nilai hanya bisa dihapus manual. Sistem auto-backup setiap ada perubahan &amp; bisa dipulihkan kapan saja.</span></div></div><div class="bg-slate-900 rounded-xl border border-slate-800 overflow-x-auto shadow-sm"><div class="px-4 py-2.5 border-b border-slate-800 flex items-center gap-2 flex-wrap"><span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider flex-1"><i class="fas fa-lock-open text-amber-400 mr-1"></i>Kunci Nilai Siswa</span><button onclick="kunciSemuaNilai(true)" class="bg-amber-700/30 text-amber-400 border border-amber-700/50 hover:bg-amber-600 hover:text-white font-bold text-[10px] px-3 py-1 rounded-lg transition flex items-center gap-1.5"><i class="fas fa-lock"></i> Kunci Semua</button><button onclick="kunciSemuaNilai(false)" class="bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700 hover:text-white font-bold text-[10px] px-3 py-1 rounded-lg transition flex items-center gap-1.5"><i class="fas fa-lock-open"></i> Buka Semua</button></div><table class="w-full text-left min-w-[880px]"><thead class="sticky top-0 bg-slate-950"><tr class="border-b border-slate-800 text-xs font-bold text-slate-400 uppercase tracking-wider"><th class="p-3 w-12 text-center">Abs</th><th class="p-3">Nama</th><th class="p-3 text-center text-emerald-400 w-36">Formatif<br><span class="text-[9px] font-normal text-slate-500 normal-case">(dari TP × bobot) 🔒</span></th><th class="p-3 text-center text-blue-400 w-28">STS</th><th class="p-3 text-center text-indigo-400 w-28">SAS</th><th class="p-3 text-center text-amber-400 w-24">Nilai Akhir</th><th class="p-3 text-center text-amber-300 w-20">Kunci</th><th class="p-3 text-center text-red-400 w-20">Hapus</th></tr></thead><tbody id="table-nilai-body" class="divide-y divide-slate-800 text-xs text-slate-300"></tbody></table></div></section>
                 <section id="tab-tugas-view" class="tab-content hidden space-y-4">
                     <div class="bg-gradient-to-r from-emerald-900/30 to-slate-900 p-4 rounded-xl border border-emerald-800/30 flex flex-col gap-3">
                         <div class="flex flex-col md:flex-row md:items-center gap-3 justify-between">
@@ -2327,6 +2335,9 @@
                             </button>
                             <button onclick="exportRekapSASExcel()" class="bg-emerald-700/30 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-700/40 font-bold text-xs px-3 py-2 rounded-lg transition flex items-center gap-1.5">
                                 <i class="fas fa-file-excel"></i> Export Excel
+                            </button>
+                            <button onclick="exportSASuntukRDM()" title="Upload template kosong dari RDM, aplikasi akan mengisi kolom Nilai otomatis" class="bg-amber-700/30 hover:bg-amber-600 text-amber-300 hover:text-white border border-amber-700/40 font-bold text-xs px-3 py-2 rounded-lg transition flex items-center gap-1.5">
+                                <i class="fas fa-file-export"></i> Isi Nilai RDM
                             </button>
                         </div>
                     </div>
@@ -3910,6 +3921,259 @@
                     </div>
                 </section>
 
+                <!-- ============================================================
+                     TAB: TANDA TERIMA RAPOT
+                     ============================================================ -->
+                <section id="tab-tanda_terima_rapot-view" class="tab-content hidden space-y-5">
+                    <!-- Header -->
+                    <div class="bg-gradient-to-r from-violet-950/60 via-slate-900 to-slate-900 rounded-2xl p-6 border border-violet-900/30 shadow-xl relative overflow-hidden">
+                        <div class="z-10 relative">
+                            <h3 class="text-xl font-black text-white flex items-center gap-2"><i class="fas fa-file-signature text-violet-400"></i> Tanda Terima Rapot</h3>
+                            <p class="text-violet-100/60 text-xs mt-1 max-w-2xl">Buat dan cetak lembar tanda terima rapot untuk semua siswa. Nama siswa otomatis sinkron dengan data kelas. Nama orang tua, tanggal penyerahan & pengembalian bisa diisi langsung di sini sebelum dicetak.</p>
+                        </div>
+                        <i class="fas fa-clipboard-check absolute right-[-10px] bottom-[-20px] text-8xl text-violet-500/10"></i>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                        <!-- Panel Kiri: Pengaturan -->
+                        <div class="lg:col-span-1 space-y-4">
+                            <!-- Info Dokumen -->
+                            <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 space-y-3">
+                                <h4 class="font-bold text-slate-100 text-sm flex items-center gap-2"><i class="fas fa-info-circle text-violet-400"></i> Info Dokumen</h4>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Tanggal Dibuat</label>
+                                    <input type="date" id="ttr-tanggal-buat" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 outline-none focus:border-violet-500">
+                                    <p class="text-[9px] text-slate-500 mt-1">Otomatis diisi hari ini. Bisa diubah.</p>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Tanggal Penyerahan Rapot</label>
+                                    <input type="date" id="ttr-tanggal-serah" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 outline-none focus:border-violet-500" placeholder="Kosongkan jika diisi manual">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Tanggal Pengembalian Rapot</label>
+                                    <input type="date" id="ttr-tanggal-kembali" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 outline-none focus:border-violet-500" placeholder="Kosongkan jika diisi manual">
+                                </div>
+                            </div>
+
+                            <!-- Tanda Tangan -->
+                            <div class="bg-slate-900 rounded-xl border border-slate-800 p-4 space-y-3">
+                                <h4 class="font-bold text-slate-100 text-sm flex items-center gap-2"><i class="fas fa-pen-nib text-violet-400"></i> Tanda Tangan</h4>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Nama Kepala Madrasah</label>
+                                    <input type="text" id="ttr-kepsek" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 outline-none focus:border-violet-500" placeholder="Dari profil...">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">NIP Kepala Madrasah <span class="text-slate-500 font-normal">(opsional)</span></label>
+                                    <input type="text" id="ttr-nip-kepsek" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 outline-none focus:border-violet-500 font-mono" placeholder="Kosongkan jika tidak ada NIP">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Nama Wali Kelas</label>
+                                    <input type="text" id="ttr-wali-kelas" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 outline-none focus:border-violet-500" placeholder="Dari profil...">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">NIP Wali Kelas <span class="text-slate-500 font-normal">(opsional)</span></label>
+                                    <input type="text" id="ttr-nip-wali" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 outline-none focus:border-violet-500 font-mono" placeholder="Kosongkan jika tidak ada NIP">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Kota & Tanggal TTD</label>
+                                    <input type="text" id="ttr-kota-ttd" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 outline-none focus:border-violet-500" placeholder="cth: Bandung, 20 Juni 2025">
+                                </div>
+                            </div>
+
+                            <!-- Aksi -->
+                            <div class="space-y-2">
+                                <button onclick="previewTandaTerimRapot()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-2">
+                                    <i class="fas fa-eye"></i> Preview
+                                </button>
+                                <button onclick="cetakTandaTerimaRapot()" class="w-full bg-violet-700 hover:bg-violet-600 text-white font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-2">
+                                    <i class="fas fa-print"></i> Cetak / Simpan PDF
+                                </button>
+                            </div>
+
+                            <div class="bg-violet-900/10 border border-violet-800/30 rounded-xl p-3 text-[10px] text-violet-200/80 leading-relaxed">
+                                <i class="fas fa-lightbulb mr-1 text-yellow-400"></i> <b>Tips:</b> Nama orang tua di tabel diambil dari data siswa. Jika belum diisi, kolom nama orang tua tampil kosong agar bisa diisi tangan. Cetak dalam mode <b>Landscape / Lanskap</b> agar sesuai ukuran F4.
+                            </div>
+                        </div>
+
+                        <!-- Panel Kanan: Preview + Edit Nama Ortu -->
+                        <div class="lg:col-span-2 space-y-4">
+                            <!-- Copy-Paste Cepat Nama Siswa -->
+                            <div class="bg-slate-900 rounded-xl border border-slate-800 p-4">
+                                <div class="flex items-center justify-between mb-2">
+                                    <h4 class="font-bold text-slate-100 text-sm flex items-center gap-2"><i class="fas fa-paste text-amber-400"></i> Input Cepat Nama Siswa</h4>
+                                    <span class="text-[9px] text-amber-400 bg-amber-900/20 px-2 py-0.5 rounded-full font-bold">Khusus cetak ini</span>
+                                </div>
+                                <p class="text-[10px] text-slate-400 mb-2">Tempel atau ketik nama siswa satu per baris. Tidak mengubah data siswa asli. Klik <b>Terapkan</b> untuk memuat ke tabel.</p>
+                                <div class="flex gap-2">
+                                    <textarea id="ttr-copypaste-input" rows="4" 
+                                        class="flex-1 bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 outline-none focus:border-amber-500 font-mono resize-none"
+                                        placeholder="Contoh:&#10;Ahmad Fauzan&#10;Siti Nurhaliza&#10;Budi Santoso&#10;..."></textarea>
+                                    <div class="flex flex-col gap-2 justify-start">
+                                        <button onclick="ttrTerapkanCopypaste()" class="bg-amber-700 hover:bg-amber-600 text-white font-bold text-xs px-3 py-2 rounded-lg transition whitespace-nowrap"><i class="fas fa-check mr-1"></i>Terapkan</button>
+                                        <button onclick="ttrIsiDariDB()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs px-3 py-2 rounded-lg transition whitespace-nowrap"><i class="fas fa-database mr-1"></i>Dari DB</button>
+                                        <button onclick="document.getElementById('ttr-copypaste-input').value=''" class="bg-slate-800 hover:bg-slate-700 text-slate-400 font-bold text-xs px-3 py-2 rounded-lg transition whitespace-nowrap"><i class="fas fa-times mr-1"></i>Bersihkan</button>
+                                    </div>
+                                </div>
+                                <p class="text-[9px] text-slate-500 mt-1.5"><i class="fas fa-info-circle mr-1"></i> Klik <b>Dari DB</b> untuk mengisi textarea dengan nama siswa dari database (lalu bisa diedit bebas).</p>
+                            </div>
+
+                            <!-- Edit Nama Siswa & Orang Tua -->
+                            <div class="bg-slate-900 rounded-xl border border-slate-800 p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <h4 class="font-bold text-slate-100 text-sm flex items-center gap-2"><i class="fas fa-users text-violet-400"></i> Nama Siswa &amp; Orang Tua/Wali</h4>
+                                    <button onclick="syncOrtuDariDB()" class="text-[10px] text-violet-400 hover:text-violet-300 border border-violet-700/50 px-2 py-1 rounded-lg transition"><i class="fas fa-sync-alt mr-1"></i>Sinkron dari Data Siswa</button>
+                                </div>
+                                <div class="overflow-x-auto max-h-64 overflow-y-auto">
+                                    <table class="w-full text-[11px]">
+                                        <thead class="sticky top-0 bg-slate-950">
+                                            <tr>
+                                                <th class="text-left py-1.5 px-2 text-slate-400 font-bold w-8">No</th>
+                                                <th class="text-left py-1.5 px-2 text-slate-400 font-bold">Nama Siswa <span class="text-amber-400">(bisa diubah)</span></th>
+                                                <th class="text-left py-1.5 px-2 text-slate-400 font-bold">Nama Orang Tua/Wali <span class="text-violet-400">(bisa diubah)</span></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="ttr-siswa-tbody" class="divide-y divide-slate-800">
+                                            <tr><td colspan="3" class="text-center py-8 text-slate-500 text-xs italic">Data siswa akan muncul di sini...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- Preview Area -->
+                            <div class="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+                                <div class="p-3 border-b border-slate-800 flex items-center justify-between">
+                                    <h4 class="font-bold text-slate-100 text-sm flex items-center gap-2"><i class="fas fa-file-alt text-violet-400"></i> Preview Tanda Terima</h4>
+                                    <span class="text-[10px] text-violet-400 font-bold bg-violet-900/20 px-2 py-1 rounded-lg">Landscape F4</span>
+                                </div>
+                                <div class="p-4 overflow-auto max-h-[500px]">
+                                    <div id="ttr-preview-area" class="bg-white text-black rounded-lg p-4 min-h-[300px] text-xs" style="font-family:'Times New Roman',serif;min-width:700px;">
+                                        <div class="flex flex-col items-center justify-center h-48 text-gray-400">
+                                            <i class="fas fa-file-signature text-5xl mb-3 opacity-30"></i>
+                                            <p class="text-sm italic">Klik <b>Preview</b> untuk melihat tampilan cetak</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ============================================================
+                     TAB HARI EFEKTIF SEMESTER
+                     ============================================================ -->
+                <section id="tab-hari_efektif-view" class="tab-content hidden space-y-5">
+                    <!-- HEADER BANNER -->
+                    <div class="relative overflow-hidden bg-gradient-to-r from-sky-900 via-slate-900 to-cyan-900 p-5 rounded-2xl border border-sky-700/40 shadow-xl">
+                        <div class="absolute -right-6 -top-6 w-32 h-32 bg-sky-500/10 rounded-full blur-2xl"></div>
+                        <div class="absolute -left-4 -bottom-4 w-24 h-24 bg-cyan-500/10 rounded-full blur-xl"></div>
+                        <div class="relative flex items-center justify-between flex-wrap gap-3">
+                            <div>
+                                <div class="flex items-center gap-2 mb-1">
+                                    <div class="w-8 h-8 bg-gradient-to-br from-sky-500 to-cyan-600 rounded-lg flex items-center justify-center shadow-lg">
+                                        <i class="fas fa-calendar-day text-white text-sm"></i>
+                                    </div>
+                                    <h3 class="text-base font-black text-white tracking-tight">Kalender Hari Efektif Semester</h3>
+                                    <span class="text-[9px] font-black bg-sky-500 text-white px-2 py-0.5 rounded-full animate-pulse">NEW</span>
+                                </div>
+                                <p class="text-xs text-sky-200/70 max-w-lg">Pantau sisa hari belajar efektif semester ini. Hari libur, Sabtu & Minggu otomatis tidak dihitung.</p>
+                            </div>
+                            <button onclick="simpanSettingHariEfektif()" class="bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-500 hover:to-cyan-500 text-white font-bold text-xs px-4 py-2 rounded-lg shadow transition flex items-center gap-2">
+                                <i class="fas fa-save"></i> Simpan Pengaturan
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- PENGATURAN SEMESTER -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+                            <h4 class="font-black text-sm text-slate-100 flex items-center gap-2"><i class="fas fa-sliders-h text-sky-400"></i> Pengaturan Semester</h4>
+                            <div class="space-y-3">
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tanggal Mulai Semester</label>
+                                    <input type="date" id="he-tanggal-mulai" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-sky-500 transition">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tanggal Akhir Semester</label>
+                                    <input type="date" id="he-tanggal-akhir" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-slate-100 outline-none focus:border-sky-500 transition">
+                                </div>
+                                <div class="flex items-center gap-3 bg-slate-800/60 rounded-xl px-3 py-2.5 border border-slate-700">
+                                    <input type="checkbox" id="he-libur-sabtu" class="w-4 h-4 accent-sky-500">
+                                    <label for="he-libur-sabtu" class="text-sm text-slate-200 font-semibold cursor-pointer">Hitung Hari Sabtu sebagai libur</label>
+                                </div>
+                                <div class="flex items-center gap-3 bg-slate-800/60 rounded-xl px-3 py-2.5 border border-slate-700">
+                                    <input type="checkbox" id="he-libur-minggu" checked class="w-4 h-4 accent-sky-500">
+                                    <label for="he-libur-minggu" class="text-sm text-slate-200 font-semibold cursor-pointer">Hitung Hari Minggu sebagai libur</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- KARTU RINGKASAN -->
+                        <div class="space-y-3">
+                            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+                                <h4 class="font-black text-sm text-slate-100 mb-4 flex items-center gap-2"><i class="fas fa-chart-pie text-sky-400"></i> Ringkasan Semester</h4>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="bg-slate-950 rounded-xl p-3 border border-slate-800 text-center">
+                                        <p class="text-[10px] uppercase font-bold text-slate-500 mb-1">Total Hari</p>
+                                        <p id="he-stat-total" class="text-2xl font-black text-slate-100">-</p>
+                                    </div>
+                                    <div class="bg-emerald-950/40 rounded-xl p-3 border border-emerald-800/40 text-center">
+                                        <p class="text-[10px] uppercase font-bold text-emerald-600 mb-1">Hari Efektif</p>
+                                        <p id="he-stat-efektif" class="text-2xl font-black text-emerald-400">-</p>
+                                    </div>
+                                    <div class="bg-red-950/30 rounded-xl p-3 border border-red-800/30 text-center">
+                                        <p class="text-[10px] uppercase font-bold text-red-600 mb-1">Hari Libur</p>
+                                        <p id="he-stat-libur" class="text-2xl font-black text-red-400">-</p>
+                                    </div>
+                                    <div class="bg-sky-950/40 rounded-xl p-3 border border-sky-800/40 text-center">
+                                        <p class="text-[10px] uppercase font-bold text-sky-600 mb-1">Sudah Terlewat</p>
+                                        <p id="he-stat-lewat" class="text-2xl font-black text-sky-400">-</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- COUNTDOWN BOX -->
+                            <div id="he-countdown-box" class="bg-gradient-to-br from-sky-900 to-cyan-900 border border-sky-700/50 rounded-2xl p-5 text-center shadow-lg hidden">
+                                <p class="text-[10px] uppercase font-black text-sky-300 mb-1 tracking-widest">Sisa Hari Efektif Belajar</p>
+                                <p id="he-sisa-angka" class="text-5xl font-black text-white my-2 tabular-nums">0</p>
+                                <p class="text-xs text-sky-200/80">hari dari <span id="he-sisa-total" class="font-bold text-white">0</span> hari efektif</p>
+                                <div class="mt-3 bg-sky-950/50 rounded-full h-2.5 overflow-hidden">
+                                    <div id="he-progress-bar" class="h-full bg-gradient-to-r from-sky-400 to-cyan-400 rounded-full transition-all duration-700" style="width:0%"></div>
+                                </div>
+                                <p id="he-progress-label" class="text-[10px] text-sky-300/70 mt-1.5">0% sudah terlewat</p>
+                                <p id="he-status-hari" class="mt-2 text-xs font-bold"></p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAMBAH HARI LIBUR -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <h4 class="font-black text-sm text-slate-100 flex items-center gap-2"><i class="fas fa-umbrella-beach text-amber-400"></i> Daftar Hari Libur</h4>
+                        <div class="flex flex-wrap gap-2">
+                            <input type="date" id="he-input-libur-tgl" class="bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 outline-none focus:border-amber-500 transition">
+                            <input type="text" id="he-input-libur-ket" placeholder="Keterangan (mis: Idul Fitri)" class="flex-1 min-w-48 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 outline-none focus:border-amber-500 transition">
+                            <button onclick="tambahHariLibur()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-4 py-2 rounded-xl transition flex items-center gap-2 whitespace-nowrap">
+                                <i class="fas fa-plus"></i> Tambah Libur
+                            </button>
+                        </div>
+                        <div id="he-list-libur" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+                            <p class="text-xs text-slate-500 italic text-center py-4">Belum ada hari libur ditambahkan.</p>
+                        </div>
+                    </div>
+
+                    <!-- KALENDER VISUAL -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <h4 class="font-black text-sm text-slate-100 flex items-center gap-2"><i class="fas fa-calendar-alt text-sky-400"></i> Kalender Hari Efektif per Bulan</h4>
+                        <div class="flex flex-wrap gap-2 mb-3" id="he-legend">
+                            <span class="flex items-center gap-1.5 text-xs text-slate-300"><span class="w-3 h-3 rounded-sm bg-emerald-600 inline-block"></span> Hari Efektif</span>
+                            <span class="flex items-center gap-1.5 text-xs text-slate-300"><span class="w-3 h-3 rounded-sm bg-slate-700 inline-block"></span> Akhir Pekan</span>
+                            <span class="flex items-center gap-1.5 text-xs text-slate-300"><span class="w-3 h-3 rounded-sm bg-amber-700 inline-block"></span> Hari Libur</span>
+                            <span class="flex items-center gap-1.5 text-xs text-slate-300"><span class="w-3 h-3 rounded-sm bg-sky-600 inline-block ring-2 ring-sky-400"></span> Hari Ini</span>
+                            <span class="flex items-center gap-1.5 text-xs text-slate-300"><span class="w-3 h-3 rounded-sm bg-slate-950 border border-slate-700 inline-block opacity-40"></span> Di Luar Semester</span>
+                        </div>
+                        <div id="he-calendar-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                            <p class="text-xs text-slate-500 italic col-span-full text-center py-8">Atur tanggal semester lalu klik <b>Simpan Pengaturan</b>.</p>
+                        </div>
+                    </div>
+                </section>
             </main>
         </div>
     </div>
@@ -3969,6 +4233,8 @@
                         <label class="block text-[10px] text-slate-400 mb-1">Alamat Tinggal</label>
                         <textarea id="form-siswa-alamat" rows="2" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-xs text-slate-100 outline-none"></textarea>
                     </div>
+                    <!-- KOLOM KUSTOM TAMBAHAN -->
+                    <div id="form-siswa-custom-fields" class="space-y-2"></div>
                 </div>
                 <div class="w-full md:w-32 flex flex-col items-center space-y-2">
                     <label class="block text-[10px] text-slate-400 w-full text-left">Foto Siswa</label>
@@ -5407,7 +5673,7 @@
             if(aBtn) { aBtn.classList.add('sidebar-active', 'text-white'); aBtn.classList.remove('text-slate-400'); }
 
             // Highlight tombol grup Orang Tua jika tab termasuk sub-menu ortu
-            const ortuTabs = ['komunikasi', 'progres_ortu', 'surat_ortu'];
+            const ortuTabs = ['komunikasi', 'progres_ortu', 'surat_ortu', 'tanda_terima_rapot'];
             const grpOrtuBtn = document.getElementById('btn-ortu-group');
             const submenuOrtu = document.getElementById('ortu-submenu');
             const chevronOrtu = document.getElementById('ortu-chevron');
@@ -5484,7 +5750,9 @@
             if(tabId === 'remedial') { renderRemedialTab(); }
             if(tabId === 'surat_ortu') { initSuratModule(); }
             if(tabId === 'formulir_siswa') { initFormulirSiswaModule(); }
+            if(tabId === 'tanda_terima_rapot') { initTandaTerimaRapot(); }
             if(tabId === 'kalkulator_koreksi') { kalkorInit(); }
+            if(tabId === 'hari_efektif') { initHariEfektif(); }
 
             
             if(window.innerWidth < 768 && document.body.classList.contains('sidebar-open')) {
@@ -5508,6 +5776,7 @@
                 'tabungan':'Tabungan Siswa',
                 'remedial':'Remedial Siswa',
                 'surat_ortu':'Surat kepada Orang Tua Murid',
+                'tanda_terima_rapot':'Tanda Terima Rapot',
                 'formulir_siswa':'Formulir Data Siswa Baru',
                 'rekap_absensi':'Rekap Absensi Siswa',
                 'kalkulator_koreksi':'Kalkulator Koreksi Penilaian',
@@ -5515,6 +5784,7 @@
                 'rekap_sas':'Rekap Kolektif Nilai SAS',
                 'rekap_sumatif':'Rekap Kolektif Nilai Sumatif (STS)',
                 'rekap_formatif':'Rekap Kolektif Agenda Formatif',
+                'hari_efektif':'Kalender Hari Efektif Semester',
             };
             const titleEl = document.getElementById('header-page-title');
             if(titleEl && tabLabels[tabId]) titleEl.textContent = tabLabels[tabId];
@@ -6192,10 +6462,25 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
         function renderSiswaTable() {
             db.siswa.sort((a,b) => (parseInt(a.absen)||0) - (parseInt(b.absen)||0));
             const b = document.getElementById('table-siswa-body');
-            if (!db.siswa.length) { b.innerHTML = '<tr><td colspan="6" class="text-center py-4">Kosong</td></tr>'; return; }
+            const cols = getKolomKustom();
+
+            // Update header kolom kustom
+            const headCustom = document.getElementById('siswa-custom-cols-head');
+            if (headCustom) {
+                headCustom.innerHTML = cols.map(c =>
+                    '<span class="inline-block px-2 py-0.5 mr-1 bg-violet-900/30 border border-violet-700/40 text-violet-300 rounded text-[10px] font-bold uppercase">' + c.nama + '</span>'
+                ).join('');
+                headCustom.className = 'px-4 py-3' + (cols.length ? '' : ' hidden');
+            }
+
+            if (!db.siswa.length) { b.innerHTML = '<tr><td colspan="' + (7 + cols.length) + '" class="text-center py-4">Kosong</td></tr>'; return; }
             const rows = db.siswa.map(s => {
-                let ava = s.foto ? `<img src="${s.foto}" class="w-10 h-10 rounded-full student-avatar border border-slate-700">` : `<div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-500"><i class="fas fa-user"></i></div>`;
-                return `<tr class="hover:bg-slate-800/50 transition"><td class="p-3 text-center font-mono">${s.absen||'-'}</td><td class="p-3">${ava}</td><td class="p-3"><div class="font-bold text-slate-100">${s.nama} <span class="text-emerald-400 text-[10px]">(${s.jk||'L'})</span></div><div class="text-[10px] text-slate-400 font-mono">NIS: ${s.nis||'-'} | NISN: ${s.nisn||'(belum diisi)'}</div></td><td class="p-3"><div class="font-bold text-slate-300 text-[11px]">${s.ortu||'-'}</div><div class="text-[10px] text-emerald-400 font-mono"><i class="fab fa-whatsapp"></i> ${s.wa||'-'}</div></td><td class="p-3 text-[10px] text-slate-400 truncate max-w-[150px]">${s.alamat||'-'}</td><td class="p-3 text-center"><button onclick="openModalSiswa('${s.id}')" class="text-amber-400 mx-1 p-1 hover:bg-slate-700 rounded"><i class="fas fa-edit"></i></button><button onclick="deleteSiswa('${s.id}')" class="text-red-400 mx-1 p-1 hover:bg-slate-700 rounded"><i class="fas fa-trash"></i></button></td></tr>`;
+                let ava = s.foto ? '<img src="' + s.foto + '" class="w-10 h-10 rounded-full student-avatar border border-slate-700">' : '<div class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-slate-500"><i class="fas fa-user"></i></div>';
+                let customCells = cols.map(c => {
+                    const val = (s.kustom && s.kustom[c.id]) ? s.kustom[c.id] : '-';
+                    return '<td class="p-3 text-[11px] text-slate-300">' + val + '</td>';
+                }).join('');
+                return '<tr class="hover:bg-slate-800/50 transition"><td class="p-3 text-center font-mono">' + (s.absen||'-') + '</td><td class="p-3">' + ava + '</td><td class="p-3"><div class="font-bold text-slate-100">' + s.nama + ' <span class="text-emerald-400 text-[10px]">(' + (s.jk||'L') + ')</span></div><div class="text-[10px] text-slate-400 font-mono">NIS: ' + (s.nis||'-') + ' | NISN: ' + (s.nisn||'(belum diisi)') + '</div></td><td class="p-3"><div class="font-bold text-slate-300 text-[11px]">' + (s.ortu||'-') + '</div><div class="text-[10px] text-emerald-400 font-mono"><i class="fab fa-whatsapp"></i> ' + (s.wa||'-') + '</div></td><td class="p-3 text-[10px] text-slate-400 truncate max-w-[150px]">' + (s.alamat||'-') + '</td>' + customCells + '<td class="p-3 text-center"><button onclick="openModalSiswa(\'' + s.id + '\')" class="text-amber-400 mx-1 p-1 hover:bg-slate-700 rounded"><i class="fas fa-edit"></i></button><button onclick="deleteSiswa(\'' + s.id + '\')" class="text-red-400 mx-1 p-1 hover:bg-slate-700 rounded"><i class="fas fa-trash"></i></button></td></tr>';
             });
             b.innerHTML = rows.join('');
         }
@@ -6203,6 +6488,8 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
         function openModalSiswa(id='') { 
             document.getElementById('modal-siswa').classList.remove('hidden'); 
             const pre = document.getElementById('form-siswa-foto-preview'), plc = document.getElementById('form-siswa-foto-placeholder');
+            // Render custom fields
+            renderCustomFieldsInModal(id ? db.siswa.find(x=>x.id===id) : null);
             if(id){ 
                 const s=db.siswa.find(x=>x.id===id); document.getElementById('form-siswa-id').value=s.id; document.getElementById('form-siswa-absen').value=s.absen; document.getElementById('form-siswa-nis').value=s.nis; document.getElementById('form-siswa-nisn').value=s.nisn||''; document.getElementById('form-siswa-nama').value=s.nama; document.getElementById('form-siswa-jk').value=s.jk||'L'; document.getElementById('form-siswa-ortu').value=s.ortu; document.getElementById('form-siswa-wa').value=s.wa; document.getElementById('form-siswa-alamat').value=s.alamat; document.getElementById('form-siswa-foto-base64').value=s.foto;
                 if(s.foto){ pre.src=s.foto; pre.classList.remove('hidden'); plc.classList.add('hidden'); } else { pre.classList.add('hidden'); plc.classList.remove('hidden'); }
@@ -6214,6 +6501,13 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
         function saveFormSiswa() { 
             const id=document.getElementById('form-siswa-id').value, nm=document.getElementById('form-siswa-nama').value; if(!nm) return; 
             const data = { absen:document.getElementById('form-siswa-absen').value, nis:document.getElementById('form-siswa-nis').value, nisn:document.getElementById('form-siswa-nisn').value, nama:nm, jk:document.getElementById('form-siswa-jk').value, ortu:document.getElementById('form-siswa-ortu').value, wa:document.getElementById('form-siswa-wa').value, alamat:document.getElementById('form-siswa-alamat').value, foto:document.getElementById('form-siswa-foto-base64').value, lksQty:1 };
+            // Kumpulkan data kolom kustom
+            const kustom = {};
+            getKolomKustom().forEach(c => {
+                const el = document.getElementById('custom-field-' + c.id);
+                if (el) kustom[c.id] = el.value;
+            });
+            data.kustom = kustom;
             if(id){ let s=db.siswa.find(x=>x.id===id); Object.assign(s, data); } else { db.siswa.push({id:'S_'+Date.now(), ...data}); } 
             saveDB(); closeModalSiswa(); renderSiswaTable(); 
         }
@@ -10247,6 +10541,151 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                 XLSX.utils.book_append_sheet(wb, ws, 'Rekap SAS');
                 XLSX.writeFile(wb, `Rekap_SAS_${mapelNama.replace(/\s/g,'_')}.xlsx`);
             });
+        }
+
+        function exportSASuntukRDM() {
+            const mId = document.getElementById('rekap-sas-mapel').value;
+            if (mId === 'semua') {
+                alert('Pilih salah satu mata pelajaran terlebih dahulu. Export RDM tidak dapat dilakukan untuk "Semua Mapel".');
+                return;
+            }
+            // Buat input file tersembunyi untuk memilih template kosong dari RDM
+            let inputFile = document.getElementById('rdm-template-input');
+            if (!inputFile) {
+                inputFile = document.createElement('input');
+                inputFile.type = 'file';
+                inputFile.accept = '.xlsx,.xls';
+                inputFile.id = 'rdm-template-input';
+                inputFile.style.display = 'none';
+                document.body.appendChild(inputFile);
+            }
+            inputFile.value = '';
+            inputFile.onchange = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                loadXLSX().then(() => {
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        try {
+                            const data = new Uint8Array(ev.target.result);
+                            const wb = XLSX.read(data, { type: 'array' });
+                            const sheetName = wb.SheetNames[0];
+                            const ws = wb.Sheets[sheetName];
+
+                            const mapelObj = db.mapel.find(m => m.id === mId);
+                            const mapelNama = mapelObj ? mapelObj.nama : '-';
+
+                            // Cari baris header (kolom yang berisi 'NIS' dan 'Nilai')
+                            const range = XLSX.utils.decode_range(ws['!ref']);
+                            let headerRow = -1, colNIS = -1, colNilai = -1;
+                            for (let r = range.s.r; r <= range.e.r; r++) {
+                                let foundNIS = -1, foundNilai = -1;
+                                for (let c = range.s.c; c <= range.e.c; c++) {
+                                    const cell = ws[XLSX.utils.encode_cell({r, c})];
+                                    if (!cell || typeof cell.v !== 'string') continue;
+                                    const val = cell.v.trim().toLowerCase();
+                                    if (val === 'nis') foundNIS = c;
+                                    if (val === 'nilai') foundNilai = c;
+                                }
+                                if (foundNIS !== -1 && foundNilai !== -1) {
+                                    headerRow = r; colNIS = foundNIS; colNilai = foundNilai;
+                                    break;
+                                }
+                            }
+                            if (headerRow === -1) {
+                                alert('Format template tidak dikenali: kolom "NIS" dan "Nilai" tidak ditemukan. Pastikan file template asli dari RDM (jangan diubah strukturnya).');
+                                return;
+                            }
+
+                            // Mapping NIS -> nilai SAS
+                            const nilaiByNis = {};
+                            db.siswa.forEach(s => {
+                                const n = db.nilai[`${s.id}_${mId}`];
+                                let nilaiSAS = n ? (parseFloat(n.sas) || 0) : 0;
+                                if (db.remedialMax) {
+                                    const rm = db.remedialMax[`${s.id}_${mId}_sas`];
+                                    if (rm && rm > 0) nilaiSAS = Math.max(nilaiSAS, rm);
+                                }
+                                nilaiSAS = Math.round(nilaiSAS * 10) / 10;
+                                const nisKey = String(s.nis || '').trim();
+                                if (nisKey) nilaiByNis[nisKey] = nilaiSAS;
+                            });
+
+                            // Snapshot nilai kolom NIS sebelum modifikasi, untuk verifikasi setelah penulisan
+                            const nisSnapshot = {};
+                            for (let r = headerRow + 1; r <= range.e.r; r++) {
+                                const addr = XLSX.utils.encode_cell({ r, c: colNIS });
+                                const cell = ws[addr];
+                                nisSnapshot[addr] = cell ? cell.v : undefined;
+                            }
+
+                            // Isi kolom Nilai berdasarkan NIS, baris demi baris setelah header
+                            // Tulis hanya properti v/w pada cell yang sudah ada (atau buat cell baru jika kosong)
+                            // tanpa menyentuh cell lain di baris yang sama.
+                            let jumlahTerisi = 0;
+                            for (let r = headerRow + 1; r <= range.e.r; r++) {
+                                const nisAddr = XLSX.utils.encode_cell({ r, c: colNIS });
+                                const nisCell = ws[nisAddr];
+                                if (!nisCell || nisCell.v === undefined || nisCell.v === '') continue;
+                                const nisVal = String(nisCell.v).trim();
+                                if (nilaiByNis.hasOwnProperty(nisVal)) {
+                                    const targetAddr = XLSX.utils.encode_cell({ r, c: colNilai });
+                                    const existing = ws[targetAddr];
+                                    const val = nilaiByNis[nisVal];
+                                    if (existing) {
+                                        existing.v = val;
+                                        existing.t = 'n';
+                                        delete existing.w;
+                                        delete existing.f;
+                                    } else {
+                                        ws[targetAddr] = { t: 'n', v: val };
+                                    }
+                                    jumlahTerisi++;
+                                }
+                            }
+
+                            if (jumlahTerisi === 0) {
+                                alert('Tidak ada baris yang cocok berdasarkan NIS. Pastikan template yang diupload adalah template kosong dari RDM untuk kelas/mapel yang sesuai.');
+                                return;
+                            }
+
+                            // Tulis ke array buffer dulu, lalu verifikasi sebelum download
+                            const outArrayBuffer = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+                            const wbCheck = XLSX.read(outArrayBuffer, { type: 'array' });
+                            const wsCheck = wbCheck.Sheets[wbCheck.SheetNames[0]];
+
+                            // Verifikasi: kolom NIS tidak berubah dari sebelum penulisan
+                            let rusak = [];
+                            for (const addr in nisSnapshot) {
+                                const before = nisSnapshot[addr];
+                                const after = wsCheck[addr] ? wsCheck[addr].v : undefined;
+                                if (before === undefined) continue;
+                                if (String(before) !== String(after)) rusak.push(`${addr}: ${before} -> ${after}`);
+                            }
+                            if (rusak.length > 0) {
+                                alert('Proses dibatalkan: terdeteksi perubahan data yang tidak diinginkan pada kolom NIS setelah penulisan file (kemungkinan masalah kompatibilitas library Excel). Detail:\n' + rusak.join('\n') + '\n\nFile TIDAK didownload untuk mencegah data rusak. Mohon laporkan masalah ini.');
+                                return;
+                            }
+
+                            const blob = new Blob([outArrayBuffer], { type: 'application/octet-stream' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `Template_SAS_${mapelNama.replace(/\s/g,'_')}.xlsx`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+
+                            alert(`Berhasil mengisi nilai untuk ${jumlahTerisi} siswa. File siap diupload ke RDM.`);
+                        } catch (err) {
+                            alert('Gagal membaca file template: ' + err.message);
+                        }
+                    };
+                    reader.readAsArrayBuffer(file);
+                });
+            };
+            inputFile.click();
         }
 
         function exportRekapSTSExcel() {
@@ -17414,6 +17853,231 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
         // ============================================================
 
         // ============================================================
+        // TANDA TERIMA RAPOT MODULE
+        // ============================================================
+
+        // State: simpan nama ortu yang sudah diedit di UI
+        let _ttrDataOrtu = []; // [{id, nama, ortu}]
+
+        function initTandaTerimaRapot() {
+            // Set tanggal hari ini
+            const today = new Date().toISOString().slice(0, 10);
+            const inputBuat = document.getElementById('ttr-tanggal-buat');
+            if (inputBuat && !inputBuat.value) inputBuat.value = today;
+
+            // Isi wali kelas & kepsek dari profil
+            const inputWali = document.getElementById('ttr-wali-kelas');
+            const inputKepsek = document.getElementById('ttr-kepsek');
+            if (inputWali && !inputWali.value) inputWali.value = db.profil?.wali || '';
+            if (inputKepsek && !inputKepsek.value) inputKepsek.value = db.profil?.kepsek || '';
+
+            // Isi kota TTD
+            const inputKota = document.getElementById('ttr-kota-ttd');
+            if (inputKota && !inputKota.value) {
+                const kota = db.raporSettings?.kota || '';
+                const tglIndo = formatTglIndo(today);
+                inputKota.value = kota ? kota + ', ' + tglIndo : tglIndo;
+            }
+
+            syncOrtuDariDB();
+        }
+
+        function syncOrtuDariDB() {
+            // Ambil data siswa dari db, urutkan by absen
+            const siswa = [...(db.siswa || [])].sort((a,b) => (parseInt(a.absen)||0)-(parseInt(b.absen)||0));
+            _ttrDataOrtu = siswa.map(s => ({ id: s.id, absen: s.absen, nama: s.nama, ortu: s.ortu || '' }));
+            renderTtrSiswaTabel();
+        }
+
+        function renderTtrSiswaTabel() {
+            const tbody = document.getElementById('ttr-siswa-tbody');
+            if (!tbody) return;
+            if (!_ttrDataOrtu.length) {
+                tbody.innerHTML = '<tr><td colspan="3" class="text-center py-8 text-slate-500 text-xs italic">Belum ada data siswa. Tambahkan siswa di menu Data & Profil Siswa, atau gunakan Input Cepat di atas.</td></tr>';
+                return;
+            }
+            tbody.innerHTML = _ttrDataOrtu.map((s, i) => `
+                <tr class="hover:bg-slate-800/40 transition">
+                    <td class="py-1.5 px-2 text-slate-400 font-mono text-center">${s.absen || (i+1)}</td>
+                    <td class="py-1.5 px-2">
+                        <input type="text" value="${escapeHtml(s.nama)}"
+                            oninput="_ttrDataOrtu[${i}].nama=this.value"
+                            class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-slate-100 outline-none focus:border-amber-500 transition"
+                            placeholder="Nama siswa...">
+                    </td>
+                    <td class="py-1.5 px-2">
+                        <input type="text" value="${escapeHtml(s.ortu)}" 
+                            oninput="_ttrDataOrtu[${i}].ortu=this.value"
+                            class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs text-slate-100 outline-none focus:border-violet-500 transition"
+                            placeholder="Nama Orang Tua/Wali...">
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function ttrTerapkanCopypaste() {
+            const raw = document.getElementById('ttr-copypaste-input')?.value || '';
+            const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+            if (!lines.length) return Swal.fire('Kosong', 'Belum ada nama yang dimasukkan.', 'warning');
+            _ttrDataOrtu = lines.map((nama, i) => ({
+                id: 'ttr_cp_' + i,
+                absen: i + 1,
+                nama: nama,
+                ortu: ''
+            }));
+            renderTtrSiswaTabel();
+            Swal.fire({ icon: 'success', title: lines.length + ' nama diterapkan', timer: 1200, showConfirmButton: false, toast: true, position: 'top-end' });
+        }
+
+        function ttrIsiDariDB() {
+            const siswa = [...(db.siswa || [])].sort((a,b) => (parseInt(a.absen)||0)-(parseInt(b.absen)||0));
+            if (!siswa.length) return Swal.fire('Kosong', 'Belum ada data siswa di database.', 'info');
+            const ta = document.getElementById('ttr-copypaste-input');
+            if (ta) ta.value = siswa.map(s => s.nama).join('\n');
+            Swal.fire({ icon: 'info', title: siswa.length + ' nama dimuat ke textarea', text: 'Edit sesuai kebutuhan, lalu klik Terapkan.', timer: 2000, showConfirmButton: false, toast: true, position: 'top-end' });
+        }
+
+        function escapeHtml(str) {
+            return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        }
+
+        function formatTglIndo(isoStr) {
+            if (!isoStr) return '';
+            const BULAN = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+            const d = new Date(isoStr + 'T00:00:00');
+            return d.getDate() + ' ' + BULAN[d.getMonth()] + ' ' + d.getFullYear();
+        }
+
+        function buatHTMLTandaTerimaRapot() {
+            const namaSekolah = db.profil?.sekolah || 'NAMA MADRASAH';
+            const kelas       = db.raporSettings?.kelas || db.profil?.kelas || '-';
+            const semester    = db.raporSettings?.semester || 'Genap';
+            const tahunAjaran = db.raporSettings?.tahunajaran || '-';
+            const waliKelas   = document.getElementById('ttr-wali-kelas')?.value || db.profil?.wali || '-';
+            const kepsek      = document.getElementById('ttr-kepsek')?.value || db.profil?.kepsek || '-';
+            const nipKepsek   = document.getElementById('ttr-nip-kepsek')?.value || '';
+            const nipWali     = document.getElementById('ttr-nip-wali')?.value || '';
+            const kotaTtd     = document.getElementById('ttr-kota-ttd')?.value || '';
+            const tglSerah    = document.getElementById('ttr-tanggal-serah')?.value ? formatTglIndo(document.getElementById('ttr-tanggal-serah').value) : '';
+            const tglKembali  = document.getElementById('ttr-tanggal-kembali')?.value ? formatTglIndo(document.getElementById('ttr-tanggal-kembali').value) : '';
+            const tglBuat     = document.getElementById('ttr-tanggal-buat')?.value ? formatTglIndo(document.getElementById('ttr-tanggal-buat').value) : formatTglIndo(new Date().toISOString().slice(0,10));
+
+            const rows = _ttrDataOrtu.map((s, i) => `
+                <tr style="page-break-inside:avoid;break-inside:avoid;">
+                    <td style="border:1px solid #333;padding:5px 7px;text-align:center;font-size:11px;height:70px;vertical-align:middle;">${s.absen || (i+1)}</td>
+                    <td style="border:1px solid #333;padding:5px 7px;font-size:11px;height:70px;vertical-align:middle;">${s.nama}</td>
+                    <td style="border:1px solid #333;padding:5px 7px;font-size:11px;height:70px;vertical-align:middle;">${s.ortu || ''}</td>
+                    <td style="border:1px solid #333;padding:5px 7px;text-align:center;font-size:11px;height:70px;vertical-align:middle;">${tglSerah}</td>
+                    <td style="border:1px solid #333;padding:5px 7px;text-align:center;font-size:11px;min-width:110px;height:70px;vertical-align:bottom;">&nbsp;</td>
+                    <td style="border:1px solid #333;padding:5px 7px;text-align:center;font-size:11px;height:70px;vertical-align:middle;">${tglKembali}</td>
+                    <td style="border:1px solid #333;padding:5px 7px;text-align:center;font-size:11px;min-width:110px;height:70px;vertical-align:bottom;">&nbsp;</td>
+                </tr>
+            `).join('');
+
+            return `
+            <div style="font-family:'Times New Roman',Georgia,serif;font-size:12px;color:#111;padding:12mm 14mm;min-width:600px;">
+                <!-- KOP -->
+                <div style="text-align:center;border-bottom:3px double #111;padding-bottom:8px;margin-bottom:10px;">
+                    <div style="font-size:15px;font-weight:900;text-transform:uppercase;letter-spacing:0.5px;">${namaSekolah}</div>
+                </div>
+
+                <!-- Judul -->
+                <div style="text-align:center;margin:8px 0 12px 0;">
+                    <div style="font-size:14px;font-weight:900;text-transform:uppercase;text-decoration:underline;letter-spacing:1px;">TANDA TERIMA RAPOT</div>
+                    <div style="font-size:11px;margin-top:4px;">Semester: <b>${semester}</b> &nbsp;|&nbsp; Tahun Ajaran: <b>${tahunAjaran}</b> &nbsp;|&nbsp; Kelas: <b>${kelas}</b></div>
+                    <div style="font-size:10px;color:#555;margin-top:2px;">Tanggal Dibuat: ${tglBuat}</div>
+                </div>
+
+                <!-- Tabel -->
+                <table style="width:100%;border-collapse:collapse;margin-bottom:16px;">
+                    <thead>
+                        <tr style="background:#e8e8e8;">
+                            <th style="border:1px solid #333;padding:6px 7px;text-align:center;font-size:11px;white-space:nowrap;" rowspan="2">No</th>
+                            <th style="border:1px solid #333;padding:6px 7px;text-align:center;font-size:11px;white-space:nowrap;" rowspan="2">Nama Siswa</th>
+                            <th style="border:1px solid #333;padding:6px 7px;text-align:center;font-size:11px;white-space:nowrap;" rowspan="2">Nama Orang Tua/Wali</th>
+                            <th style="border:1px solid #333;padding:6px 7px;text-align:center;font-size:11px;white-space:nowrap;" colspan="2">Penyerahan Rapot</th>
+                            <th style="border:1px solid #333;padding:6px 7px;text-align:center;font-size:11px;white-space:nowrap;" colspan="2">Pengembalian Rapot</th>
+                        </tr>
+                        <tr style="background:#f0f0f0;">
+                            <th style="border:1px solid #333;padding:5px 7px;text-align:center;font-size:10px;">Tanggal</th>
+                            <th style="border:1px solid #333;padding:5px 7px;text-align:center;font-size:10px;">Tanda Tangan Wali</th>
+                            <th style="border:1px solid #333;padding:5px 7px;text-align:center;font-size:10px;">Tanggal</th>
+                            <th style="border:1px solid #333;padding:5px 7px;text-align:center;font-size:10px;">Tanda Tangan Wali</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows || '<tr><td colspan="7" style="text-align:center;padding:16px;color:#999;font-style:italic;">Belum ada data siswa.</td></tr>'}
+                    </tbody>
+                </table>
+
+                <!-- Tanda Tangan -->
+                <div style="display:flex;justify-content:space-between;margin-top:20px;padding:0 20px;">
+                    <div style="text-align:center;min-width:200px;">
+                        <div style="font-size:11px;margin-bottom:4px;">Mengetahui,</div>
+                        <div style="font-size:11px;margin-bottom:55px;">Kepala Madrasah,</div>
+                        <div style="font-size:11px;font-weight:bold;border-bottom:1px solid #111;padding-bottom:2px;display:inline-block;min-width:180px;">${kepsek}</div>
+                        ${nipKepsek ? `<div style="font-size:10px;margin-top:3px;">NIP. ${nipKepsek}</div>` : ''}
+                    </div>
+                    <div style="text-align:center;min-width:200px;">
+                        <div style="font-size:11px;margin-bottom:4px;">${kotaTtd}</div>
+                        <div style="font-size:11px;margin-bottom:55px;">Wali Kelas ${kelas},</div>
+                        <div style="font-size:11px;font-weight:bold;border-bottom:1px solid #111;padding-bottom:2px;display:inline-block;min-width:180px;">${waliKelas}</div>
+                        ${nipWali ? `<div style="font-size:10px;margin-top:3px;">NIP. ${nipWali}</div>` : ''}
+                    </div>
+                </div>
+            </div>`;
+        }
+
+        function previewTandaTerimRapot() {
+            const area = document.getElementById('ttr-preview-area');
+            if (area) area.innerHTML = buatHTMLTandaTerimaRapot();
+        }
+
+        function cetakTandaTerimaRapot() {
+            const html = buatHTMLTandaTerimaRapot();
+            const namaSekolah = db.profil?.sekolah || 'Madrasah';
+            const kelas = db.raporSettings?.kelas || db.profil?.kelas || 'Kelas';
+
+            const printWin = window.open('', '_blank', 'width=1000,height=700');
+            if (!printWin) return Swal.fire('Peringatan', 'Popup diblokir browser. Izinkan popup untuk mencetak.', 'warning');
+            printWin.document.write(`<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Tanda Terima Rapot - ${namaSekolah} - ${kelas}</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  @page { size: F4 landscape; margin: 10mm 12mm; }
+  * { box-sizing: border-box; }
+  body { font-family: 'Times New Roman', Georgia, serif; font-size: 12px; color: #111; background: #fff; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  table { border-collapse: collapse; width: 100%; }
+  td, th { height: 70px; }
+  tr { page-break-inside: avoid; break-inside: avoid; }
+  .no-print { position: sticky; top: 0; z-index: 999; background: #1e1b4b; padding: 10px 16px; text-align: center; }
+  .no-print button { background: #7c3aed; color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: bold; font-family: sans-serif; cursor: pointer; margin: 0 5px; }
+  .no-print button:last-child { background: #475569; }
+  @media print { .no-print { display: none !important; } }
+</style>
+</head>
+<body>
+<div class="no-print">
+  <button onclick="window.print()">🖨️ Cetak / Simpan PDF (Landscape F4)</button>
+  <button onclick="window.close()">✕ Tutup</button>
+</div>
+${html}
+<script>
+document.fonts.ready.then(function() { setTimeout(function() { window.print(); }, 600); }).catch(function(){ setTimeout(function(){ window.print(); }, 1000); });
+<\/script>
+</body>
+</html>`);
+            printWin.document.close();
+            printWin.focus();
+        }
+        // ============================================================
+        // END TANDA TERIMA RAPOT MODULE
+        // ============================================================
+
+        // ============================================================
         // REKAP ABSENSI SISWA MODULE
         // ============================================================
         function initRekapAbsensi() {
@@ -20312,5 +20976,832 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             </div>
         </div>
     </div>
+
+    <!-- ============================================================
+         MODAL KELOLA KOLOM KUSTOM SISWA
+         ============================================================ -->
+    <div id="modal-kolom-kustom" class="fixed inset-0 bg-slate-950/80 z-[80] hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-violet-700/40 rounded-2xl w-full max-w-md shadow-2xl modal-enter">
+            <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+                <h3 class="font-black text-base text-white flex items-center gap-2"><i class="fas fa-columns text-violet-400"></i> Kelola Kolom Kustom</h3>
+                <button onclick="closeModalKolomKustom()" class="text-slate-500 hover:text-red-400 transition"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            <div class="p-5 space-y-4">
+                <p class="text-xs text-slate-400">Tambah kolom data tambahan untuk semua siswa. Misal: NIK, Agama, Gol. Darah, dsb.</p>
+                <!-- Form tambah kolom -->
+                <div class="flex gap-2">
+                    <input type="text" id="input-nama-kolom-baru" placeholder="Nama kolom (mis: Agama, NIK...)" class="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-100 outline-none focus:border-violet-500 transition">
+                    <button onclick="tambahKolomKustom()" class="bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs px-4 py-2 rounded-xl transition whitespace-nowrap"><i class="fas fa-plus mr-1"></i>Tambah</button>
+                </div>
+                <!-- Daftar kolom -->
+                <div id="list-kolom-kustom" class="space-y-2 max-h-64 overflow-y-auto pr-1">
+                    <p class="text-xs text-slate-500 italic text-center py-4">Belum ada kolom kustom.</p>
+                </div>
+                <p class="text-[10px] text-amber-400/80 bg-amber-950/20 border border-amber-800/30 rounded-lg px-3 py-2"><i class="fas fa-info-circle mr-1"></i> Menghapus kolom akan menghapus data kolom tersebut dari semua siswa.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         MODAL ISI MASSAL KOLOM
+         ============================================================ -->
+    <div id="modal-isi-massal" class="fixed inset-0 bg-slate-950/80 z-[80] hidden flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-sky-700/40 rounded-2xl w-full max-w-lg shadow-2xl modal-enter max-h-[90vh] overflow-y-auto">
+            <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+                <h3 class="font-black text-base text-white flex items-center gap-2"><i class="fas fa-paste text-sky-400"></i> Isi Massal per Kolom</h3>
+                <button onclick="closeModalIsiMassal()" class="text-slate-500 hover:text-red-400 transition"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            <div class="p-5 space-y-4">
+                <!-- Pilih kolom target -->
+                <div>
+                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Pilih Kolom yang Mau Diisi</label>
+                    <select id="massal-target-kolom" onchange="renderMassalRows()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-100 outline-none focus:border-sky-500 transition">
+                        <option value="">-- Pilih Kolom --</option>
+                    </select>
+                </div>
+                <p class="text-xs text-slate-400">Isi satu per satu, atau <b class="text-sky-300">paste sekaligus</b> dari Excel/Notepad (satu baris = satu siswa, urut nomor absen).</p>
+                <button onclick="pasteSemuaIsiMassal()" class="w-full bg-sky-700/40 hover:bg-sky-600 border border-sky-700/50 text-sky-200 font-bold text-xs px-3 py-2.5 rounded-xl transition flex items-center justify-center gap-2">
+                    <i class="fas fa-clipboard"></i> Paste dari Clipboard (Semua Sekaligus)
+                </button>
+                <!-- Tabel isi per siswa -->
+                <div id="massal-rows-container" class="space-y-1.5 max-h-[40vh] overflow-y-auto pr-1 border border-slate-800 rounded-xl p-3 bg-slate-950/50">
+                    <p class="text-xs text-slate-500 italic text-center py-4">Pilih kolom terlebih dahulu.</p>
+                </div>
+                <div class="flex justify-end gap-2 pt-2 border-t border-slate-800">
+                    <button onclick="closeModalIsiMassal()" class="px-4 py-2 rounded-xl bg-slate-800 text-xs text-slate-400 hover:bg-slate-700 transition">Batal</button>
+                    <button onclick="simpanIsiMassal()" class="px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-500 text-xs text-white font-bold transition flex items-center gap-2"><i class="fas fa-save"></i> Simpan Semua</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================
+         MODUL HARI EFEKTIF SEMESTER
+         ============================================================ -->
+    <script>
+    // ============================================================
+    // KOLOM KUSTOM SISWA
+    // ============================================================
+    function getKolomKustom() {
+        if (!db.kolomKustom) db.kolomKustom = [];
+        return db.kolomKustom;
+    }
+
+    function openModalKolomKustom() {
+        document.getElementById('modal-kolom-kustom').classList.remove('hidden');
+        renderListKolomKustom();
+    }
+    function closeModalKolomKustom() {
+        document.getElementById('modal-kolom-kustom').classList.add('hidden');
+    }
+
+    function tambahKolomKustom() {
+        const inp = document.getElementById('input-nama-kolom-baru');
+        const nama = inp.value.trim();
+        if (!nama) return;
+        const cols = getKolomKustom();
+        if (cols.find(c => c.nama.toLowerCase() === nama.toLowerCase())) {
+            Swal.fire({ toast:true, position:'top-end', icon:'warning', title:'Kolom sudah ada', showConfirmButton:false, timer:1800, background:'#1e293b', color:'#f8fafc' });
+            return;
+        }
+        cols.push({ id: 'kk_' + Date.now(), nama: nama });
+        db.kolomKustom = cols;
+        saveDB();
+        inp.value = '';
+        renderListKolomKustom();
+        renderSiswaTable();
+        Swal.fire({ toast:true, position:'top-end', icon:'success', title:'Kolom "' + nama + '" ditambahkan', showConfirmButton:false, timer:1800, background:'#1e293b', color:'#f8fafc' });
+    }
+
+    function hapusKolomKustom(id) {
+        Swal.fire({
+            title: 'Hapus Kolom?', icon: 'warning',
+            html: 'Data kolom ini akan dihapus dari semua siswa.',
+            showCancelButton: true, confirmButtonColor: '#ef4444',
+            confirmButtonText: 'Ya, Hapus', cancelButtonText: 'Batal',
+            background: '#1e293b', color: '#f8fafc'
+        }).then(r => {
+            if (!r.isConfirmed) return;
+            db.kolomKustom = getKolomKustom().filter(c => c.id !== id);
+            // Hapus data dari semua siswa
+            db.siswa.forEach(s => { if (s.kustom) delete s.kustom[id]; });
+            saveDB();
+            renderListKolomKustom();
+            renderSiswaTable();
+        });
+    }
+
+    function renderListKolomKustom() {
+        const el = document.getElementById('list-kolom-kustom');
+        if (!el) return;
+        const cols = getKolomKustom();
+        if (!cols.length) { el.innerHTML = '<p class="text-xs text-slate-500 italic text-center py-4">Belum ada kolom kustom.</p>'; return; }
+        el.innerHTML = cols.map((c, i) => {
+            return '<div class="flex items-center justify-between bg-violet-950/30 border border-violet-800/40 rounded-xl px-3 py-2.5 gap-2">' +
+                '<div class="flex items-center gap-2">' +
+                '<span class="w-6 h-6 bg-violet-800/60 text-violet-300 rounded-lg flex items-center justify-center text-[10px] font-black">' + (i+1) + '</span>' +
+                '<span class="text-sm font-bold text-slate-100">' + c.nama + '</span>' +
+                '</div>' +
+                '<div class="flex gap-2">' +
+                '<button onclick="openModalIsiMassal(\'' + c.id + '\')" class="text-sky-400 hover:text-sky-300 text-xs font-bold px-2 py-1 hover:bg-slate-700 rounded-lg transition" title="Isi Massal"><i class="fas fa-paste mr-1"></i>Isi Massal</button>' +
+                '<button onclick="hapusKolomKustom(\'' + c.id + '\')" class="text-slate-500 hover:text-red-400 transition text-sm p-1 hover:bg-slate-700 rounded-lg"><i class="fas fa-trash"></i></button>' +
+                '</div></div>';
+        }).join('');
+    }
+
+    function renderCustomFieldsInModal(siswa) {
+        const container = document.getElementById('form-siswa-custom-fields');
+        if (!container) return;
+        const cols = getKolomKustom();
+        if (!cols.length) { container.innerHTML = ''; return; }
+        const kustom = (siswa && siswa.kustom) ? siswa.kustom : {};
+        container.innerHTML = '<div class="border-t border-slate-800 pt-3 mt-1"><p class="text-[10px] font-black uppercase text-violet-400 mb-2 tracking-wider"><i class="fas fa-columns mr-1"></i>Data Tambahan (Kolom Kustom)</p><div class="space-y-2">' +
+            cols.map(c => {
+                const val = kustom[c.id] || '';
+                return '<div><label class="block text-[10px] text-slate-400 mb-1">' + c.nama + '</label>' +
+                    '<input type="text" id="custom-field-' + c.id + '" value="' + val.replace(/"/g, '&quot;') + '" class="w-full bg-slate-950 border border-violet-800/50 rounded p-2 text-xs text-slate-100 outline-none focus:border-violet-500" placeholder="' + c.nama + ' siswa..."></div>';
+            }).join('') +
+            '</div></div>';
+    }
+
+    // ============================================================
+    // MODAL ISI MASSAL KOLOM
+    // ============================================================
+    function openModalIsiMassal(kolumId) {
+        document.getElementById('modal-isi-massal').classList.remove('hidden');
+        populateMassalKolomDropdown(kolumId);
+        renderMassalRows();
+    }
+    function closeModalIsiMassal() {
+        document.getElementById('modal-isi-massal').classList.add('hidden');
+    }
+
+    function populateMassalKolomDropdown(preselect) {
+        const sel = document.getElementById('massal-target-kolom');
+        const cols = getKolomKustom();
+        // Tambahkan juga kolom bawaan yang sering diisi massal
+        const bawaan = [
+            { id:'nis', nama:'NIS' },
+            { id:'nisn', nama:'NISN' },
+            { id:'ortu', nama:'Nama Orang Tua' },
+            { id:'wa', nama:'No WhatsApp Ortu' },
+            { id:'alamat', nama:'Alamat' }
+        ];
+        sel.innerHTML = '<option value="">-- Pilih Kolom --</option>' +
+            '<optgroup label="Kolom Bawaan">' +
+            bawaan.map(c => '<option value="bawaan:' + c.id + '"' + (preselect === c.id ? ' selected' : '') + '>' + c.nama + '</option>').join('') +
+            '</optgroup>';
+        if (cols.length) {
+            sel.innerHTML += '<optgroup label="Kolom Kustom">' +
+                cols.map(c => '<option value="kustom:' + c.id + '"' + (preselect === c.id ? ' selected' : '') + '>' + c.nama + '</option>').join('') +
+                '</optgroup>';
+        }
+    }
+
+    function renderMassalRows() {
+        const sel = document.getElementById('massal-target-kolom').value;
+        const container = document.getElementById('massal-rows-container');
+        if (!sel) { container.innerHTML = '<p class="text-xs text-slate-500 italic text-center py-4">Pilih kolom terlebih dahulu.</p>'; return; }
+        const [tipe, fieldId] = sel.split(':');
+        const sorted = [...db.siswa].sort((a,b) => (parseInt(a.absen)||0) - (parseInt(b.absen)||0));
+        container.innerHTML = sorted.map(s => {
+            let curVal = '';
+            if (tipe === 'bawaan') curVal = s[fieldId] || '';
+            else if (tipe === 'kustom') curVal = (s.kustom && s.kustom[fieldId]) ? s.kustom[fieldId] : '';
+            return '<div class="flex items-center gap-2">' +
+                '<span class="w-7 h-7 bg-slate-800 text-slate-400 rounded-lg flex items-center justify-center text-[10px] font-black shrink-0">' + (s.absen||'-') + '</span>' +
+                '<span class="text-xs text-slate-300 w-32 shrink-0 truncate font-semibold">' + s.nama + '</span>' +
+                '<input type="text" id="massal-input-' + s.id + '" value="' + String(curVal).replace(/"/g,'&quot;') + '" placeholder="(kosong)" ' +
+                'class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-100 outline-none focus:border-sky-500 transition" ' +
+                'onkeydown="massalNextRow(event, \'' + s.id + '\', ' + JSON.stringify(sorted.map(x=>x.id)) + ')">' +
+                '</div>';
+        }).join('');
+    }
+
+    function massalNextRow(e, currentId, idList) {
+        if (e.key === 'Enter' || e.key === 'Tab') {
+            e.preventDefault();
+            const idx = idList.indexOf(currentId);
+            if (idx < idList.length - 1) {
+                const nextInput = document.getElementById('massal-input-' + idList[idx + 1]);
+                if (nextInput) nextInput.focus();
+            }
+        }
+    }
+
+    async function pasteSemuaIsiMassal() {
+        const sel = document.getElementById('massal-target-kolom').value;
+        if (!sel) { Swal.fire({ toast:true, position:'top-end', icon:'warning', title:'Pilih kolom dulu', showConfirmButton:false, timer:1800, background:'#1e293b', color:'#f8fafc' }); return; }
+        try {
+            const text = await navigator.clipboard.readText();
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l !== '');
+            const sorted = [...db.siswa].sort((a,b) => (parseInt(a.absen)||0) - (parseInt(b.absen)||0));
+            lines.forEach((val, i) => {
+                if (i >= sorted.length) return;
+                const inp = document.getElementById('massal-input-' + sorted[i].id);
+                if (inp) inp.value = val;
+            });
+            Swal.fire({ toast:true, position:'top-end', icon:'success', title: lines.length + ' baris dipaste', showConfirmButton:false, timer:2000, background:'#1e293b', color:'#f8fafc' });
+        } catch(e) {
+            Swal.fire({ icon:'info', title:'Izin Clipboard', text:'Browser memblokir akses clipboard. Silakan paste manual ke setiap baris, atau gunakan browser Chrome/Edge dan izinkan akses clipboard.', background:'#1e293b', color:'#f8fafc' });
+        }
+    }
+
+    function simpanIsiMassal() {
+        const sel = document.getElementById('massal-target-kolom').value;
+        if (!sel) return;
+        const [tipe, fieldId] = sel.split(':');
+        const sorted = [...db.siswa].sort((a,b) => (parseInt(a.absen)||0) - (parseInt(b.absen)||0));
+        sorted.forEach(s => {
+            const inp = document.getElementById('massal-input-' + s.id);
+            if (!inp) return;
+            const val = inp.value;
+            const target = db.siswa.find(x => x.id === s.id);
+            if (!target) return;
+            if (tipe === 'bawaan') {
+                target[fieldId] = val;
+            } else if (tipe === 'kustom') {
+                if (!target.kustom) target.kustom = {};
+                target.kustom[fieldId] = val;
+            }
+        });
+        saveDB();
+        renderSiswaTable();
+        closeModalIsiMassal();
+        Swal.fire({ toast:true, position:'top-end', icon:'success', title:'Data berhasil disimpan', showConfirmButton:false, timer:2000, background:'#1e293b', color:'#f8fafc' });
+    }
+    function getHEData() {
+        if (!db.hariEfektif) {
+            db.hariEfektif = {
+                mulai: '',
+                akhir: '',
+                liburSabtu: false,
+                liburMinggu: true,
+                hariLibur: [] // [{tgl:'2025-01-01', ket:'Tahun Baru'}]
+            };
+        }
+        return db.hariEfektif;
+    }
+
+    function initHariEfektif() {
+        const d = getHEData();
+        const mulaiEl = document.getElementById('he-tanggal-mulai');
+        const akhirEl = document.getElementById('he-tanggal-akhir');
+        const sabtuEl = document.getElementById('he-libur-sabtu');
+        const mingguEl = document.getElementById('he-libur-minggu');
+        if (mulaiEl) mulaiEl.value = d.mulai || '';
+        if (akhirEl) akhirEl.value = d.akhir || '';
+        if (sabtuEl) sabtuEl.checked = d.liburSabtu || false;
+        if (mingguEl) mingguEl.checked = (d.liburMinggu !== false);
+        renderHariLiburList();
+        hitungHariEfektif();
+    }
+
+    function simpanSettingHariEfektif() {
+        const d = getHEData();
+        const mulai = document.getElementById('he-tanggal-mulai').value;
+        const akhir = document.getElementById('he-tanggal-akhir').value;
+        if (!mulai || !akhir) {
+            Swal.fire({ icon: 'warning', title: 'Peringatan', text: 'Isi tanggal mulai & akhir semester terlebih dahulu.', background: '#1e293b', color: '#f8fafc' });
+            return;
+        }
+        if (mulai > akhir) {
+            Swal.fire({ icon: 'warning', title: 'Peringatan', text: 'Tanggal mulai harus sebelum tanggal akhir.', background: '#1e293b', color: '#f8fafc' });
+            return;
+        }
+        d.mulai = mulai;
+        d.akhir = akhir;
+        d.liburSabtu = document.getElementById('he-libur-sabtu').checked;
+        d.liburMinggu = document.getElementById('he-libur-minggu').checked;
+        db.hariEfektif = d;
+        saveDB();
+        hitungHariEfektif();
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Pengaturan disimpan', showConfirmButton: false, timer: 2000, background: '#1e293b', color: '#f8fafc' });
+    }
+
+    function tambahHariLibur() {
+        const tgl = document.getElementById('he-input-libur-tgl').value;
+        const ket = document.getElementById('he-input-libur-ket').value.trim() || 'Hari Libur';
+        if (!tgl) {
+            Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: 'Pilih tanggal libur', showConfirmButton: false, timer: 1800, background: '#1e293b', color: '#f8fafc' });
+            return;
+        }
+        const d = getHEData();
+        const exists = d.hariLibur.find(h => h.tgl === tgl);
+        if (exists) {
+            Swal.fire({ toast: true, position: 'top-end', icon: 'info', title: 'Tanggal sudah ada di daftar libur', showConfirmButton: false, timer: 1800, background: '#1e293b', color: '#f8fafc' });
+            return;
+        }
+        d.hariLibur.push({ tgl, ket });
+        d.hariLibur.sort((a, b) => a.tgl.localeCompare(b.tgl));
+        db.hariEfektif = d;
+        saveDB();
+        document.getElementById('he-input-libur-tgl').value = '';
+        document.getElementById('he-input-libur-ket').value = '';
+        renderHariLiburList();
+        hitungHariEfektif();
+    }
+
+    function hapusHariLibur(tgl) {
+        const d = getHEData();
+        d.hariLibur = d.hariLibur.filter(h => h.tgl !== tgl);
+        db.hariEfektif = d;
+        saveDB();
+        renderHariLiburList();
+        hitungHariEfektif();
+    }
+
+    function renderHariLiburList() {
+        const d = getHEData();
+        const el = document.getElementById('he-list-libur');
+        if (!el) return;
+        if (!d.hariLibur || d.hariLibur.length === 0) {
+            el.innerHTML = '<p class="text-xs text-slate-500 italic text-center py-4">Belum ada hari libur ditambahkan.</p>';
+            return;
+        }
+        const hariNama = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+        const bulanNama = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Ags','Sep','Okt','Nov','Des'];
+        el.innerHTML = d.hariLibur.map(h => {
+            const dt = new Date(h.tgl + 'T00:00:00');
+            const label = hariNama[dt.getDay()] + ', ' + dt.getDate() + ' ' + bulanNama[dt.getMonth()] + ' ' + dt.getFullYear();
+            return '<div class="flex items-center justify-between bg-amber-950/30 border border-amber-800/40 rounded-xl px-3 py-2 gap-2">' +
+                '<div>' +
+                '<p class="text-xs font-bold text-amber-300">' + label + '</p>' +
+                '<p class="text-[10px] text-slate-400">' + h.ket + '</p>' +
+                '</div>' +
+                '<button onclick="hapusHariLibur(\'' + h.tgl + '\')" class="text-slate-500 hover:text-red-400 transition text-sm ml-2 shrink-0"><i class="fas fa-times"></i></button>' +
+                '</div>';
+        }).join('');
+    }
+
+    function isLiburHE(dateStr, d) {
+        const dt = new Date(dateStr + 'T00:00:00');
+        const day = dt.getDay();
+        if (d.liburMinggu !== false && day === 0) return true;
+        if (d.liburSabtu && day === 6) return true;
+        if (d.hariLibur && d.hariLibur.find(h => h.tgl === dateStr)) return true;
+        return false;
+    }
+
+    function hitungHariEfektif() {
+        const d = getHEData();
+        const statsIds = ['he-stat-total','he-stat-efektif','he-stat-libur','he-stat-lewat'];
+        if (!d.mulai || !d.akhir) {
+            statsIds.forEach(function(id) { var el = document.getElementById(id); if (el) el.textContent = '-'; });
+            var cb = document.getElementById('he-countdown-box');
+            if (cb) cb.classList.add('hidden');
+            var cc = document.getElementById('he-calendar-container');
+            if (cc) cc.innerHTML = '<p class="text-xs text-slate-500 italic col-span-full text-center py-8">Atur tanggal semester lalu klik <b>Simpan Pengaturan</b>.</p>';
+            return;
+        }
+
+        var mulai = new Date(d.mulai + 'T00:00:00');
+        var akhir = new Date(d.akhir + 'T00:00:00');
+        var today = new Date();
+        today.setHours(0,0,0,0);
+
+        var totalHari = 0, hariEfektif = 0, hariLiburCount = 0, hariLewat = 0;
+        var curr = new Date(mulai);
+        while (curr <= akhir) {
+            var dStr = curr.toISOString().split('T')[0];
+            totalHari++;
+            if (isLiburHE(dStr, d)) { hariLiburCount++; }
+            else { hariEfektif++; if (curr < today) hariLewat++; }
+            curr.setDate(curr.getDate() + 1);
+        }
+
+        var sisaEfektif = Math.max(0, hariEfektif - hariLewat);
+        var persenLewat = hariEfektif > 0 ? Math.round((hariLewat / hariEfektif) * 100) : 0;
+
+        document.getElementById('he-stat-total').textContent = totalHari;
+        document.getElementById('he-stat-efektif').textContent = hariEfektif;
+        document.getElementById('he-stat-libur').textContent = hariLiburCount;
+        document.getElementById('he-stat-lewat').textContent = hariLewat;
+
+        var cb = document.getElementById('he-countdown-box');
+        if (cb) {
+            cb.classList.remove('hidden');
+            document.getElementById('he-sisa-angka').textContent = sisaEfektif;
+            document.getElementById('he-sisa-total').textContent = hariEfektif;
+            document.getElementById('he-progress-bar').style.width = persenLewat + '%';
+            document.getElementById('he-progress-label').textContent = persenLewat + '% sudah terlewat';
+
+            var todayStr = today.toISOString().split('T')[0];
+            var statusEl = document.getElementById('he-status-hari');
+            if (today < mulai) {
+                statusEl.innerHTML = '<span class="text-amber-300"><i class="fas fa-hourglass-start mr-1"></i>Semester belum dimulai</span>';
+            } else if (today > akhir) {
+                statusEl.innerHTML = '<span class="text-slate-400"><i class="fas fa-flag-checkered mr-1"></i>Semester telah selesai</span>';
+            } else if (isLiburHE(todayStr, d)) {
+                statusEl.innerHTML = '<span class="text-amber-300"><i class="fas fa-umbrella-beach mr-1"></i>Hari ini adalah hari libur</span>';
+            } else {
+                statusEl.innerHTML = '<span class="text-emerald-300"><i class="fas fa-book-open mr-1"></i>Hari ini adalah hari belajar efektif</span>';
+            }
+        }
+
+        renderKalenderHE(d, mulai, akhir, today);
+    }
+
+    function renderKalenderHE(d, mulai, akhir, today) {
+        var cc = document.getElementById('he-calendar-container');
+        if (!cc) return;
+
+        var hariSingkat = ['Min','Sen','Sel','Rab','Kam','Jum','Sab'];
+        var bulanNama = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+        var todayStr = today.toISOString().split('T')[0];
+        var liburKetMap = {};
+        (d.hariLibur || []).forEach(function(h) { liburKetMap[h.tgl] = h.ket; });
+
+        var months = [];
+        var cm = new Date(mulai.getFullYear(), mulai.getMonth(), 1);
+        var akhirMonth = new Date(akhir.getFullYear(), akhir.getMonth(), 1);
+        while (cm <= akhirMonth) {
+            months.push({ year: cm.getFullYear(), month: cm.getMonth() });
+            cm.setMonth(cm.getMonth() + 1);
+        }
+
+        var html = '';
+        months.forEach(function(item) {
+            var year = item.year, month = item.month;
+            var firstDay = new Date(year, month, 1);
+            var lastDay = new Date(year, month + 1, 0);
+            var efektifBulan = 0, liburBulan = 0;
+
+            var cx = new Date(year, month, 1);
+            while (cx <= lastDay) {
+                var cxStr = cx.toISOString().split('T')[0];
+                if (cx >= mulai && cx <= akhir) {
+                    if (isLiburHE(cxStr, d)) liburBulan++;
+                    else efektifBulan++;
+                }
+                cx.setDate(cx.getDate() + 1);
+            }
+
+            html += '<div class="bg-slate-950 border border-slate-800 rounded-2xl p-4">';
+            html += '<div class="flex items-center justify-between mb-3">';
+            html += '<h5 class="font-black text-sm text-slate-100">' + bulanNama[month] + ' ' + year + '</h5>';
+            html += '<div class="flex gap-1.5 text-[10px]">';
+            html += '<span class="bg-emerald-900/60 text-emerald-300 px-2 py-0.5 rounded-full font-bold">' + efektifBulan + ' efektif</span>';
+            html += '<span class="bg-red-900/60 text-red-300 px-2 py-0.5 rounded-full font-bold">' + liburBulan + ' libur</span>';
+            html += '</div></div>';
+            html += '<div class="grid grid-cols-7 gap-0.5 text-center mb-1">';
+            hariSingkat.forEach(function(h, i) {
+                var cl = i === 0 ? 'text-red-400' : i === 6 ? 'text-amber-400' : 'text-slate-500';
+                html += '<div class="text-[9px] font-black ' + cl + ' pb-1">' + h + '</div>';
+            });
+            html += '</div>';
+            html += '<div class="grid grid-cols-7 gap-0.5 text-center">';
+
+            var startPad = firstDay.getDay();
+            for (var p = 0; p < startPad; p++) html += '<div></div>';
+
+            for (var day = 1; day <= lastDay.getDate(); day++) {
+                var dt = new Date(year, month, day);
+                var dStr = dt.toISOString().split('T')[0];
+                var dalamSemester = dt >= mulai && dt <= akhir;
+                var isToday = dStr === todayStr;
+                var isWeekend = (d.liburSabtu && dt.getDay() === 6) || (d.liburMinggu !== false && dt.getDay() === 0);
+                var isNasional = liburKetMap[dStr] && !isWeekend;
+                var liburHari = isLiburHE(dStr, d);
+
+                var cellClass = 'rounded-md text-[11px] font-bold py-1 ';
+                var title = '';
+                if (!dalamSemester) {
+                    cellClass += 'text-slate-700 opacity-40';
+                } else if (isToday) {
+                    cellClass += 'bg-sky-600 text-white ring-2 ring-sky-400';
+                    title = 'Hari ini';
+                } else if (isNasional) {
+                    cellClass += 'bg-amber-800/70 text-amber-200';
+                    title = liburKetMap[dStr] || 'Hari Libur';
+                } else if (isWeekend) {
+                    cellClass += 'bg-slate-800 text-slate-500';
+                } else {
+                    cellClass += 'bg-emerald-900/60 text-emerald-300';
+                }
+                html += '<div class="' + cellClass + '" title="' + title + '">' + day + '</div>';
+            }
+            html += '</div></div>';
+        });
+
+        cc.innerHTML = html || '<p class="text-xs text-slate-500 italic col-span-full text-center py-8">Tidak ada data bulan.</p>';
+    }
+    </script>
+
+    <!-- ============================================================
+         MODAL INPUT MASSAL STS / SAS
+         ============================================================ -->
+    <div id="modal-input-massal" class="fixed inset-0 bg-slate-950/90 z-[300] hidden flex items-center justify-center p-4" onclick="if(event.target===this)tutupModalInputMassal()">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl shadow-2xl modal-enter flex flex-col max-h-[92vh]">
+            <!-- Header -->
+            <div id="massal-header" class="flex items-center justify-between p-5 border-b border-slate-800 shrink-0">
+                <div>
+                    <h3 id="massal-judul" class="font-black text-base text-white flex items-center gap-2">
+                        <i class="fas fa-bolt text-blue-400"></i> Input Massal STS
+                    </h3>
+                    <p id="massal-mapel-label" class="text-[11px] text-slate-400 mt-0.5 font-medium"></p>
+                </div>
+                <button onclick="tutupModalInputMassal()" class="text-slate-400 hover:text-red-400 text-xl transition"><i class="fas fa-times"></i></button>
+            </div>
+
+            <!-- Panduan -->
+            <div id="massal-panduan" class="mx-5 mt-4 bg-blue-950/40 border border-blue-800/40 rounded-xl p-3 text-[11px] text-blue-300 shrink-0"></div>
+
+            <!-- Isi modal -->
+            <div class="flex-1 overflow-y-auto p-5 space-y-4">
+
+                <!-- Dua kolom jika mode keduanya -->
+                <div id="massal-input-area" class="flex gap-4 flex-col sm:flex-row">
+                    <!-- Kolom STS -->
+                    <div id="massal-sts-wrap" class="flex-1 flex flex-col gap-2">
+                        <label class="text-xs font-black text-blue-400 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-blue-500 inline-block"></span>
+                            NILAI STS
+                            <span class="text-slate-500 font-normal text-[10px]">(1 nilai per baris)</span>
+                        </label>
+                        <textarea id="massal-textarea-sts"
+                            placeholder="Paste atau ketik nilai di sini…
+Contoh:
+85
+90
+78
+…"
+                            class="flex-1 min-h-[260px] bg-slate-950 border border-blue-800/60 focus:border-blue-500 rounded-xl p-3 text-sm font-mono text-blue-200 resize-none outline-none leading-7 placeholder-slate-700 transition"
+                            oninput="massalUpdatePreview()"></textarea>
+                    </div>
+                    <!-- Kolom SAS (hanya tampil kalau mode keduanya) -->
+                    <div id="massal-sas-wrap" class="flex-1 flex flex-col gap-2 hidden">
+                        <label class="text-xs font-black text-indigo-400 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-indigo-500 inline-block"></span>
+                            NILAI SAS
+                            <span class="text-slate-500 font-normal text-[10px]">(1 nilai per baris)</span>
+                        </label>
+                        <textarea id="massal-textarea-sas"
+                            placeholder="Paste atau ketik nilai di sini…
+Contoh:
+88
+75
+92
+…"
+                            class="flex-1 min-h-[260px] bg-slate-950 border border-indigo-800/60 focus:border-indigo-500 rounded-xl p-3 text-sm font-mono text-indigo-200 resize-none outline-none leading-7 placeholder-slate-700 transition"
+                            oninput="massalUpdatePreview()"></textarea>
+                    </div>
+                </div>
+
+                <!-- Preview tabel -->
+                <div id="massal-preview-wrap" class="hidden">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[11px] font-black text-slate-400 uppercase tracking-wider">Preview — Pastikan sudah sesuai sebelum simpan</span>
+                        <span id="massal-preview-counter" class="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded-full font-bold"></span>
+                    </div>
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl overflow-hidden max-h-64 overflow-y-auto">
+                        <table class="w-full text-left text-xs">
+                            <thead class="sticky top-0 bg-slate-900 border-b border-slate-800">
+                                <tr>
+                                    <th class="p-2.5 text-slate-500 font-bold w-12 text-center">Abs</th>
+                                    <th class="p-2.5 text-slate-400 font-bold">Nama Siswa</th>
+                                    <th id="massal-th-sts" class="p-2.5 text-blue-400 font-bold text-center w-20 hidden">STS</th>
+                                    <th id="massal-th-sas" class="p-2.5 text-indigo-400 font-bold text-center w-20 hidden">SAS</th>
+                                    <th class="p-2.5 text-slate-500 font-bold text-center w-16">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="massal-preview-tbody" class="divide-y divide-slate-800/60 text-slate-300"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-5 border-t border-slate-800 flex items-center gap-3 shrink-0">
+                <button onclick="massalUpdatePreview(true)" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs py-2.5 rounded-xl transition flex items-center justify-center gap-2">
+                    <i class="fas fa-eye"></i> Preview
+                </button>
+                <button onclick="simpanInputMassal()" class="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm py-2.5 rounded-xl transition shadow-lg flex items-center justify-center gap-2">
+                    <i class="fas fa-save"></i> Simpan Nilai
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    // ============================================================
+    //  INPUT MASSAL STS / SAS
+    // ============================================================
+    var _massalMode = 'sts'; // 'sts' | 'sas' | 'keduanya'
+
+    function openModalInputMassal(mode) {
+        const mId = document.getElementById('select-nilai-mapel').value;
+        if (!mId) {
+            Swal.fire({ toast: true, position: 'top-end', icon: 'warning', title: 'Pilih mata pelajaran dulu!', showConfirmButton: false, timer: 2000 });
+            return;
+        }
+        _massalMode = mode;
+        const mapel = db.mapel.find(m => m.id === mId);
+        const mapelNama = mapel ? mapel.nama : '—';
+
+        // Judul & panduan
+        const judulMap = {
+            sts:      '<i class="fas fa-bolt text-blue-400"></i> Input Massal Nilai STS',
+            sas:      '<i class="fas fa-bolt text-indigo-400"></i> Input Massal Nilai SAS',
+            keduanya: '<i class="fas fa-layer-group text-violet-400"></i> Input Massal STS & SAS'
+        };
+        const panduanMap = {
+            sts:      '📋 <b>Cara pakai:</b> Paste / ketik nilai STS satu per baris, berurutan sesuai nomor absen (absen 1 di baris 1, dst). Baris kosong atau tanda <b>–</b> = siswa dilewati (nilai tidak diubah). Nilai harus 0–100.',
+            sas:      '📋 <b>Cara pakai:</b> Paste / ketik nilai SAS satu per baris, berurutan sesuai nomor absen (absen 1 di baris 1, dst). Baris kosong atau tanda <b>–</b> = siswa dilewati (nilai tidak diubah). Nilai harus 0–100.',
+            keduanya: '📋 <b>Cara pakai:</b> Isi kolom <b class="text-blue-300">STS</b> dan <b class="text-indigo-300">SAS</b> secara terpisah, masing-masing satu baris per absen. Baris kosong atau <b>–</b> = siswa dilewati. Nilai harus 0–100.'
+        };
+
+        document.getElementById('massal-judul').innerHTML = judulMap[mode];
+        document.getElementById('massal-panduan').innerHTML = panduanMap[mode];
+        document.getElementById('massal-mapel-label').textContent = '📚 Mapel: ' + mapelNama + ' — ' + db.siswa.length + ' siswa terdaftar';
+
+        // Tampilkan/sembunyikan kolom sesuai mode
+        const stsWrap = document.getElementById('massal-sts-wrap');
+        const sasWrap = document.getElementById('massal-sas-wrap');
+        if (mode === 'sas') {
+            stsWrap.classList.add('hidden');
+            sasWrap.classList.remove('hidden');
+            // Rename textarea placeholder di kolom sas yang kini tunggal
+        } else if (mode === 'sts') {
+            stsWrap.classList.remove('hidden');
+            sasWrap.classList.add('hidden');
+        } else {
+            stsWrap.classList.remove('hidden');
+            sasWrap.classList.remove('hidden');
+        }
+
+        // Pre-fill dengan nilai yang sudah ada
+        const sortedSiswa = [...db.siswa].sort((a, b) => (parseInt(a.absen)||0) - (parseInt(b.absen)||0));
+        if (mode !== 'sas') {
+            document.getElementById('massal-textarea-sts').value = sortedSiswa.map(s => {
+                const n = db.nilai[`${s.id}_${mId}`];
+                return (n && n.sts !== undefined && n.sts !== '' && n.sts !== 0) ? n.sts : '';
+            }).join('\n');
+        }
+        if (mode !== 'sts') {
+            document.getElementById('massal-textarea-sas').value = sortedSiswa.map(s => {
+                const n = db.nilai[`${s.id}_${mId}`];
+                return (n && n.sas !== undefined && n.sas !== '' && n.sas !== 0) ? n.sas : '';
+            }).join('\n');
+        }
+
+        document.getElementById('massal-preview-wrap').classList.add('hidden');
+        document.getElementById('modal-input-massal').classList.remove('hidden');
+        // Auto-preview
+        setTimeout(() => massalUpdatePreview(true), 100);
+    }
+
+    function tutupModalInputMassal() {
+        document.getElementById('modal-input-massal').classList.add('hidden');
+    }
+
+    function massalParseLinesValid(raw) {
+        // Ambil baris, bersihkan, kembalikan array (null jika dilewati, angka jika valid)
+        return raw.split('\n').map(line => {
+            const t = line.trim();
+            if (t === '' || t === '-' || t === '–') return null; // dilewati
+            const v = parseFloat(t.replace(',', '.'));
+            if (isNaN(v) || v < 0 || v > 100) return 'INVALID:' + t;
+            return v;
+        });
+    }
+
+    function massalUpdatePreview(forceShow) {
+        const mId = document.getElementById('select-nilai-mapel').value;
+        if (!mId) return;
+        const sortedSiswa = [...db.siswa].sort((a, b) => (parseInt(a.absen)||0) - (parseInt(b.absen)||0));
+
+        const rawSts = (_massalMode !== 'sas') ? document.getElementById('massal-textarea-sts').value : null;
+        const rawSas = (_massalMode !== 'sts') ? document.getElementById('massal-textarea-sas').value : null;
+
+        const linesSts = rawSts !== null ? massalParseLinesValid(rawSts) : [];
+        const linesSas = rawSas !== null ? massalParseLinesValid(rawSas) : [];
+
+        // Tampilkan header preview
+        document.getElementById('massal-th-sts').classList.toggle('hidden', _massalMode === 'sas');
+        document.getElementById('massal-th-sas').classList.toggle('hidden', _massalMode === 'sts');
+
+        const mapel = db.mapel.find(m => m.id === mId);
+        const kkm = mapel ? (parseFloat(mapel.kkm)||75) : 75;
+
+        let rows = '';
+        let diisi = 0, dilewati = 0, invalid = 0;
+
+        sortedSiswa.forEach((s, idx) => {
+            const stsVal = (linesSts.length > idx) ? linesSts[idx] : null;
+            const sasVal = (linesSas.length > idx) ? linesSas[idx] : null;
+
+            let stsHtml = '<span class="text-slate-600">—</span>';
+            let sasHtml = '<span class="text-slate-600">—</span>';
+            let statusHtml = '';
+            let rowClass = '';
+
+            // Cek STS
+            let stsOk = true;
+            if (_massalMode !== 'sas') {
+                if (stsVal === null) {
+                    stsHtml = '<span class="text-slate-600 text-[10px]">lewati</span>';
+                } else if (typeof stsVal === 'string' && stsVal.startsWith('INVALID:')) {
+                    stsHtml = '<span class="text-red-400 font-bold">' + stsVal.replace('INVALID:', '') + '</span>';
+                    stsOk = false; invalid++;
+                } else {
+                    stsHtml = '<span class="font-black ' + (stsVal >= kkm ? 'text-blue-300' : 'text-red-400') + '">' + stsVal + '</span>';
+                    diisi++;
+                }
+            }
+
+            // Cek SAS
+            let sasOk = true;
+            if (_massalMode !== 'sts') {
+                if (sasVal === null) {
+                    sasHtml = '<span class="text-slate-600 text-[10px]">lewati</span>';
+                } else if (typeof sasVal === 'string' && sasVal.startsWith('INVALID:')) {
+                    sasHtml = '<span class="text-red-400 font-bold">' + sasVal.replace('INVALID:', '') + '</span>';
+                    sasOk = false; if (_massalMode !== 'keduanya') invalid++;
+                } else {
+                    sasHtml = '<span class="font-black ' + (sasVal >= kkm ? 'text-indigo-300' : 'text-red-400') + '">' + sasVal + '</span>';
+                    if (_massalMode === 'sas') diisi++;
+                }
+            }
+
+            if (!stsOk || !sasOk) {
+                rowClass = 'bg-red-950/20';
+                statusHtml = '<span class="text-[10px] text-red-400 font-bold">⚠ Error</span>';
+            } else if ((stsVal === null && _massalMode !== 'sas') || (sasVal === null && _massalMode !== 'sts')) {
+                if ((stsVal === null || _massalMode === 'sas') && (sasVal === null || _massalMode === 'sts')) {
+                    rowClass = 'opacity-40';
+                    dilewati++;
+                    statusHtml = '<span class="text-[10px] text-slate-600">—</span>';
+                } else {
+                    statusHtml = '<span class="text-[10px] text-emerald-500">✓</span>';
+                }
+            } else {
+                statusHtml = '<span class="text-[10px] text-emerald-500">✓</span>';
+            }
+
+            rows += `<tr class="${rowClass}">
+                <td class="p-2 text-center font-mono text-slate-500">${s.absen}</td>
+                <td class="p-2 font-semibold text-slate-300">${s.nama}</td>
+                ${_massalMode !== 'sas' ? `<td class="p-2 text-center">${stsHtml}</td>` : ''}
+                ${_massalMode !== 'sts' ? `<td class="p-2 text-center">${sasHtml}</td>` : ''}
+                <td class="p-2 text-center">${statusHtml}</td>
+            </tr>`;
+        });
+
+        document.getElementById('massal-preview-tbody').innerHTML = rows || '<tr><td colspan="5" class="p-4 text-center text-slate-600 italic">Belum ada data</td></tr>';
+        document.getElementById('massal-preview-counter').textContent = `${diisi} diisi · ${dilewati} dilewati${invalid > 0 ? ' · ' + invalid + ' error' : ''}`;
+
+        if (forceShow || document.getElementById('massal-preview-wrap').classList.contains('') ) {
+            document.getElementById('massal-preview-wrap').classList.remove('hidden');
+        }
+    }
+
+    function simpanInputMassal() {
+        const mId = document.getElementById('select-nilai-mapel').value;
+        if (!mId) return;
+
+        const sortedSiswa = [...db.siswa].sort((a, b) => (parseInt(a.absen)||0) - (parseInt(b.absen)||0));
+        const rawSts = (_massalMode !== 'sas') ? document.getElementById('massal-textarea-sts').value : null;
+        const rawSas = (_massalMode !== 'sts') ? document.getElementById('massal-textarea-sas').value : null;
+
+        const linesSts = rawSts !== null ? massalParseLinesValid(rawSts) : [];
+        const linesSas = rawSas !== null ? massalParseLinesValid(rawSas) : [];
+
+        // Cek apakah ada nilai invalid
+        const adaInvalidSts = linesSts.some(v => typeof v === 'string' && v.startsWith('INVALID:'));
+        const adaInvalidSas = linesSas.some(v => typeof v === 'string' && v.startsWith('INVALID:'));
+        if (adaInvalidSts || adaInvalidSas) {
+            Swal.fire({ title: 'Ada Nilai Tidak Valid!', html: 'Periksa kembali nilai yang ditandai merah di preview.<br><small class="text-slate-400">Pastikan nilai berupa angka 0–100.</small>', icon: 'error', background: '#1e293b', color: '#f8fafc' });
+            massalUpdatePreview(true);
+            return;
+        }
+
+        let jumlahSts = 0, jumlahSas = 0, jumlahLewati = 0;
+        sortedSiswa.forEach((s, idx) => {
+            const key = `${s.id}_${mId}`;
+            if (!db.nilai[key]) db.nilai[key] = { formatif: 0, sts: 0, sas: 0 };
+
+            if (_massalMode !== 'sas' && linesSts.length > idx && linesSts[idx] !== null) {
+                db.nilai[key].sts = linesSts[idx];
+                jumlahSts++;
+            }
+            if (_massalMode !== 'sts' && linesSas.length > idx && linesSas[idx] !== null) {
+                db.nilai[key].sas = linesSas[idx];
+                jumlahSas++;
+            }
+        });
+
+        saveDB();
+        tutupModalInputMassal();
+        loadInputNilaiSiswa();
+
+        let msg = '';
+        if (_massalMode === 'sts') msg = `${jumlahSts} nilai STS berhasil disimpan.`;
+        else if (_massalMode === 'sas') msg = `${jumlahSas} nilai SAS berhasil disimpan.`;
+        else msg = `${jumlahSts} nilai STS &amp; ${jumlahSas} nilai SAS berhasil disimpan.`;
+
+        Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Input Massal Berhasil!', html: msg, showConfirmButton: false, timer: 3000, background: '#1e293b', color: '#f8fafc' });
+    }
+    </script>
 </body>
 </html>
