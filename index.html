@@ -18,6 +18,9 @@
         });
       }
     </script>
+    <!-- Google API Client untuk Google Drive Backup -->
+    <script src="https://apis.google.com/js/api.js" defer></script>
+    <script src="https://accounts.google.com/gsi/client" defer></script>
 
     <!-- Google Fonts: preconnect untuk load lebih cepat -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3606,6 +3609,91 @@
                                 <button onclick="resetData()" class="bg-red-900/30 text-red-400 border border-red-900/50 hover:bg-red-600 hover:text-white transition font-bold text-xs px-4 py-2 rounded"><i class="fas fa-trash mr-1"></i> Format Bersih</button>
                             </div>
                         </div>
+                        <!-- ===== GOOGLE DRIVE BACKUP ===== -->
+                        <div class="pt-6 mt-4 border-t border-slate-800" id="gdrive-backup-section">
+                            <h4 class="text-xs font-bold text-slate-300 mb-1 flex items-center gap-2">
+                                <i class="fab fa-google-drive text-green-400"></i> Backup Otomatis ke Google Drive
+                            </h4>
+                            <p class="text-[10px] text-slate-500 mb-3">Data disimpan sebagai <b class="text-slate-400">1 file</b> di Google Drive Anda (file lama ditimpa, tidak membuat file baru). Login sekali, backup selamanya.</p>
+
+                            <!-- Status Login -->
+                            <div id="gdrive-login-area" class="mb-3">
+                                <div id="gdrive-signed-out" class="flex items-center gap-3 bg-slate-950 border border-slate-700 rounded-xl p-3">
+                                    <div class="w-8 h-8 rounded-full bg-green-900/30 flex items-center justify-center shrink-0">
+                                        <i class="fab fa-google text-green-400 text-sm"></i>
+                                    </div>
+                                    <div class="flex-1">
+                                        <p class="text-xs font-bold text-slate-200">Belum Login Google</p>
+                                        <p class="text-[10px] text-slate-500">Login untuk mengaktifkan backup ke Drive</p>
+                                    </div>
+                                    <button onclick="gdriveSignIn()" class="bg-green-600 hover:bg-green-500 text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 whitespace-nowrap">
+                                        <i class="fab fa-google"></i> Login Google
+                                    </button>
+                                </div>
+                                <div id="gdrive-signed-in" class="hidden flex items-center gap-3 bg-slate-950 border border-green-800/50 rounded-xl p-3">
+                                    <div class="w-8 h-8 rounded-full bg-green-900/40 flex items-center justify-center shrink-0">
+                                        <i class="fab fa-google-drive text-green-400 text-sm"></i>
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <p class="text-xs font-bold text-green-400">Terhubung ke Google Drive</p>
+                                        <p id="gdrive-user-email" class="text-[10px] text-slate-400 truncate"></p>
+                                    </div>
+                                    <button onclick="gdriveSignOut()" class="bg-slate-700 hover:bg-red-700 text-slate-300 hover:text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition whitespace-nowrap">
+                                        <i class="fas fa-sign-out-alt"></i> Logout
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Pengaturan Auto-Backup -->
+                            <div id="gdrive-settings-area" class="space-y-3">
+                                <!-- Toggle Auto-backup -->
+                                <div class="flex items-center justify-between bg-slate-950 border border-slate-800 rounded-lg p-3">
+                                    <div>
+                                        <p class="text-xs font-bold text-slate-200"><i class="fas fa-clock text-blue-400 mr-1"></i> Auto-Backup Otomatis</p>
+                                        <p class="text-[10px] text-slate-500 mt-0.5">Backup berjalan otomatis di latar belakang sesuai interval</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer ml-4 shrink-0">
+                                        <input type="checkbox" id="toggle-gdrive-auto" onchange="toggleGdriveAuto()" class="sr-only peer">
+                                        <div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                                    </label>
+                                </div>
+
+                                <!-- Pilih Interval -->
+                                <div id="gdrive-interval-area" class="hidden flex items-center gap-2 bg-slate-950 border border-slate-800 rounded-lg p-3 flex-wrap">
+                                    <p class="text-[10px] text-slate-400 font-bold mr-1">Interval:</p>
+                                    <button onclick="setGdriveInterval(1)" id="gdrive-int-1" class="text-[10px] font-bold px-3 py-1.5 rounded-lg border transition">1 menit</button>
+                                    <button onclick="setGdriveInterval(5)" id="gdrive-int-5" class="text-[10px] font-bold px-3 py-1.5 rounded-lg border transition">5 menit</button>
+                                    <button onclick="setGdriveInterval(10)" id="gdrive-int-10" class="text-[10px] font-bold px-3 py-1.5 rounded-lg border transition">10 menit</button>
+                                    <button onclick="setGdriveInterval(30)" id="gdrive-int-30" class="text-[10px] font-bold px-3 py-1.5 rounded-lg border transition">30 menit</button>
+                                    <button onclick="setGdriveInterval(60)" id="gdrive-int-60" class="text-[10px] font-bold px-3 py-1.5 rounded-lg border transition">1 jam</button>
+                                </div>
+
+                                <!-- Status & Tombol Manual -->
+                                <div class="flex items-center gap-3 flex-wrap">
+                                    <div class="flex-1 bg-slate-950 border border-slate-800 rounded-lg p-2.5 min-w-0">
+                                        <p class="text-[10px] text-slate-500 font-semibold uppercase tracking-wider mb-0.5">Status Backup</p>
+                                        <p id="gdrive-status-text" class="text-[11px] text-slate-400 font-mono truncate">—</p>
+                                        <p id="gdrive-last-backup" class="text-[10px] text-slate-600 mt-0.5"></p>
+                                    </div>
+                                    <button onclick="gdriveBackupNow()" id="btn-gdrive-backup-now" class="bg-green-700 hover:bg-green-600 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition shadow flex items-center gap-2 whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed" disabled>
+                                        <i class="fab fa-google-drive"></i> Backup Sekarang
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Setup Client ID info -->
+                            <div id="gdrive-setup-info" class="mt-3 bg-blue-950/30 border border-blue-800/40 rounded-lg p-3 hidden">
+                                <p class="text-[10px] text-blue-300 font-bold mb-1"><i class="fas fa-info-circle mr-1"></i> Setup Google Client ID</p>
+                                <p class="text-[10px] text-slate-400">Masukkan Google OAuth Client ID Anda untuk mengaktifkan fitur ini:</p>
+                                <div class="flex gap-2 mt-2">
+                                    <input type="text" id="input-gdrive-client-id" placeholder="xxxx.apps.googleusercontent.com" class="flex-1 bg-slate-950 border border-slate-700 rounded p-1.5 text-[10px] text-white outline-none focus:border-blue-500">
+                                    <button onclick="saveGdriveClientId()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold text-[10px] px-3 py-1.5 rounded-lg transition">Simpan</button>
+                                </div>
+                                <p class="text-[9px] text-slate-500 mt-1.5"><a href="https://console.cloud.google.com/apis/credentials" target="_blank" class="text-blue-400 underline">Buat Client ID di Google Cloud Console</a> → OAuth 2.0 → Web Application → Tambahkan origin URL aplikasi ini.</p>
+                            </div>
+                        </div>
+                        <!-- ===== END GOOGLE DRIVE BACKUP ===== -->
+
                         <!-- Reset Nilai TP & Remedial -->
                         <div class="pt-5 mt-4 border-t border-orange-900/30">
                             <h4 class="text-xs font-bold text-orange-400 mb-1 flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i> Perbaikan Data</h4>
@@ -5733,7 +5821,7 @@
                 loadRaporSettings();
                 renderMapelGuruPanel();
             }
-            if(tabId === 'pengaturan') { renderHeaderInfo(); loadTTDPreviewPengaturan(); }
+            if(tabId === 'pengaturan') { renderHeaderInfo(); loadTTDPreviewPengaturan(); initGdriveUI(); }
             if(tabId === 'absensi_guru') { if(!document.getElementById('input-absensi-guru-tanggal').value) document.getElementById('input-absensi-guru-tanggal').value = getTodayLocalStr(); loadAbsensiGuru(); renderRekapGuru(); }
             if(tabId === 'rekap_lengkap') renderRekLengkap();
             if(tabId === 'rekap_absensi') { initRekapAbsensi(); }
@@ -11931,6 +12019,388 @@ ${htmlContent}
                 if(r.isConfirmed) { localStorage.removeItem('erabot_db_v6_1'); location.reload(); }
             });
         }
+
+        // ============================================================
+        //  GOOGLE DRIVE BACKUP MODULE
+        // ============================================================
+        const GDRIVE_SCOPES = 'https://www.googleapis.com/auth/drive.file';
+        const GDRIVE_DB_KEY = 'erabot_gdrive_settings';
+        let _gdriveTokenClient = null;
+        let _gdriveAccessToken = null;
+        let _gdriveAutoTimer = null;
+        let _gdriveFileId = null; // Cache file ID di Drive
+        let _gdriveSettings = {
+            clientId: '',
+            autoEnabled: false,
+            intervalMinutes: 5,
+            lastBackupTime: null,
+            userEmail: '',
+            fileId: null
+        };
+
+        function loadGdriveSettings() {
+            try {
+                const s = JSON.parse(localStorage.getItem(GDRIVE_DB_KEY));
+                if (s) _gdriveSettings = { ..._gdriveSettings, ...s };
+            } catch(e) {}
+        }
+
+        function saveGdriveSettings() {
+            localStorage.setItem(GDRIVE_DB_KEY, JSON.stringify(_gdriveSettings));
+        }
+
+        function initGdriveUI() {
+            loadGdriveSettings();
+            const hasClientId = !!_gdriveSettings.clientId;
+
+            // Tampilkan setup info jika belum ada client ID
+            document.getElementById('gdrive-setup-info').classList.toggle('hidden', hasClientId);
+
+            if (_gdriveSettings.clientId) {
+                document.getElementById('input-gdrive-client-id').value = _gdriveSettings.clientId;
+            }
+
+            // Restore UI state
+            const toggleEl = document.getElementById('toggle-gdrive-auto');
+            toggleEl.checked = _gdriveSettings.autoEnabled;
+            document.getElementById('gdrive-interval-area').classList.toggle('hidden', !_gdriveSettings.autoEnabled);
+            updateGdriveIntervalUI(_gdriveSettings.intervalMinutes);
+
+            // Restore last backup info
+            if (_gdriveSettings.lastBackupTime) {
+                const d = new Date(_gdriveSettings.lastBackupTime);
+                document.getElementById('gdrive-last-backup').textContent = 'Terakhir: ' + d.toLocaleString('id-ID');
+            }
+
+            // Restore file ID cache
+            if (_gdriveSettings.fileId) _gdriveFileId = _gdriveSettings.fileId;
+
+            // Init Google Identity Services jika client ID ada
+            if (hasClientId && window.google && google.accounts) {
+                _initGdriveTokenClient();
+            } else if (hasClientId) {
+                // tunggu script load
+                window.addEventListener('load', () => {
+                    if (window.google && google.accounts) _initGdriveTokenClient();
+                });
+            }
+
+            // Jika ada sesi sebelumnya (token tersimpan di session) — coba restore
+            const savedToken = sessionStorage.getItem('gdrive_token');
+            const savedEmail = _gdriveSettings.userEmail;
+            if (savedToken && savedEmail) {
+                _gdriveAccessToken = savedToken;
+                _setGdriveSignedIn(savedEmail);
+                // Restart auto-backup jika aktif
+                if (_gdriveSettings.autoEnabled) {
+                    _startGdriveAutoTimer();
+                }
+            }
+        }
+
+        function _initGdriveTokenClient() {
+            if (!_gdriveSettings.clientId) return;
+            try {
+                _gdriveTokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: _gdriveSettings.clientId,
+                    scope: GDRIVE_SCOPES,
+                    callback: (response) => {
+                        if (response.error) {
+                            _setGdriveStatus('❌ Login gagal: ' + response.error, 'error');
+                            return;
+                        }
+                        _gdriveAccessToken = response.access_token;
+                        sessionStorage.setItem('gdrive_token', _gdriveAccessToken);
+                        // Ambil info user
+                        fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                            headers: { Authorization: 'Bearer ' + _gdriveAccessToken }
+                        }).then(r => r.json()).then(info => {
+                            const email = info.email || 'Akun Google';
+                            _gdriveSettings.userEmail = email;
+                            saveGdriveSettings();
+                            _setGdriveSignedIn(email);
+                            // Mulai auto jika aktif
+                            if (_gdriveSettings.autoEnabled) _startGdriveAutoTimer();
+                            Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Login Google Berhasil!', html: email, showConfirmButton: false, timer: 2500, background: '#1e293b', color: '#f8fafc' });
+                        });
+                    }
+                });
+            } catch(e) {
+                console.warn('Google GSI init error:', e);
+            }
+        }
+
+        function saveGdriveClientId() {
+            const val = document.getElementById('input-gdrive-client-id').value.trim();
+            if (!val) { Swal.fire({ toast:true, position:'top-end', icon:'warning', title:'Client ID kosong!', showConfirmButton:false, timer:2000, background:'#1e293b', color:'#f8fafc' }); return; }
+            _gdriveSettings.clientId = val;
+            saveGdriveSettings();
+            document.getElementById('gdrive-setup-info').classList.add('hidden');
+            // Re-init
+            if (window.google && google.accounts) {
+                _initGdriveTokenClient();
+                Swal.fire({ toast:true, position:'top-end', icon:'success', title:'Client ID disimpan! Silakan login.', showConfirmButton:false, timer:2500, background:'#1e293b', color:'#f8fafc' });
+            } else {
+                Swal.fire({ toast:true, position:'top-end', icon:'info', title:'Muat ulang halaman untuk menyelesaikan setup.', showConfirmButton:false, timer:3000, background:'#1e293b', color:'#f8fafc' });
+            }
+        }
+
+        function gdriveSignIn() {
+            if (!_gdriveSettings.clientId) {
+                document.getElementById('gdrive-setup-info').classList.remove('hidden');
+                Swal.fire({ toast:true, position:'top-end', icon:'warning', title:'Masukkan Google Client ID dulu!', showConfirmButton:false, timer:2500, background:'#1e293b', color:'#f8fafc' });
+                return;
+            }
+            if (!_gdriveTokenClient) {
+                if (window.google && google.accounts) {
+                    _initGdriveTokenClient();
+                } else {
+                    Swal.fire({ toast:true, position:'top-end', icon:'error', title:'Google API belum siap, coba muat ulang halaman.', showConfirmButton:false, timer:3000, background:'#1e293b', color:'#f8fafc' });
+                    return;
+                }
+            }
+            _setGdriveStatus('Membuka jendela login Google...', 'loading');
+            _gdriveTokenClient.requestAccessToken({ prompt: 'consent' });
+        }
+
+        function gdriveSignOut() {
+            Swal.fire({
+                title: 'Logout Google Drive?', text: 'Auto-backup akan dinonaktifkan.', icon: 'question',
+                showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Logout',
+                background: '#1e293b', color: '#f8fafc'
+            }).then(r => {
+                if (!r.isConfirmed) return;
+                if (_gdriveAccessToken && window.google && google.accounts) {
+                    google.accounts.oauth2.revoke(_gdriveAccessToken, () => {});
+                }
+                _gdriveAccessToken = null;
+                sessionStorage.removeItem('gdrive_token');
+                _gdriveSettings.userEmail = '';
+                _gdriveSettings.autoEnabled = false;
+                document.getElementById('toggle-gdrive-auto').checked = false;
+                document.getElementById('gdrive-interval-area').classList.add('hidden');
+                saveGdriveSettings();
+                _stopGdriveAutoTimer();
+                _setGdriveSignedOut();
+                Swal.fire({ toast:true, position:'top-end', icon:'success', title:'Logout berhasil', showConfirmButton:false, timer:2000, background:'#1e293b', color:'#f8fafc' });
+            });
+        }
+
+        function _setGdriveSignedIn(email) {
+            document.getElementById('gdrive-signed-out').classList.add('hidden');
+            document.getElementById('gdrive-signed-in').classList.remove('hidden');
+            document.getElementById('gdrive-user-email').textContent = email;
+            document.getElementById('btn-gdrive-backup-now').disabled = false;
+            _setGdriveStatus('Siap backup ke Google Drive', 'ok');
+        }
+
+        function _setGdriveSignedOut() {
+            document.getElementById('gdrive-signed-out').classList.remove('hidden');
+            document.getElementById('gdrive-signed-in').classList.add('hidden');
+            document.getElementById('btn-gdrive-backup-now').disabled = true;
+            _setGdriveStatus('—', 'idle');
+        }
+
+        function _setGdriveStatus(msg, type) {
+            const el = document.getElementById('gdrive-status-text');
+            if (!el) return;
+            el.textContent = msg;
+            el.className = 'text-[11px] font-mono truncate ' + {
+                ok: 'text-green-400', error: 'text-red-400', loading: 'text-yellow-400 animate-pulse', idle: 'text-slate-400'
+            }[type || 'idle'];
+        }
+
+        function toggleGdriveAuto() {
+            const on = document.getElementById('toggle-gdrive-auto').checked;
+            _gdriveSettings.autoEnabled = on;
+            saveGdriveSettings();
+            document.getElementById('gdrive-interval-area').classList.toggle('hidden', !on);
+            if (on) {
+                if (!_gdriveAccessToken) {
+                    document.getElementById('toggle-gdrive-auto').checked = false;
+                    _gdriveSettings.autoEnabled = false;
+                    saveGdriveSettings();
+                    document.getElementById('gdrive-interval-area').classList.add('hidden');
+                    Swal.fire({ toast:true, position:'top-end', icon:'warning', title:'Login Google dulu sebelum mengaktifkan auto-backup!', showConfirmButton:false, timer:3000, background:'#1e293b', color:'#f8fafc' });
+                    return;
+                }
+                _startGdriveAutoTimer();
+                Swal.fire({ toast:true, position:'top-end', icon:'success', title:'Auto-backup diaktifkan!', html:'Setiap ' + _gdriveSettings.intervalMinutes + ' menit', showConfirmButton:false, timer:2500, background:'#1e293b', color:'#f8fafc' });
+            } else {
+                _stopGdriveAutoTimer();
+                _setGdriveStatus('Auto-backup dinonaktifkan', 'idle');
+            }
+        }
+
+        function setGdriveInterval(minutes) {
+            _gdriveSettings.intervalMinutes = minutes;
+            saveGdriveSettings();
+            updateGdriveIntervalUI(minutes);
+            // Restart timer dengan interval baru
+            if (_gdriveSettings.autoEnabled && _gdriveAccessToken) {
+                _stopGdriveAutoTimer();
+                _startGdriveAutoTimer();
+            }
+            Swal.fire({ toast:true, position:'top-end', icon:'info', title:'Interval diubah: ' + minutes + ' menit', showConfirmButton:false, timer:1500, background:'#1e293b', color:'#f8fafc' });
+        }
+
+        function updateGdriveIntervalUI(active) {
+            const ids = [1, 5, 10, 30, 60];
+            ids.forEach(m => {
+                const btn = document.getElementById('gdrive-int-' + m);
+                if (!btn) return;
+                const isActive = m === active;
+                btn.className = 'text-[10px] font-bold px-3 py-1.5 rounded-lg border transition ' +
+                    (isActive ? 'bg-blue-600 text-white border-blue-500' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700 hover:text-slate-200');
+            });
+        }
+
+        function _startGdriveAutoTimer() {
+            _stopGdriveAutoTimer();
+            const ms = _gdriveSettings.intervalMinutes * 60 * 1000;
+            _gdriveAutoTimer = setInterval(() => {
+                if (_gdriveAccessToken) {
+                    _gdriveDoBackup(true); // silent mode
+                }
+            }, ms);
+            _setGdriveStatus('⏱ Auto-backup aktif setiap ' + _gdriveSettings.intervalMinutes + ' menit', 'ok');
+        }
+
+        function _stopGdriveAutoTimer() {
+            if (_gdriveAutoTimer) { clearInterval(_gdriveAutoTimer); _gdriveAutoTimer = null; }
+        }
+
+        function gdriveBackupNow() {
+            if (!_gdriveAccessToken) {
+                Swal.fire({ toast:true, position:'top-end', icon:'warning', title:'Login Google dulu!', showConfirmButton:false, timer:2000, background:'#1e293b', color:'#f8fafc' });
+                return;
+            }
+            _gdriveDoBackup(false);
+        }
+
+        async function _gdriveDoBackup(silent) {
+            _setGdriveStatus('⏳ Mengupload ke Google Drive...', 'loading');
+            const btn = document.getElementById('btn-gdrive-backup-now');
+            if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengupload...'; }
+
+            try {
+                const sekolah = (db.profil && db.profil.sekolah) ? db.profil.sekolah.replace(/[^a-zA-Z0-9_\- ]/g, '') : 'eRapot';
+                const fileName = `Backup_eRapot_${sekolah}.json`;
+                const content = JSON.stringify(db);
+
+                // Cari file yang sudah ada dulu (berdasarkan nama)
+                let fileId = _gdriveFileId || _gdriveSettings.fileId;
+
+                // Verifikasi file masih exist di Drive
+                if (fileId) {
+                    try {
+                        const checkRes = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?fields=id,name`, {
+                            headers: { Authorization: 'Bearer ' + _gdriveAccessToken }
+                        });
+                        if (!checkRes.ok) fileId = null; // File sudah tidak ada
+                    } catch(e) { fileId = null; }
+                }
+
+                // Cari via nama jika belum ada fileId
+                if (!fileId) {
+                    const searchRes = await fetch(
+                        `https://www.googleapis.com/drive/v3/files?q=name%3D'${encodeURIComponent(fileName)}'%20and%20trashed%3Dfalse&fields=files(id,name)&spaces=drive`,
+                        { headers: { Authorization: 'Bearer ' + _gdriveAccessToken } }
+                    );
+                    const searchData = await searchRes.json();
+                    if (searchData.files && searchData.files.length > 0) {
+                        fileId = searchData.files[0].id;
+                    }
+                }
+
+                let resultId;
+                if (fileId) {
+                    // UPDATE (PATCH) file yang sudah ada — tidak buat file baru
+                    const boundary = '-------314159265358979323846';
+                    const body = [
+                        '--' + boundary,
+                        'Content-Type: application/json; charset=UTF-8',
+                        '',
+                        JSON.stringify({ name: fileName }),
+                        '--' + boundary,
+                        'Content-Type: application/json',
+                        '',
+                        content,
+                        '--' + boundary + '--'
+                    ].join('\r\n');
+
+                    const res = await fetch(`https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=multipart&fields=id`, {
+                        method: 'PATCH',
+                        headers: {
+                            Authorization: 'Bearer ' + _gdriveAccessToken,
+                            'Content-Type': 'multipart/related; boundary="' + boundary + '"'
+                        },
+                        body: body
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error?.message || 'Update gagal');
+                    resultId = data.id;
+                } else {
+                    // CREATE file baru (hanya sekali)
+                    const boundary = '-------314159265358979323846';
+                    const body = [
+                        '--' + boundary,
+                        'Content-Type: application/json; charset=UTF-8',
+                        '',
+                        JSON.stringify({ name: fileName, mimeType: 'application/json' }),
+                        '--' + boundary,
+                        'Content-Type: application/json',
+                        '',
+                        content,
+                        '--' + boundary + '--'
+                    ].join('\r\n');
+
+                    const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id', {
+                        method: 'POST',
+                        headers: {
+                            Authorization: 'Bearer ' + _gdriveAccessToken,
+                            'Content-Type': 'multipart/related; boundary="' + boundary + '"'
+                        },
+                        body: body
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error?.message || 'Upload gagal');
+                    resultId = data.id;
+                }
+
+                // Simpan file ID untuk backup berikutnya
+                _gdriveFileId = resultId;
+                _gdriveSettings.fileId = resultId;
+                _gdriveSettings.lastBackupTime = new Date().toISOString();
+                saveGdriveSettings();
+
+                const waktu = new Date().toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' });
+                _setGdriveStatus('✅ Backup berhasil — ' + waktu, 'ok');
+                document.getElementById('gdrive-last-backup').textContent = 'Terakhir: ' + new Date().toLocaleString('id-ID');
+
+                if (!silent) {
+                    Swal.fire({ toast:true, position:'top-end', icon:'success', title:'Backup Google Drive Berhasil!', html:'File: <b>' + fileName + '</b><br><small class="text-slate-400">File lama ditimpa, tidak ada duplikat.</small>', showConfirmButton:false, timer:3500, background:'#1e293b', color:'#f8fafc' });
+                }
+
+            } catch(err) {
+                const msg = err.message || 'Gagal';
+                _setGdriveStatus('❌ Error: ' + msg, 'error');
+                // Jika token expired, minta login ulang
+                if (msg.includes('401') || msg.toLowerCase().includes('invalid') || msg.toLowerCase().includes('unauthorized')) {
+                    _gdriveAccessToken = null;
+                    sessionStorage.removeItem('gdrive_token');
+                    _setGdriveSignedOut();
+                    if (!silent) Swal.fire({ toast:true, position:'top-end', icon:'error', title:'Sesi Google habis!', html:'Silakan login ulang.', showConfirmButton:false, timer:3000, background:'#1e293b', color:'#f8fafc' });
+                } else {
+                    if (!silent) Swal.fire({ toast:true, position:'top-end', icon:'error', title:'Backup Gagal', html:msg, showConfirmButton:false, timer:3000, background:'#1e293b', color:'#f8fafc' });
+                }
+            } finally {
+                if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fab fa-google-drive"></i> Backup Sekarang'; }
+            }
+        }
+        // ============================================================
+        //  END GOOGLE DRIVE BACKUP MODULE
+        // ============================================================
 
         function resetNilaiTPdanRemedial() {
             const jumlahTP = Object.keys(db.nilaiTP || {}).length;
