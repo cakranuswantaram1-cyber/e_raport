@@ -354,6 +354,7 @@
                 </div>
                 <button title="Formulir Data Siswa Baru" onclick="switchTab('formulir_siswa')" id="btn-formulir_siswa" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-cyan-400 transition relative"><i class="fas fa-file-signature w-5 text-center text-cyan-400"></i> <span class="text-cyan-300">Formulir Siswa Baru</span> <span class="absolute right-2 top-2 text-[8px] font-black text-white bg-cyan-600 px-1.5 py-0.5 rounded-full">NEW</span></button>
                 <button title="Hari Efektif Semester" onclick="switchTab('hari_efektif')" id="btn-hari_efektif" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-sky-400 transition relative"><i class="fas fa-calendar-day w-5 text-center text-sky-400"></i> <span class="nav-label text-sky-300">Hari Efektif</span> <span class="absolute right-2 top-2 text-[8px] font-black text-white bg-sky-600 px-1.5 py-0.5 rounded-full">NEW</span></button>
+                <button title="Manajemen File" onclick="switchTab('manajemen_file')" id="btn-manajemen_file" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-orange-400 transition relative"><i class="fas fa-folder-open w-5 text-center text-orange-400"></i> <span class="nav-label text-orange-300">Manajemen File</span> <span class="absolute right-2 top-2 text-[8px] font-black text-white bg-orange-600 px-1.5 py-0.5 rounded-full">NEW</span></button>
                 <button title="Pengaturan Sistem" onclick="switchTab('pengaturan')" id="btn-pengaturan" class="nav-link w-full flex items-center gap-3 px-3 py-2.5 rounded-xl font-semibold text-slate-400 hover:bg-slate-800 hover:text-emerald-400 transition"><i class="fas fa-cogs w-5 text-center"></i> <span class="nav-label">Pengaturan Sistem</span></button>
             </nav>
         </aside>
@@ -3803,28 +3804,6 @@
                             </div>
                         </div>
 
-                        <!-- MODAL EDIT NILAI -->
-                        <div id="lgr-edit-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" style="background:rgba(0,0,0,0.7)">
-                            <div class="bg-slate-900 border border-yellow-700/40 rounded-2xl shadow-2xl w-full max-w-lg p-5 space-y-4">
-                                <div class="flex items-center justify-between">
-                                    <h3 class="text-sm font-black text-yellow-300"><i class="fas fa-edit mr-2"></i>Edit Nilai Siswa</h3>
-                                    <button onclick="leggerCloseEdit()" class="text-slate-400 hover:text-white text-lg"><i class="fas fa-times"></i></button>
-                                </div>
-                                <div>
-                                    <label class="text-[10px] text-slate-400 font-bold">NAMA SISWA</label>
-                                    <input type="text" id="lgr-edit-nama" class="w-full mt-1 bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 outline-none focus:border-yellow-500 font-semibold">
-                                </div>
-                                <div class="grid grid-cols-4 gap-2" id="lgr-edit-fields"></div>
-                                <div class="flex items-center justify-between pt-2 border-t border-slate-800">
-                                    <div class="text-xs text-slate-400">Total: <span id="lgr-edit-total-preview" class="text-yellow-400 font-black text-sm">0</span></div>
-                                    <div class="flex gap-2">
-                                        <button onclick="leggerCloseEdit()" class="bg-slate-800 text-slate-300 font-bold text-xs px-4 py-2 rounded-lg hover:bg-slate-700 transition">Batal</button>
-                                        <button onclick="leggerSaveEdit()" class="bg-yellow-700 hover:bg-yellow-600 text-white font-bold text-xs px-5 py-2 rounded-lg transition"><i class="fas fa-save mr-1"></i>Simpan</button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
                         <!-- Ranking Panel -->
                         <div id="lgr-panel-ranking" class="hidden overflow-x-auto rounded-xl border border-slate-800">
                             <table class="w-full text-xs">
@@ -4712,6 +4691,457 @@
                         </div>
                     </div>
                 </section>
+
+                <!-- ============================================================
+                     MANAJEMEN FILE - Tab Section
+                     ============================================================ -->
+                <section id="tab-manajemen_file-view" class="tab-content hidden space-y-5">
+                    <!-- Header -->
+                    <div class="bg-gradient-to-r from-orange-900/40 to-slate-900 border border-orange-800/40 rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-lg font-black text-orange-300 flex items-center gap-2"><i class="fas fa-folder-open"></i> Manajemen File</h2>
+                            <p class="text-xs text-slate-400 mt-1">Upload, baca, edit, dan kelola file PDF, Word, Excel, gambar, dan format lainnya.</p>
+                        </div>
+                        <label class="cursor-pointer bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs px-5 py-2.5 rounded-xl transition flex items-center gap-2 shadow-lg w-fit">
+                            <i class="fas fa-upload"></i> Upload File
+                            <input type="file" id="mf-upload-input" multiple accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.txt,.png,.jpg,.jpeg,.gif,.webp,.ppt,.pptx,.mp4,.mp3,.zip" class="hidden" onchange="mfHandleUpload(event)">
+                        </label>
+                    </div>
+
+                    <!-- Filter & Search Bar -->
+                    <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col sm:flex-row gap-3 items-center">
+                        <div class="flex-1 relative w-full">
+                            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
+                            <input type="text" id="mf-search" onkeyup="mfRender()" placeholder="Cari file berdasarkan nama..." class="w-full bg-slate-950 border border-slate-700 rounded-lg pl-8 pr-3 py-2 text-xs text-slate-100 outline-none focus:border-orange-500">
+                        </div>
+                        <div class="flex gap-2 flex-wrap">
+                            <button onclick="mfSetFilter('all')" id="mf-filter-all" class="mf-filter-btn text-xs font-bold px-3 py-1.5 rounded-lg border border-orange-600 bg-orange-600 text-white transition">Semua</button>
+                            <button onclick="mfSetFilter('pdf')" id="mf-filter-pdf" class="mf-filter-btn text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:text-red-400 transition"><i class="fas fa-file-pdf mr-1"></i>PDF</button>
+                            <button onclick="mfSetFilter('word')" id="mf-filter-word" class="mf-filter-btn text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:text-blue-400 transition"><i class="fas fa-file-word mr-1"></i>Word</button>
+                            <button onclick="mfSetFilter('excel')" id="mf-filter-excel" class="mf-filter-btn text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:text-green-400 transition"><i class="fas fa-file-excel mr-1"></i>Excel</button>
+                            <button onclick="mfSetFilter('image')" id="mf-filter-image" class="mf-filter-btn text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:text-pink-400 transition"><i class="fas fa-image mr-1"></i>Gambar</button>
+                            <button onclick="mfSetFilter('other')" id="mf-filter-other" class="mf-filter-btn text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-700 bg-slate-800 text-slate-400 hover:text-slate-300 transition"><i class="fas fa-file mr-1"></i>Lainnya</button>
+                        </div>
+                    </div>
+
+                    <!-- Stats Bar -->
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3" id="mf-stats-bar">
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 text-center">
+                            <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Total File</p>
+                            <p class="text-xl font-black text-orange-400" id="mf-stat-total">0</p>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 text-center">
+                            <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Total Ukuran</p>
+                            <p class="text-xl font-black text-emerald-400" id="mf-stat-size">0 KB</p>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 text-center">
+                            <p class="text-[10px] text-slate-500 uppercase font-bold mb-1">Dipilih</p>
+                            <p class="text-xl font-black text-blue-400" id="mf-stat-selected">0</p>
+                        </div>
+                        <div class="bg-slate-900 border border-slate-800 rounded-xl p-3 text-center flex flex-col items-center justify-center gap-1">
+                            <button onclick="mfDeleteSelected()" class="text-[10px] font-bold text-red-400 hover:text-red-300 border border-red-900/50 hover:bg-red-900/20 px-3 py-1.5 rounded-lg transition w-full"><i class="fas fa-trash mr-1"></i>Hapus Terpilih</button>
+                        </div>
+                    </div>
+
+                    <!-- File Grid -->
+                    <div id="mf-empty-state" class="hidden bg-slate-900 border border-dashed border-slate-700 rounded-xl p-12 text-center">
+                        <i class="fas fa-folder-open text-5xl text-slate-700 mb-4 block"></i>
+                        <p class="text-slate-500 font-bold text-sm">Belum ada file.</p>
+                        <p class="text-slate-600 text-xs mt-1">Klik tombol <b class="text-orange-400">Upload File</b> untuk menambahkan.</p>
+                    </div>
+
+                    <div id="mf-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"></div>
+                </section>
+
+                <!-- ============================================================
+                     MODAL: VIEWER / EDITOR FILE
+                     ============================================================ -->
+                <div id="mf-modal" class="fixed inset-0 bg-slate-950/95 z-[500] hidden flex items-center justify-center p-3" onclick="if(event.target===this)mfCloseModal()">
+                    <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl max-h-[92vh] flex flex-col shadow-2xl modal-enter">
+                        <!-- Modal Header -->
+                        <div class="flex items-center justify-between px-5 py-3.5 border-b border-slate-800 shrink-0">
+                            <div class="flex items-center gap-3 min-w-0">
+                                <span id="mf-modal-icon" class="text-2xl shrink-0"></span>
+                                <div class="min-w-0">
+                                    <p id="mf-modal-name" class="text-sm font-black text-slate-100 truncate"></p>
+                                    <p id="mf-modal-meta" class="text-[10px] text-slate-500"></p>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0 ml-3">
+                                <button onclick="mfDownloadFile()" class="text-xs font-bold text-emerald-400 hover:text-emerald-300 border border-emerald-800/50 hover:bg-emerald-900/20 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5"><i class="fas fa-download"></i><span class="hidden sm:inline">Unduh</span></button>
+                                <button onclick="mfDeleteFromModal()" class="text-xs font-bold text-red-400 hover:text-red-300 border border-red-900/50 hover:bg-red-900/20 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5"><i class="fas fa-trash"></i><span class="hidden sm:inline">Hapus</span></button>
+                                <button onclick="mfCloseModal()" class="text-slate-400 hover:text-white transition w-8 h-8 flex items-center justify-center rounded-lg hover:bg-slate-800"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                        <!-- Modal Tabs (for editable files) -->
+                        <div id="mf-modal-tabs" class="hidden px-5 pt-3 pb-0 flex gap-2 shrink-0">
+                            <button onclick="mfSwitchModalTab('view')" id="mf-tab-view" class="text-xs font-bold px-4 py-1.5 rounded-lg bg-orange-600 text-white transition">Tampilkan</button>
+                            <button onclick="mfSwitchModalTab('edit')" id="mf-tab-edit" class="text-xs font-bold px-4 py-1.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition"><i class="fas fa-edit mr-1"></i>Edit</button>
+                        </div>
+                        <!-- Modal Body -->
+                        <div id="mf-modal-body" class="flex-1 overflow-auto p-5 min-h-0"></div>
+                        <!-- Edit save bar -->
+                        <div id="mf-edit-bar" class="hidden px-5 py-3 border-t border-slate-800 flex justify-end gap-2 shrink-0">
+                            <button onclick="mfCancelEdit()" class="text-xs font-bold text-slate-400 hover:text-white border border-slate-700 hover:bg-slate-800 px-4 py-2 rounded-lg transition">Batal</button>
+                            <button onclick="mfSaveEdit()" class="text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-500 px-5 py-2 rounded-lg transition flex items-center gap-1.5"><i class="fas fa-save"></i> Simpan Perubahan</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ============================================================
+                     MANAJEMEN FILE - JavaScript
+                     ============================================================ -->
+                <script>
+                (function(){
+                    const STORE_KEY = 'erapot_mf_files_v1';
+                    let mfFiles = [];
+                    let mfFilter = 'all';
+                    let mfCurrentIdx = null;
+                    let mfCurrentTab = 'view';
+
+                    /* ---- LocalStorage I/O ---- */
+                    function mfSave(){
+                        try {
+                            // Save metadata only (not file data for large files)
+                            const meta = mfFiles.map(f => ({
+                                id: f.id, name: f.name, type: f.type, size: f.size,
+                                date: f.date, category: f.category, dataKey: f.dataKey
+                            }));
+                            localStorage.setItem(STORE_KEY + '_meta', JSON.stringify(meta));
+                            // Save data separately per file
+                            mfFiles.forEach(f => {
+                                if(f.data) {
+                                    try { localStorage.setItem(STORE_KEY + '_data_' + f.id, f.data); } catch(e){}
+                                }
+                            });
+                        } catch(e){ console.warn('Storage full, file may not persist.', e); }
+                    }
+
+                    function mfLoad(){
+                        try {
+                            const meta = JSON.parse(localStorage.getItem(STORE_KEY + '_meta') || '[]');
+                            mfFiles = meta.map(m => {
+                                const data = localStorage.getItem(STORE_KEY + '_data_' + m.id) || null;
+                                return {...m, data};
+                            });
+                        } catch(e){ mfFiles = []; }
+                        mfRender();
+                    }
+
+                    /* ---- Category Detection ---- */
+                    function mfGetCategory(name){
+                        const ext = name.split('.').pop().toLowerCase();
+                        if(['pdf'].includes(ext)) return 'pdf';
+                        if(['doc','docx'].includes(ext)) return 'word';
+                        if(['xls','xlsx','csv'].includes(ext)) return 'excel';
+                        if(['png','jpg','jpeg','gif','webp','bmp','svg'].includes(ext)) return 'image';
+                        if(['txt','md','html','css','js','json','xml'].includes(ext)) return 'text';
+                        if(['ppt','pptx'].includes(ext)) return 'ppt';
+                        if(['mp4','mp3','wav','ogg','webm','avi','mov'].includes(ext)) return 'media';
+                        if(['zip','rar','7z','tar'].includes(ext)) return 'archive';
+                        return 'other';
+                    }
+
+                    function mfGetIcon(cat, name){
+                        const icons = {
+                            pdf: '<i class="fas fa-file-pdf text-red-500 text-3xl"></i>',
+                            word: '<i class="fas fa-file-word text-blue-500 text-3xl"></i>',
+                            excel: '<i class="fas fa-file-excel text-green-500 text-3xl"></i>',
+                            image: '<i class="fas fa-image text-pink-500 text-3xl"></i>',
+                            text: '<i class="fas fa-file-alt text-yellow-400 text-3xl"></i>',
+                            ppt: '<i class="fas fa-file-powerpoint text-orange-500 text-3xl"></i>',
+                            media: '<i class="fas fa-photo-video text-purple-400 text-3xl"></i>',
+                            archive: '<i class="fas fa-file-archive text-amber-500 text-3xl"></i>',
+                            other: '<i class="fas fa-file text-slate-400 text-3xl"></i>'
+                        };
+                        return icons[cat] || icons.other;
+                    }
+
+                    function mfGetIconInline(cat){
+                        const icons = {
+                            pdf:'<i class="fas fa-file-pdf text-red-500 text-2xl"></i>',
+                            word:'<i class="fas fa-file-word text-blue-500 text-2xl"></i>',
+                            excel:'<i class="fas fa-file-excel text-green-500 text-2xl"></i>',
+                            image:'<i class="fas fa-image text-pink-500 text-2xl"></i>',
+                            text:'<i class="fas fa-file-alt text-yellow-400 text-2xl"></i>',
+                            ppt:'<i class="fas fa-file-powerpoint text-orange-500 text-2xl"></i>',
+                            media:'<i class="fas fa-photo-video text-purple-400 text-2xl"></i>',
+                            archive:'<i class="fas fa-file-archive text-amber-500 text-2xl"></i>',
+                            other:'<i class="fas fa-file text-slate-400 text-2xl"></i>'
+                        };
+                        return icons[cat] || icons.other;
+                    }
+
+                    function mfFormatSize(bytes){
+                        if(!bytes) return '—';
+                        if(bytes < 1024) return bytes + ' B';
+                        if(bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB';
+                        return (bytes/1024/1024).toFixed(2) + ' MB';
+                    }
+
+                    /* ---- Upload Handler ---- */
+                    window.mfHandleUpload = function(event){
+                        const files = Array.from(event.target.files);
+                        if(!files.length) return;
+                        let loaded = 0;
+                        files.forEach(file => {
+                            const reader = new FileReader();
+                            reader.onload = function(e){
+                                const id = 'mf_' + Date.now() + '_' + Math.random().toString(36).slice(2,7);
+                                const cat = mfGetCategory(file.name);
+                                mfFiles.unshift({
+                                    id, name: file.name, type: file.type, size: file.size,
+                                    date: new Date().toLocaleDateString('id-ID',{day:'2-digit',month:'short',year:'numeric'}),
+                                    category: cat, data: e.target.result, selected: false
+                                });
+                                loaded++;
+                                if(loaded === files.length){
+                                    mfSave();
+                                    mfRender();
+                                    if(typeof Swal !== 'undefined'){
+                                        Swal.fire({icon:'success',title:'Upload Berhasil!',text:loaded+' file berhasil diupload.',timer:1800,showConfirmButton:false});
+                                    }
+                                }
+                            };
+                            reader.readAsDataURL(file);
+                        });
+                        event.target.value = '';
+                    };
+
+                    /* ---- Filter ---- */
+                    window.mfSetFilter = function(f){
+                        mfFilter = f;
+                        document.querySelectorAll('.mf-filter-btn').forEach(b => {
+                            b.classList.remove('bg-orange-600','text-white','border-orange-600');
+                            b.classList.add('bg-slate-800','text-slate-400','border-slate-700');
+                        });
+                        const active = document.getElementById('mf-filter-' + f);
+                        if(active){
+                            active.classList.remove('bg-slate-800','text-slate-400','border-slate-700');
+                            active.classList.add('bg-orange-600','text-white','border-orange-600');
+                        }
+                        mfRender();
+                    };
+
+                    /* ---- Render Grid ---- */
+                    window.mfRender = function(){
+                        const search = (document.getElementById('mf-search')?.value || '').toLowerCase();
+                        let filtered = mfFiles.filter(f => {
+                            const matchFilter = mfFilter === 'all' || f.category === mfFilter;
+                            const matchSearch = f.name.toLowerCase().includes(search);
+                            return matchFilter && matchSearch;
+                        });
+
+                        const grid = document.getElementById('mf-grid');
+                        const empty = document.getElementById('mf-empty-state');
+                        if(!grid) return;
+
+                        // Stats
+                        const total = mfFiles.length;
+                        const totalSize = mfFiles.reduce((a,f) => a + (f.size||0), 0);
+                        const selected = mfFiles.filter(f => f.selected).length;
+                        if(document.getElementById('mf-stat-total')) document.getElementById('mf-stat-total').textContent = total;
+                        if(document.getElementById('mf-stat-size')) document.getElementById('mf-stat-size').textContent = mfFormatSize(totalSize);
+                        if(document.getElementById('mf-stat-selected')) document.getElementById('mf-stat-selected').textContent = selected;
+
+                        if(!filtered.length){
+                            grid.innerHTML = '';
+                            if(empty) empty.classList.remove('hidden');
+                            return;
+                        }
+                        if(empty) empty.classList.add('hidden');
+
+                        grid.innerHTML = filtered.map((f, vi) => {
+                            const realIdx = mfFiles.findIndex(x => x.id === f.id);
+                            const isImg = f.category === 'image';
+                            const thumbHtml = isImg && f.data
+                                ? `<img src="${f.data}" class="w-full h-28 object-cover rounded-lg mb-3" alt="${f.name}">`
+                                : `<div class="flex items-center justify-center h-20 mb-3">${mfGetIcon(f.category, f.name)}</div>`;
+                            return `
+                            <div class="bg-slate-900 border ${f.selected ? 'border-orange-500' : 'border-slate-800'} rounded-xl p-4 flex flex-col gap-2 hover:border-slate-600 transition group relative">
+                                <div class="absolute top-3 right-3 z-10">
+                                    <input type="checkbox" ${f.selected?'checked':''} onchange="mfToggleSelect(${realIdx}, this.checked)" class="w-4 h-4 accent-orange-500 cursor-pointer">
+                                </div>
+                                <div class="cursor-pointer" onclick="mfOpenModal(${realIdx})">${thumbHtml}</div>
+                                <p class="text-xs font-bold text-slate-100 truncate cursor-pointer" onclick="mfOpenModal(${realIdx})" title="${f.name}">${f.name}</p>
+                                <div class="flex items-center justify-between mt-auto pt-2 border-t border-slate-800">
+                                    <span class="text-[10px] text-slate-500">${mfFormatSize(f.size)}</span>
+                                    <span class="text-[10px] text-slate-600">${f.date}</span>
+                                </div>
+                                <div class="flex gap-1.5 mt-1">
+                                    <button onclick="mfOpenModal(${realIdx})" class="flex-1 text-[10px] font-bold py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-orange-300 transition"><i class="fas fa-eye mr-1"></i>Buka</button>
+                                    <button onclick="mfDownloadDirect(${realIdx})" class="text-[10px] font-bold py-1 px-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-emerald-400 transition"><i class="fas fa-download"></i></button>
+                                    <button onclick="mfDeleteDirect(${realIdx})" class="text-[10px] font-bold py-1 px-2 rounded-lg bg-slate-800 hover:bg-red-900/50 text-red-400 transition"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>`;
+                        }).join('');
+                    };
+
+                    /* ---- Toggle Select ---- */
+                    window.mfToggleSelect = function(idx, val){
+                        if(mfFiles[idx]) mfFiles[idx].selected = val;
+                        mfRender();
+                    };
+
+                    /* ---- Delete Selected ---- */
+                    window.mfDeleteSelected = function(){
+                        const sel = mfFiles.filter(f => f.selected);
+                        if(!sel.length){ alert('Tidak ada file yang dipilih!'); return; }
+                        if(!confirm('Hapus ' + sel.length + ' file yang dipilih?')) return;
+                        sel.forEach(f => {
+                            try { localStorage.removeItem(STORE_KEY + '_data_' + f.id); } catch(e){}
+                        });
+                        mfFiles = mfFiles.filter(f => !f.selected);
+                        mfSave(); mfRender();
+                    };
+
+                    /* ---- Delete Direct ---- */
+                    window.mfDeleteDirect = function(idx){
+                        if(!confirm('Hapus file "' + mfFiles[idx]?.name + '"?')) return;
+                        try { localStorage.removeItem(STORE_KEY + '_data_' + mfFiles[idx].id); } catch(e){}
+                        mfFiles.splice(idx, 1);
+                        mfSave(); mfRender();
+                    };
+
+                    /* ---- Download Direct ---- */
+                    window.mfDownloadDirect = function(idx){
+                        const f = mfFiles[idx];
+                        if(!f || !f.data) return;
+                        const a = document.createElement('a');
+                        a.href = f.data; a.download = f.name; a.click();
+                    };
+
+                    /* ---- Open Modal ---- */
+                    window.mfOpenModal = function(idx){
+                        mfCurrentIdx = idx;
+                        mfCurrentTab = 'view';
+                        const f = mfFiles[idx];
+                        if(!f) return;
+                        const modal = document.getElementById('mf-modal');
+                        document.getElementById('mf-modal-icon').innerHTML = mfGetIconInline(f.category);
+                        document.getElementById('mf-modal-name').textContent = f.name;
+                        document.getElementById('mf-modal-meta').textContent = mfFormatSize(f.size) + ' • ' + f.date;
+                        const tabs = document.getElementById('mf-modal-tabs');
+                        const editBar = document.getElementById('mf-edit-bar');
+                        const isEditable = ['text'].includes(f.category);
+                        if(isEditable){ tabs.classList.remove('hidden'); } else { tabs.classList.add('hidden'); }
+                        if(editBar) editBar.classList.add('hidden');
+                        mfRenderModalBody(f, 'view');
+                        modal.classList.remove('hidden');
+                    };
+
+                    window.mfCloseModal = function(){
+                        document.getElementById('mf-modal').classList.add('hidden');
+                        mfCurrentIdx = null;
+                    };
+
+                    window.mfSwitchModalTab = function(tab){
+                        mfCurrentTab = tab;
+                        const f = mfFiles[mfCurrentIdx];
+                        if(!f) return;
+                        document.getElementById('mf-tab-view').className = 'text-xs font-bold px-4 py-1.5 rounded-lg transition ' + (tab==='view'?'bg-orange-600 text-white':'bg-slate-800 text-slate-400 hover:text-white');
+                        document.getElementById('mf-tab-edit').className = 'text-xs font-bold px-4 py-1.5 rounded-lg transition ' + (tab==='edit'?'bg-orange-600 text-white':'bg-slate-800 text-slate-400 hover:text-white');
+                        const editBar = document.getElementById('mf-edit-bar');
+                        if(tab === 'edit'){ editBar.classList.remove('hidden'); } else { editBar.classList.add('hidden'); }
+                        mfRenderModalBody(f, tab);
+                    };
+
+                    function mfRenderModalBody(f, tab){
+                        const body = document.getElementById('mf-modal-body');
+                        if(!f.data){ body.innerHTML = '<p class="text-slate-500 text-sm text-center py-8">Data file tidak tersedia.</p>'; return; }
+
+                        if(tab === 'edit' && f.category === 'text'){
+                            const txt = atob(f.data.split(',')[1] || '');
+                            body.innerHTML = `<textarea id="mf-edit-textarea" class="w-full h-full min-h-[400px] bg-slate-950 border border-slate-700 rounded-lg p-3 text-xs text-slate-100 font-mono outline-none focus:border-orange-500 resize-none">${txt}</textarea>`;
+                            return;
+                        }
+
+                        switch(f.category){
+                            case 'pdf':
+                                body.innerHTML = `<iframe src="${f.data}" class="w-full rounded-lg" style="height:70vh;border:none;background:#1e293b;" title="${f.name}"></iframe>`;
+                                break;
+                            case 'image':
+                                body.innerHTML = `<div class="flex justify-center"><img src="${f.data}" class="max-w-full max-h-[72vh] rounded-xl object-contain" alt="${f.name}"></div>`;
+                                break;
+                            case 'text':
+                                try {
+                                    const txt = decodeURIComponent(escape(atob(f.data.split(',')[1] || '')));
+                                    body.innerHTML = `<pre class="text-xs text-slate-300 bg-slate-950 p-4 rounded-lg overflow-auto max-h-[70vh] whitespace-pre-wrap font-mono leading-relaxed">${txt.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</pre>`;
+                                } catch(e) {
+                                    body.innerHTML = `<p class="text-slate-500 text-xs text-center py-8">Tidak dapat menampilkan isi file ini secara langsung.</p>`;
+                                }
+                                break;
+                            case 'media':
+                                if(f.type.startsWith('video/')){
+                                    body.innerHTML = `<video controls class="w-full rounded-xl max-h-[70vh]" src="${f.data}"></video>`;
+                                } else {
+                                    body.innerHTML = `<audio controls class="w-full mt-4" src="${f.data}"></audio>`;
+                                }
+                                break;
+                            case 'word':
+                            case 'excel':
+                            case 'ppt':
+                                body.innerHTML = `
+                                <div class="text-center py-10">
+                                    <div class="text-5xl mb-4">${f.category==='word'?'📝':f.category==='excel'?'📊':'📊'}</div>
+                                    <p class="text-sm font-bold text-slate-300 mb-2">${f.name}</p>
+                                    <p class="text-xs text-slate-500 mb-6">File ${f.category.toUpperCase()} tidak bisa ditampilkan langsung di browser.<br>Silakan unduh untuk membukanya di aplikasi yang sesuai.</p>
+                                    <button onclick="mfDownloadFile()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-6 py-2.5 rounded-xl transition"><i class="fas fa-download mr-2"></i>Unduh File</button>
+                                </div>`;
+                                break;
+                            default:
+                                body.innerHTML = `
+                                <div class="text-center py-10">
+                                    <div class="text-5xl mb-4">📁</div>
+                                    <p class="text-sm font-bold text-slate-300 mb-2">${f.name}</p>
+                                    <p class="text-xs text-slate-500 mb-6">Tipe file ini tidak dapat ditampilkan langsung.<br>Unduh untuk membukanya.</p>
+                                    <button onclick="mfDownloadFile()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-6 py-2.5 rounded-xl transition"><i class="fas fa-download mr-2"></i>Unduh File</button>
+                                </div>`;
+                        }
+                    }
+
+                    /* ---- Download from Modal ---- */
+                    window.mfDownloadFile = function(){
+                        if(mfCurrentIdx === null) return;
+                        mfDownloadDirect(mfCurrentIdx);
+                    };
+
+                    /* ---- Delete from Modal ---- */
+                    window.mfDeleteFromModal = function(){
+                        if(mfCurrentIdx === null) return;
+                        const name = mfFiles[mfCurrentIdx]?.name;
+                        if(!confirm('Hapus file "' + name + '"?')) return;
+                        try { localStorage.removeItem(STORE_KEY + '_data_' + mfFiles[mfCurrentIdx].id); } catch(e){}
+                        mfFiles.splice(mfCurrentIdx, 1);
+                        mfSave(); mfRender(); mfCloseModal();
+                    };
+
+                    /* ---- Save Edit ---- */
+                    window.mfSaveEdit = function(){
+                        if(mfCurrentIdx === null) return;
+                        const ta = document.getElementById('mf-edit-textarea');
+                        if(!ta) return;
+                        const newText = ta.value;
+                        const blob = new Blob([newText], {type: 'text/plain'});
+                        const reader = new FileReader();
+                        reader.onload = function(e){
+                            mfFiles[mfCurrentIdx].data = e.target.result;
+                            mfFiles[mfCurrentIdx].size = blob.size;
+                            mfSave();
+                            mfRender();
+                            mfSwitchModalTab('view');
+                            if(typeof Swal !== 'undefined') Swal.fire({icon:'success',title:'Tersimpan!',timer:1200,showConfirmButton:false});
+                        };
+                        reader.readAsDataURL(blob);
+                    };
+
+                    window.mfCancelEdit = function(){ mfSwitchModalTab('view'); };
+
+                    /* ---- Init ---- */
+                    mfLoad();
+                })();
+                </script>
+
             </main>
         </div>
     </div>
@@ -4780,6 +5210,7 @@
                         <img id="form-siswa-foto-preview" src="" class="w-full h-full object-cover hidden">
                         <div id="form-siswa-foto-placeholder" class="text-slate-500 text-3xl"><i class="fas fa-camera"></i></div>
                         <div class="absolute inset-0 bg-black/60 hidden group-hover:flex items-center justify-center text-[10px] text-white font-bold text-center p-1">Klik Ubah</div>
+                        <button type="button" id="btn-hapus-foto-siswa" onclick="event.stopPropagation(); hapusFotoSiswaForm();" title="Hapus Foto" class="hidden absolute top-1 right-1 w-5 h-5 rounded-full bg-red-600 hover:bg-red-500 text-white text-[10px] flex items-center justify-center shadow-lg z-10"><i class="fas fa-times"></i></button>
                     </div>
                     <input type="file" id="form-siswa-foto-input" accept="image/*" class="hidden" onchange="compressAndPreviewImage(event)">
                     <input type="hidden" id="form-siswa-foto-base64">
@@ -5779,9 +6210,14 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase tracking-wider">Tanggal <span class="text-red-400">*</span></label>
+                        <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase tracking-wider">Tanggal Mulai <span class="text-red-400">*</span></label>
                         <input type="date" id="form-agenda-tanggal" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100 outline-none focus:border-amber-500 transition">
                     </div>
+                </div>
+                <div>
+                    <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase tracking-wider">Tanggal Selesai (Opsional — untuk acara beberapa hari)</label>
+                    <input type="date" id="form-agenda-tanggal-selesai" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-xs text-slate-100 outline-none focus:border-amber-500 transition">
+                    <p class="text-[9px] text-slate-500 mt-1">Kosongkan jika acara hanya berlangsung 1 hari. Contoh: Ujian 07 Juni s/d 14 Juni 2026.</p>
                 </div>
                 <div>
                     <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase tracking-wider">Waktu (Opsional)</label>
@@ -6445,6 +6881,10 @@
                 const ov = document.getElementById('sidebar-overlay');
                 if(ov) ov.classList.add('hidden');
             }
+
+            // === NAVIGASI TOMBOL BACK: catat tab aktif ke history ===
+            // Agar tombol Back di HP kembali ke menu/dashboard dulu, bukan langsung keluar app.
+            if (typeof _navTrackTab === 'function') _navTrackTab(tabId);
             // Update judul header
             const tabLabels = {
                 'dashboard':'Dashboard Utama','siswa':'Data & Profil Siswa','jadwal':'Jadwal & Piket Kelas',
@@ -7141,8 +7581,18 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                     document.getElementById('form-siswa-foto-preview').src = dataUrl;
                     document.getElementById('form-siswa-foto-preview').classList.remove('hidden');
                     document.getElementById('form-siswa-foto-placeholder').classList.add('hidden');
+                    document.getElementById('btn-hapus-foto-siswa').classList.remove('hidden');
                 }
             };
+        }
+
+        function hapusFotoSiswaForm() {
+            document.getElementById('form-siswa-foto-base64').value = '';
+            document.getElementById('form-siswa-foto-input').value = '';
+            document.getElementById('form-siswa-foto-preview').src = '';
+            document.getElementById('form-siswa-foto-preview').classList.add('hidden');
+            document.getElementById('form-siswa-foto-placeholder').classList.remove('hidden');
+            document.getElementById('btn-hapus-foto-siswa').classList.add('hidden');
         }
 
         function renderSiswaTable() {
@@ -7173,14 +7623,14 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
         
         function openModalSiswa(id='') { 
             document.getElementById('modal-siswa').classList.remove('hidden'); 
-            const pre = document.getElementById('form-siswa-foto-preview'), plc = document.getElementById('form-siswa-foto-placeholder');
+            const pre = document.getElementById('form-siswa-foto-preview'), plc = document.getElementById('form-siswa-foto-placeholder'), btnHapusFoto = document.getElementById('btn-hapus-foto-siswa');
             // Render custom fields
             renderCustomFieldsInModal(id ? db.siswa.find(x=>x.id===id) : null);
             if(id){ 
                 const s=db.siswa.find(x=>x.id===id); document.getElementById('form-siswa-id').value=s.id; document.getElementById('form-siswa-absen').value=s.absen; document.getElementById('form-siswa-nis').value=s.nis; document.getElementById('form-siswa-nisn').value=s.nisn||''; document.getElementById('form-siswa-nama').value=s.nama; document.getElementById('form-siswa-jk').value=s.jk||'L'; document.getElementById('form-siswa-ortu').value=s.ortu; document.getElementById('form-siswa-wa').value=s.wa; document.getElementById('form-siswa-alamat').value=s.alamat; document.getElementById('form-siswa-foto-base64').value=s.foto;
-                if(s.foto){ pre.src=s.foto; pre.classList.remove('hidden'); plc.classList.add('hidden'); } else { pre.classList.add('hidden'); plc.classList.remove('hidden'); }
+                if(s.foto){ pre.src=s.foto; pre.classList.remove('hidden'); plc.classList.add('hidden'); btnHapusFoto.classList.remove('hidden'); } else { pre.classList.add('hidden'); plc.classList.remove('hidden'); btnHapusFoto.classList.add('hidden'); }
             } else { 
-                document.getElementById('form-siswa-id').value=''; document.getElementById('form-siswa-absen').value=db.siswa.length+1; document.getElementById('form-siswa-nis').value=''; document.getElementById('form-siswa-nisn').value=''; document.getElementById('form-siswa-nama').value=''; document.getElementById('form-siswa-jk').value='L'; document.getElementById('form-siswa-ortu').value=''; document.getElementById('form-siswa-wa').value=''; document.getElementById('form-siswa-alamat').value=''; document.getElementById('form-siswa-foto-base64').value=''; pre.classList.add('hidden'); plc.classList.remove('hidden');
+                document.getElementById('form-siswa-id').value=''; document.getElementById('form-siswa-absen').value=db.siswa.length+1; document.getElementById('form-siswa-nis').value=''; document.getElementById('form-siswa-nisn').value=''; document.getElementById('form-siswa-nama').value=''; document.getElementById('form-siswa-jk').value='L'; document.getElementById('form-siswa-ortu').value=''; document.getElementById('form-siswa-wa').value=''; document.getElementById('form-siswa-alamat').value=''; document.getElementById('form-siswa-foto-base64').value=''; pre.classList.add('hidden'); plc.classList.remove('hidden'); btnHapusFoto.classList.add('hidden');
             } 
         }
         function closeModalSiswa() { document.getElementById('modal-siswa').classList.add('hidden'); }
@@ -16255,12 +16705,37 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             return Math.round((ev - today) / (1000 * 60 * 60 * 24));
         }
 
+        // Selisih hari ke tanggal SELESAI agenda (kalau tidak ada rentang, sama dengan tanggal mulai)
+        function getAgendaEndDiff(a) {
+            const akhir = a.tanggalSelesai || a.tanggal;
+            return getAgendaDaysDiff(akhir);
+        }
+
+        // Cek apakah hari ini berada di DALAM rentang tanggal agenda (mulai..selesai)
+        function isAgendaBerlangsung(a) {
+            if (!a.tanggalSelesai) return false;
+            const diffMulai = getAgendaDaysDiff(a.tanggal);
+            const diffAkhir = getAgendaDaysDiff(a.tanggalSelesai);
+            return diffMulai <= 0 && diffAkhir >= 0;
+        }
+
         function getCountdownBadge(diff) {
             if (diff < 0)  return `<span class="countdown-badge text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-700 text-slate-400">Sudah lewat</span>`;
             if (diff === 0) return `<span class="countdown-badge text-[9px] font-black px-2 py-0.5 rounded-full bg-red-600 text-white animate-pulse">HARI INI!</span>`;
             if (diff === 1) return `<span class="countdown-badge text-[9px] font-black px-2 py-0.5 rounded-full bg-orange-600 text-white">Besok!</span>`;
             if (diff <= 3) return `<span class="countdown-badge text-[9px] font-bold px-2 py-0.5 rounded-full bg-amber-700 text-white">H-${diff}</span>`;
             return `<span class="countdown-badge text-[9px] font-bold px-2 py-0.5 rounded-full bg-slate-700 text-slate-300">H-${diff}</span>`;
+        }
+
+        // Badge yang paham rentang tanggal: kalau hari ini di dalam rentang mulai..selesai, tampil "Berlangsung"
+        function getCountdownBadgeRange(a) {
+            if (isAgendaBerlangsung(a)) {
+                const sisaHari = getAgendaDaysDiff(a.tanggalSelesai);
+                const label = sisaHari === 0 ? 'Hari Terakhir!' : `Berlangsung (sisa ${sisaHari} hari)`;
+                return `<span class="countdown-badge text-[9px] font-black px-2 py-0.5 rounded-full bg-red-600 text-white animate-pulse">${label}</span>`;
+            }
+            // Belum mulai atau sudah selesai sepenuhnya: pakai badge berdasarkan tanggal mulai
+            return getCountdownBadge(getAgendaDaysDiff(a.tanggal));
         }
 
         function setAgendaFilter(cat) {
@@ -16285,6 +16760,7 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             let statUpcoming = 0, statToday = 0, statDone = 0;
             items.forEach(a => {
                 if (a.selesai) { statDone++; return; }
+                if (isAgendaBerlangsung(a)) { statToday++; return; }
                 const diff = getAgendaDaysDiff(a.tanggal);
                 if (diff === 0) statToday++;
                 else if (diff > 0) statUpcoming++;
@@ -16312,10 +16788,16 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             list.innerHTML = items.map(a => {
                 const kat = AGENDA_KATEGORI[a.kategori] || AGENDA_KATEGORI.lainnya;
                 const diff = getAgendaDaysDiff(a.tanggal);
-                const countdown = getCountdownBadge(diff);
-                const dateFormatted = new Date(a.tanggal + 'T00:00:00').toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-                const isHariIni = diff === 0;
-                const isDekat = !a.selesai && diff >= 0 && diff <= 3;
+                const berlangsung = isAgendaBerlangsung(a);
+                const countdown = getCountdownBadgeRange(a);
+                const dateStartFormatted = new Date(a.tanggal + 'T00:00:00').toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+                let dateFormatted = dateStartFormatted;
+                if (a.tanggalSelesai) {
+                    const dateEndFormatted = new Date(a.tanggalSelesai + 'T00:00:00').toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+                    dateFormatted = `${dateStartFormatted} &ndash; ${dateEndFormatted}`;
+                }
+                const isHariIni = diff === 0 || berlangsung;
+                const isDekat = !a.selesai && (berlangsung || (diff >= 0 && diff <= 3));
                 return `<div class="agenda-card ${kat.cls} ${a.selesai ? 'agenda-selesai' : ''} ${isDekat && !a.selesai ? 'reminder-urgent' : ''} bg-slate-900 rounded-xl p-4 border border-slate-800 shadow-sm">
                     <div class="flex items-start justify-between gap-3">
                         <div class="flex items-start gap-3 flex-1 min-w-0">
@@ -16349,6 +16831,7 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
         function openModalAgenda(id = '') {
             document.getElementById('modal-agenda').classList.remove('hidden');
             document.getElementById('form-agenda-tanggal').value = getTodayLocalStr();
+            document.getElementById('form-agenda-tanggal-selesai').value = '';
             document.getElementById('form-agenda-waktu').value = '';
             document.getElementById('form-agenda-lokasi').value = '';
             document.getElementById('form-agenda-ket').value = '';
@@ -16360,6 +16843,7 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
                 document.getElementById('form-agenda-nama').value = a.nama;
                 document.getElementById('form-agenda-kategori').value = a.kategori;
                 document.getElementById('form-agenda-tanggal').value = a.tanggal;
+                document.getElementById('form-agenda-tanggal-selesai').value = a.tanggalSelesai || '';
                 document.getElementById('form-agenda-waktu').value = a.waktu || '';
                 document.getElementById('form-agenda-lokasi').value = a.lokasi || '';
                 document.getElementById('form-agenda-ket').value = a.ket || '';
@@ -16378,13 +16862,16 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
         function saveFormAgenda() {
             const nama = document.getElementById('form-agenda-nama').value.trim();
             const tanggal = document.getElementById('form-agenda-tanggal').value;
+            const tanggalSelesai = document.getElementById('form-agenda-tanggal-selesai').value || '';
             if (!nama) return Swal.fire('Gagal', 'Nama acara tidak boleh kosong.', 'warning');
-            if (!tanggal) return Swal.fire('Gagal', 'Tanggal acara harus diisi.', 'warning');
+            if (!tanggal) return Swal.fire('Gagal', 'Tanggal mulai acara harus diisi.', 'warning');
+            if (tanggalSelesai && tanggalSelesai < tanggal) return Swal.fire('Gagal', 'Tanggal selesai tidak boleh lebih awal dari tanggal mulai.', 'warning');
             const id = document.getElementById('form-agenda-id').value;
             const data = {
                 nama,
                 kategori: document.getElementById('form-agenda-kategori').value,
                 tanggal,
+                tanggalSelesai: (tanggalSelesai && tanggalSelesai !== tanggal) ? tanggalSelesai : '',
                 waktu: document.getElementById('form-agenda-waktu').value || '',
                 lokasi: document.getElementById('form-agenda-lokasi').value.trim() || '',
                 ket: document.getElementById('form-agenda-ket').value.trim() || '',
@@ -16432,9 +16919,10 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             if (!container) return;
 
             const now = new Date(); now.setHours(0,0,0,0);
-            // Ambil agenda yang belum selesai, dalam rentang H-3 s/d H+0
+            // Ambil agenda yang belum selesai: dalam rentang H-3 s/d H+0 dari tanggal mulai, ATAU sedang berlangsung (rentang tanggal)
             const reminders = (db.agenda || []).filter(a => {
                 if (a.selesai) return false;
+                if (isAgendaBerlangsung(a)) return true;
                 const diff = getAgendaDaysDiff(a.tanggal);
                 return diff >= 0 && diff <= 3;
             }).sort((a, b) => new Date(a.tanggal) - new Date(b.tanggal));
@@ -16474,9 +16962,14 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             container.innerHTML = reminders.map(a => {
                 const kat = AGENDA_KATEGORI[a.kategori] || AGENDA_KATEGORI.lainnya;
                 const diff = getAgendaDaysDiff(a.tanggal);
-                const dateShort = new Date(a.tanggal+'T00:00:00').toLocaleDateString('id-ID',{day:'numeric',month:'short',weekday:'short'});
-                const urgentClass = diff === 0 ? 'border-red-800/60 bg-red-900/10' : diff === 1 ? 'border-orange-800/40 bg-orange-900/10' : 'border-amber-800/30 bg-amber-900/10';
-                const countdownBadge = getCountdownBadge(diff);
+                const berlangsung = isAgendaBerlangsung(a);
+                let dateShort = new Date(a.tanggal+'T00:00:00').toLocaleDateString('id-ID',{day:'numeric',month:'short',weekday:'short'});
+                if (a.tanggalSelesai) {
+                    const dateEndShort = new Date(a.tanggalSelesai+'T00:00:00').toLocaleDateString('id-ID',{day:'numeric',month:'short'});
+                    dateShort = `${dateShort} &ndash; ${dateEndShort}`;
+                }
+                const urgentClass = (diff === 0 || berlangsung) ? 'border-red-800/60 bg-red-900/10' : diff === 1 ? 'border-orange-800/40 bg-orange-900/10' : 'border-amber-800/30 bg-amber-900/10';
+                const countdownBadge = getCountdownBadgeRange(a);
                 return `<div class="rounded-xl p-3 border ${urgentClass} flex items-center gap-3">
                     <div class="w-9 h-9 rounded-xl flex items-center justify-center bg-slate-800/80 shrink-0 ${kat.color}"><i class="${kat.icon} text-sm"></i></div>
                     <div class="flex-1 min-w-0">
@@ -22291,24 +22784,86 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
         // ============================================================
 
         // ============================================================
-        // BACK BUTTON / EXIT WARNING
-        // Menampilkan peringatan saat tombol Back ditekan agar
-        // pengguna tidak keluar aplikasi secara tidak sengaja.
+        // BACK BUTTON: NAVIGASI MENU + TUTUP MODAL + KONFIRMASI KELUAR
+        // Urutan saat tombol Back (HP/browser) ditekan:
+        //   1) Jika ada modal terbuka -> tutup modal itu saja
+        //   2) Jika sedang berada di tab selain Dashboard -> kembali ke Dashboard
+        //   3) Jika sudah di Dashboard & tidak ada modal -> tampilkan konfirmasi keluar
         // ============================================================
         (function() {
-            // Tambahkan state palsu ke history agar tombol back
-            // tidak langsung keluar, melainkan memicu popstate.
-            history.pushState({ page: 'app' }, '', window.location.href);
+            const NAV_BASE_STATE = { nav: 'base' };
+            const NAV_TAB_STATE  = { nav: 'tab' };
+
+            // Beri 1 state dasar di history. Selama kita berada di tab non-dashboard,
+            // akan ada 1 state TAMBAHAN di atas state dasar ini (lihat _navTrackTab).
+            history.pushState(NAV_BASE_STATE, '', window.location.href);
 
             let isExiting = false; // flag agar Swal tidak muncul dua kali
+            let hasTabState = false; // apakah saat ini ada state "tab" di atas state dasar
+
+            // Dipanggil dari switchTab() setiap kali pindah tab.
+            window._navTrackTab = function(tabId) {
+                if (isExiting) return;
+                if (tabId === 'dashboard') {
+                    // Di Dashboard: pastikan tidak ada state tab tambahan menumpuk.
+                    hasTabState = false;
+                } else if (!hasTabState) {
+                    // Pindah dari Dashboard ke tab lain: tambahkan 1 state baru.
+                    history.pushState(NAV_TAB_STATE, '', window.location.href);
+                    hasTabState = true;
+                }
+                // Jika pindah antar-tab non-dashboard (tab lain ke tab lain), tidak perlu
+                // menambah state baru lagi — cukup 1 langkah Back untuk balik ke Dashboard.
+            };
+
+            function findOpenModal() {
+                // Modal pada app ini selalu berupa <div id="modal-..."> dengan class "fixed"
+                // dan disembunyikan via class "hidden". Cari yang sedang TIDAK hidden.
+                const modals = document.querySelectorAll('div[id^="modal-"].fixed');
+                for (const m of modals) {
+                    if (!m.classList.contains('hidden')) return m;
+                }
+                return null;
+            }
+
+            function closeModalGeneric(modalEl) {
+                // Coba panggil fungsi close resmi-nya dulu (agar state internal modul ikut bersih),
+                // baru fallback ke sembunyikan paksa jika tidak ada fungsi close yang cocok.
+                const closeFnMap = {
+                    'modal-agenda': 'closeModalAgenda',
+                    'modal-tambah-acara': 'closeModalTambahAcara',
+                    'modal-detail-acara': 'closeModalDetailAcara'
+                };
+                const fnName = closeFnMap[modalEl.id];
+                if (fnName && typeof window[fnName] === 'function') {
+                    window[fnName]();
+                } else {
+                    modalEl.classList.add('hidden');
+                }
+            }
 
             window.addEventListener('popstate', function(e) {
                 if (isExiting) return;
 
-                // Kembalikan state palsu supaya app tetap di history
-                history.pushState({ page: 'app' }, '', window.location.href);
+                const openModal = findOpenModal();
+                if (openModal) {
+                    // Langkah 1: tutup modal yang terbuka, jangan ubah tab/keluar.
+                    closeModalGeneric(openModal);
+                    history.pushState(e.state || NAV_BASE_STATE, '', window.location.href);
+                    return;
+                }
 
-                // Tampilkan dialog konfirmasi keluar
+                if (hasTabState) {
+                    // Langkah 2: kembali ke Dashboard dulu, jangan langsung keluar.
+                    hasTabState = false;
+                    switchTab('dashboard');
+                    history.pushState(NAV_BASE_STATE, '', window.location.href);
+                    return;
+                }
+
+                // Langkah 3: sudah di Dashboard tanpa modal -> tampilkan konfirmasi keluar.
+                history.pushState(NAV_BASE_STATE, '', window.location.href);
+
                 Swal.fire({
                     icon: 'question',
                     title: 'Keluar Aplikasi?',
@@ -22328,7 +22883,7 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
                 }).then(function(result) {
                     if (result.isConfirmed) {
                         isExiting = true;
-                        // Hapus state palsu lalu navigasi mundur (keluar)
+                        // Hapus state dasar lalu navigasi mundur (keluar)
                         history.go(-2);
                     }
                     // Jika Batal → tidak melakukan apa-apa, app tetap terbuka
@@ -22336,7 +22891,7 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             });
         })();
         // ============================================================
-        // END BACK BUTTON WARNING
+        // END BACK BUTTON NAVIGATION
         // ============================================================
 
     </script>
@@ -24931,3 +25486,115 @@ Contoh:
     </script>
 </body>
 </html>
+<!-- ============================================================
+     MODAL EDIT NILAI LEGGER — fixed overlay (di luar semua container)
+     ============================================================ -->
+<div id="lgr-edit-modal-v2" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,0.75)">
+    <div style="background:#0f172a;border:1.5px solid #a16207;border-radius:16px;box-shadow:0 25px 50px rgba(0,0,0,0.7);width:100%;max-width:520px;padding:20px;display:flex;flex-direction:column;gap:16px;max-height:90vh;overflow-y:auto">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+            <h3 style="font-size:14px;font-weight:900;color:#fde047;margin:0"><i class="fas fa-edit" style="margin-right:8px"></i>Edit Nilai Siswa</h3>
+            <button onclick="lgr2Close()" style="color:#94a3b8;font-size:18px;background:none;border:none;cursor:pointer;padding:4px"><i class="fas fa-times"></i></button>
+        </div>
+        <div>
+            <label style="font-size:10px;color:#94a3b8;font-weight:700;display:block;margin-bottom:4px;text-transform:uppercase">Nama Siswa</label>
+            <input type="text" id="lgr2-nama" style="width:100%;background:#020617;border:1px solid #334155;border-radius:8px;padding:8px 10px;font-size:12px;color:#f1f5f9;outline:none;font-weight:600;box-sizing:border-box">
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px" id="lgr2-fields"></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding-top:8px;border-top:1px solid #1e293b">
+            <div style="font-size:12px;color:#94a3b8">Total: <span id="lgr2-total" style="color:#facc15;font-weight:900;font-size:16px">0</span></div>
+            <div style="display:flex;gap:8px">
+                <button onclick="lgr2Close()" style="background:#1e293b;color:#cbd5e1;font-weight:700;font-size:12px;padding:8px 16px;border-radius:8px;border:none;cursor:pointer">Batal</button>
+                <button onclick="lgr2Save()" style="background:#a16207;color:#fff;font-weight:700;font-size:12px;padding:8px 20px;border-radius:8px;border:none;cursor:pointer"><i class="fas fa-save" style="margin-right:4px"></i>Simpan</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ============================================================
+// PATCH LEGGER EDIT — menggunakan modal v2 yang ada di luar container
+// ============================================================
+var _lgr2EditIdx = null;
+
+function lgr2Open(no) {
+    var r = lgrData.find(function(x){ return x.no === no; });
+    if (!r) return;
+    _lgr2EditIdx = no;
+    document.getElementById('lgr2-nama').value = r.nama;
+    var html = '';
+    LGR_COLS.forEach(function(c) {
+        var fullName = LGR_COL_FULL[c] || c;
+        html += '<div>' +
+            '<label style="font-size:9px;color:#64748b;font-weight:700;text-transform:uppercase;display:block;margin-bottom:2px">' + fullName + '</label>' +
+            '<input type="number" id="lgr2-ef-' + c + '" value="' + (parseInt(r[c])||0) + '" min="0" max="100"' +
+            ' oninput="lgr2UpdateTotal()"' +
+            ' style="width:100%;background:#020617;border:1px solid #334155;border-radius:6px;padding:6px 4px;font-size:12px;color:#f1f5f9;outline:none;text-align:center;box-sizing:border-box">' +
+            '</div>';
+    });
+    document.getElementById('lgr2-fields').innerHTML = html;
+    lgr2UpdateTotal();
+    var modal = document.getElementById('lgr-edit-modal-v2');
+    modal.style.display = 'flex';
+}
+
+function lgr2UpdateTotal() {
+    var total = 0;
+    LGR_COLS.forEach(function(c) {
+        var el = document.getElementById('lgr2-ef-' + c);
+        if (el) total += parseInt(el.value) || 0;
+    });
+    var el = document.getElementById('lgr2-total');
+    if (el) el.textContent = total;
+}
+
+function lgr2Save() {
+    var r = lgrData.find(function(x){ return x.no === _lgr2EditIdx; });
+    if (!r) return;
+    var namaEl = document.getElementById('lgr2-nama');
+    if (namaEl && namaEl.value.trim()) r.nama = namaEl.value.trim();
+    LGR_COLS.forEach(function(c) {
+        var el = document.getElementById('lgr2-ef-' + c);
+        if (el) r[c] = Math.min(100, Math.max(0, parseInt(el.value)||0));
+    });
+    r.total = LGR_COLS.reduce(function(a,c){ return a + (parseInt(r[c])||0); }, 0);
+    lgr2Close();
+    leggerShowData();
+    Swal.fire({toast:true, position:'top-end', icon:'success', title:'Nilai berhasil disimpan', showConfirmButton:false, timer:1500, background:'#1e293b', color:'#f8fafc'});
+}
+
+function lgr2Close() {
+    var modal = document.getElementById('lgr-edit-modal-v2');
+    modal.style.display = 'none';
+    _lgr2EditIdx = null;
+}
+
+// Override tombol edit di tabel agar pakai modal v2
+var _origLeggerRenderTable = leggerRenderTable;
+leggerRenderTable = function() {
+    var d = leggerGetFiltered();
+    var allVals = lgrData.flatMap(function(r){ return LGR_COLS.map(function(c){ return parseInt(r[c])||0; }); }).filter(function(v){ return v > 0; });
+    var minV = allVals.length ? Math.min.apply(null, allVals) : 0;
+    var maxV = allVals.length ? Math.max.apply(null, allVals) : 100;
+    var html = '';
+    d.forEach(function(r, i) {
+        html += '<tr class="' + (i%2===1?'bg-slate-900/40':'') + '">' +
+            '<td class="p-2 text-center text-slate-500 font-mono text-[11px]">' + r.no + '</td>' +
+            '<td class="p-2 font-semibold text-slate-200 text-[11px]">' + r.nama + '</td>';
+        LGR_COLS.forEach(function(c) {
+            var v = parseInt(r[c])||0;
+            var colorAttr = leggerColorVal(v, minV, maxV);
+            html += '<td class="p-2 text-center text-[11px]" ' + colorAttr + '>' + (v||'-') + '</td>';
+        });
+        html += '<td class="p-2 text-center font-black text-yellow-400 text-[12px]">' + r.total + '</td>' +
+            '<td class="p-2 text-center whitespace-nowrap">' +
+            '<button onclick="lgr2Open(' + r.no + ')" class="text-yellow-400 hover:text-yellow-200 text-[11px] px-1.5 py-0.5 rounded bg-yellow-900/30 hover:bg-yellow-800/50 transition" title="Edit Nilai"><i class="fas fa-pen"></i></button>' +
+            '<button onclick="leggerDeleteRow(' + r.no + ')" class="text-red-500 hover:text-red-300 text-[11px] px-1.5 py-0.5 rounded bg-red-900/20 hover:bg-red-800/40 transition ml-1" title="Hapus"><i class="fas fa-times"></i></button>' +
+            '</td></tr>';
+    });
+    var el = document.getElementById('lgr-tbody');
+    if (el) el.innerHTML = html || '<tr><td colspan="17" class="p-4 text-center text-slate-600 italic text-xs">Tidak ada data</td></tr>';
+};
+// ============================================================
+// END PATCH LEGGER EDIT
+// ============================================================
+</script>
