@@ -531,7 +531,7 @@
                     </div>
 
                     <!-- Statistik Tabungan -->
-                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
                         <div class="bg-slate-900 p-4 rounded-xl border border-pink-900/30 text-center">
                             <p class="text-[10px] font-bold text-pink-400 uppercase tracking-wider">Total Tabungan</p>
                             <h4 id="tab-stat-total" class="text-lg font-black text-pink-300 mt-1">Rp 0</h4>
@@ -547,6 +547,10 @@
                         <div class="bg-slate-900 p-4 rounded-xl border border-slate-800 text-center">
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Siswa Menabung</p>
                             <h4 id="tab-stat-penabung" class="text-2xl font-black text-slate-100 mt-1">0</h4>
+                        </div>
+                        <div class="bg-slate-900 p-4 rounded-xl border border-amber-900/30 text-center">
+                            <p class="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Tabungan Harian</p>
+                            <h4 id="tab-stat-harian" class="text-lg font-black text-amber-300 mt-1">Rp 0</h4>
                         </div>
                     </div>
 
@@ -620,9 +624,20 @@
                                 <!-- Filter Mode -->
                                 <select id="rekap-tab-mode" onchange="onRekTabModeChange()" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-100 outline-none focus:border-pink-500">
                                     <option value="semua">Semua Waktu</option>
+                                    <option value="harian">Per Hari</option>
+                                    <option value="minggu">Per Minggu</option>
                                     <option value="bulan">Per Bulan</option>
                                     <option value="semester">Per Semester</option>
+                                    <option value="total">Total per Siswa</option>
                                 </select>
+                                <!-- Filter Harian -->
+                                <div id="ctrl-tab-harian" class="hidden">
+                                    <input type="date" id="rekap-tab-harian-val" onchange="renderTabunganRekap()" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-100 outline-none focus:border-pink-500">
+                                </div>
+                                <!-- Filter Minggu -->
+                                <div id="ctrl-tab-minggu" class="hidden">
+                                    <input type="week" id="rekap-tab-minggu-val" onchange="renderTabunganRekap()" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-100 outline-none focus:border-pink-500">
+                                </div>
                                 <!-- Filter Bulan -->
                                 <div id="ctrl-tab-bulan" class="hidden">
                                     <input type="month" id="rekap-tab-bulan-val" onchange="renderTabunganRekap()" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-slate-100 outline-none focus:border-pink-500">
@@ -640,6 +655,7 @@
                                     <option value="">Semua Siswa</option>
                                 </select>
                                 <button onclick="cetakTabunganPDF()" class="bg-red-700 hover:bg-red-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition"><i class="fas fa-file-pdf mr-1"></i> Cetak PDF</button>
+                                <button onclick="cetakDaftarHarianTabungan()" class="bg-indigo-700 hover:bg-indigo-600 text-white font-bold text-xs px-3 py-1.5 rounded-lg transition"><i class="fas fa-table mr-1"></i> Cetak Daftar Harian</button>
                             </div>
                         </div>
                         <!-- Tabel Rekap -->
@@ -648,13 +664,13 @@
                                 <thead class="bg-slate-950 text-slate-400">
                                     <tr>
                                         <th class="p-3 text-left w-10">No</th>
-                                        <th class="p-3 text-left">Tanggal</th>
+                                        <th class="p-3 text-left" id="th-rekap-tanggal">Tanggal</th>
                                         <th class="p-3 text-left">Nama Siswa</th>
-                                        <th class="p-3 text-center w-16">Jenis</th>
-                                        <th class="p-3 text-right">Jumlah</th>
-                                        <th class="p-3 text-left">Keterangan</th>
-                                        <th class="p-3 text-right">Saldo Saat Itu</th>
-                                        <th class="p-3 text-center w-16">Aksi</th>
+                                        <th class="p-3 text-center w-16" id="th-rekap-jenis">Jenis</th>
+                                        <th class="p-3 text-right" id="th-rekap-jumlah">Jumlah</th>
+                                        <th class="p-3 text-left" id="th-rekap-ket">Keterangan</th>
+                                        <th class="p-3 text-right" id="th-rekap-saldo">Saldo Saat Itu</th>
+                                        <th class="p-3 text-center w-16" id="th-rekap-aksi">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="rekap-tabungan-tbody" class="divide-y divide-slate-800/50"></tbody>
@@ -6603,6 +6619,18 @@
             const d = new Date();
             return dateToLocalStr(d);
         }
+        // Konversi nilai <input type="week"> (format "YYYY-Www") jadi rentang tanggal [Senin, Minggu]
+        function getRentangMingguISO(weekStr) {
+            const [tahun, wk] = weekStr.split('-W').map(Number);
+            // ISO week 1 = minggu yang berisi 4 Januari
+            const jan4 = new Date(tahun, 0, 4);
+            const jan4Day = jan4.getDay() || 7; // Senin=1..Minggu=7
+            const senin = new Date(jan4);
+            senin.setDate(jan4.getDate() - jan4Day + 1 + (wk - 1) * 7);
+            const minggu = new Date(senin);
+            minggu.setDate(senin.getDate() + 6);
+            return [dateToLocalStr(senin), dateToLocalStr(minggu)];
+        }
         function dateToLocalStr(d) {
             // Pakai waktu lokal, BUKAN UTC (toISOString = UTC, bisa beda hari di WIB)
             const y = d.getFullYear();
@@ -7566,26 +7594,74 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
         function compressAndPreviewImage(e) {
             const file = e.target.files[0];
             if (!file) return;
+            const inputEl = e.target;
             const reader = new FileReader();
             reader.readAsDataURL(file);
             reader.onload = event => {
                 const img = new Image();
                 img.src = event.target.result;
-                img.onload = () => {
+                img.onload = async () => {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 150, MAX_HEIGHT = 200; 
+                    // Resolusi dinaikkan (150x200 -> 220x300) agar descriptor wajah lebih akurat,
+                    // ukuran tetap kecil untuk penyimpanan lokal.
+                    const MAX_WIDTH = 220, MAX_HEIGHT = 300; 
                     let width = img.width, height = img.height;
                     if (width > height) { if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; } } 
                     else { if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; } }
                     canvas.width = width; canvas.height = height;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.6); 
-                    document.getElementById('form-siswa-foto-base64').value = dataUrl;
-                    document.getElementById('form-siswa-foto-preview').src = dataUrl;
-                    document.getElementById('form-siswa-foto-preview').classList.remove('hidden');
-                    document.getElementById('form-siswa-foto-placeholder').classList.add('hidden');
-                    document.getElementById('btn-hapus-foto-siswa').classList.remove('hidden');
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.7); 
+
+                    const applyFoto = () => {
+                        document.getElementById('form-siswa-foto-base64').value = dataUrl;
+                        document.getElementById('form-siswa-foto-preview').src = dataUrl;
+                        document.getElementById('form-siswa-foto-preview').classList.remove('hidden');
+                        document.getElementById('form-siswa-foto-placeholder').classList.add('hidden');
+                        document.getElementById('btn-hapus-foto-siswa').classList.remove('hidden');
+                    };
+
+                    // Validasi: pastikan foto punya 1 wajah yang jelas terdeteksi,
+                    // supaya tidak jadi penyebab absen wajah salah kenali siswa lain.
+                    let validasiOk = true;
+                    let pesanValidasi = '';
+                    try {
+                        Swal.fire({ title: 'Memeriksa wajah pada foto...', allowOutsideClick: false, showConfirmButton: false, didOpen: () => Swal.showLoading() });
+                        await loadFaceAPI();
+                        await loadFaceApiModels();
+                        const dets = await faceapi.detectAllFaces(canvas, new faceapi.TinyFaceDetectorOptions())
+                            .withFaceLandmarks().withFaceDescriptors();
+                        Swal.close();
+                        if (dets.length === 0) {
+                            validasiOk = false;
+                            pesanValidasi = 'Wajah tidak terdeteksi di foto ini. Gunakan foto close-up wajah yang jelas & pencahayaan cukup agar absen wajah akurat.';
+                        } else if (dets.length > 1) {
+                            validasiOk = false;
+                            pesanValidasi = 'Terdeteksi lebih dari 1 wajah di foto ini. Gunakan foto yang hanya berisi 1 wajah (siswa tersebut saja).';
+                        }
+                    } catch (err) {
+                        Swal.close();
+                        console.error(err);
+                        // Kalau model gagal dimuat (mis. tidak ada internet), jangan blokir upload foto biasa
+                        pesanValidasi = '';
+                    }
+
+                    if (!validasiOk) {
+                        const r = await Swal.fire({
+                            icon: 'warning', title: 'Foto Kurang Jelas',
+                            text: pesanValidasi,
+                            showCancelButton: true,
+                            confirmButtonText: 'Tetap Gunakan Foto Ini',
+                            cancelButtonText: 'Pilih Foto Lain'
+                        });
+                        if (r.isConfirmed) {
+                            applyFoto();
+                        } else {
+                            inputEl.value = '';
+                        }
+                    } else {
+                        applyFoto();
+                    }
                 }
             };
         }
@@ -11184,6 +11260,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             descriptors: [], // [{id, nama, foto, descriptor}]
             detectInterval: null,
             lastMarked: {}, // sId -> timestamp, cegah double-mark berturut-turut
+            matchStreak: {}, // sId -> jumlah frame berturut-turut cocok (anti salah-deteksi 1 frame)
             modelsReady: false
         };
 
@@ -11197,6 +11274,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             document.getElementById('face-loading-overlay').classList.remove('hidden');
             document.getElementById('face-status-box').textContent = 'Memuat model pengenalan wajah (sekali saja, butuh koneksi internet)...';
             _faceState.lastMarked = {};
+            _faceState.matchStreak = {};
             _faceState._lastUnknownSpeak = 0;
             updateFaceCounters();
             initFaceVoice(); // Siapkan suara sejak awal
@@ -11274,14 +11352,25 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                     return;
                 }
 
-                const matcher = new faceapi.FaceMatcher(_faceState.descriptors.map(d => new faceapi.LabeledFaceDescriptors(d.id, [d.descriptor])), 0.5);
+                // Threshold diperketat (0.5 -> 0.45) agar wajah yang mirip tidak mudah tertukar
+                const matcher = new faceapi.FaceMatcher(_faceState.descriptors.map(d => new faceapi.LabeledFaceDescriptors(d.id, [d.descriptor])), 0.45);
+                const matchedIdsThisFrame = new Set();
 
                 resized.forEach((d, idx) => {
                     const best = matcher.findBestMatch(detections[idx].descriptor);
                     if (best.label !== 'unknown') {
                         const siswa = _faceState.descriptors.find(x => x.id === best.label);
-                        drawFaceBox(ctx, d.detection.box, '#10b981', siswa ? siswa.nama : 'Dikenali');
-                        if (siswa) handleFaceMatched(siswa);
+                        if (siswa) {
+                            matchedIdsThisFrame.add(siswa.id);
+                            // Wajib cocok 2x berturut-turut sebelum dianggap valid & dicatat Hadir
+                            // (anti salah-deteksi sesaat akibat 1 frame buruk)
+                            _faceState.matchStreak[siswa.id] = (_faceState.matchStreak[siswa.id] || 0) + 1;
+                            const terverifikasi = _faceState.matchStreak[siswa.id] >= 2;
+                            drawFaceBox(ctx, d.detection.box, terverifikasi ? '#10b981' : '#38bdf8', terverifikasi ? siswa.nama : `${siswa.nama}?`);
+                            if (terverifikasi) handleFaceMatched(siswa);
+                        } else {
+                            drawFaceBox(ctx, d.detection.box, '#10b981', 'Dikenali');
+                        }
                     } else {
                         drawFaceBox(ctx, d.detection.box, '#f59e0b', 'Tidak dikenali');
                         // 🔊 Suara: Wajah TIDAK dikenali (cooldown 5 detik agar tidak berulang terus)
@@ -11292,6 +11381,11 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                             setTimeout(() => speakFace('Wajah tidak dikenali. Pastikan pencahayaan cukup.', 0.95, 0.9), 250);
                         }
                     }
+                });
+
+                // Reset streak utk siswa yang tidak terdeteksi lagi di frame ini
+                Object.keys(_faceState.matchStreak).forEach(id => {
+                    if (!matchedIdsThisFrame.has(id)) delete _faceState.matchStreak[id];
                 });
             }, 700);
         }
@@ -17322,6 +17416,17 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             document.getElementById('tab-stat-setor').textContent = rupiah(totalSetor);
             document.getElementById('tab-stat-tarik').textContent = rupiah(totalTarik);
             document.getElementById('tab-stat-penabung').textContent = penabungCount;
+
+            // Total tabungan harian (setor - tarik untuk tanggal hari ini)
+            const todayStr = getTodayLocalStr();
+            let setorHariIni = 0, tarikHariIni = 0;
+            (db.tabungan || []).forEach(t => {
+                if (t.tanggal !== todayStr) return;
+                if (t.jenis === 'setor') setorHariIni += parseInt(t.nominal) || 0;
+                else tarikHariIni += parseInt(t.nominal) || 0;
+            });
+            const statHarianEl = document.getElementById('tab-stat-harian');
+            if (statHarianEl) statHarianEl.textContent = rupiah(setorHariIni - tarikHariIni);
         }
 
         // Render tabel rekapitulasi transaksi
@@ -17331,7 +17436,18 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
 
             // Filter tanggal
             const filterTgl = (tglStr) => {
-                if (mode === 'semua') return true;
+                if (mode === 'semua' || mode === 'total') return true;
+                if (mode === 'harian') {
+                    const hv = document.getElementById('rekap-tab-harian-val')?.value;
+                    if (!hv) return true;
+                    return tglStr === hv;
+                }
+                if (mode === 'minggu') {
+                    const wv = document.getElementById('rekap-tab-minggu-val')?.value;
+                    if (!wv) return true;
+                    const [mulai, akhir] = getRentangMingguISO(wv);
+                    return tglStr >= mulai && tglStr <= akhir;
+                }
                 if (mode === 'bulan') {
                     const bv = document.getElementById('rekap-tab-bulan-val')?.value;
                     if (!bv) return true;
@@ -17378,6 +17494,44 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             const tbody = document.getElementById('rekap-tabungan-tbody');
             if (!tbody) return;
 
+            if (mode === 'total') {
+                // Rekap total per siswa (agregat, bukan per transaksi)
+                const agg = {};
+                trx.forEach(t => {
+                    if (!agg[t.siswaId]) agg[t.siswaId] = { setor: 0, tarik: 0 };
+                    if (t.jenis === 'setor') agg[t.siswaId].setor += parseInt(t.nominal) || 0;
+                    else agg[t.siswaId].tarik += parseInt(t.nominal) || 0;
+                });
+                const daftarAgg = Object.keys(agg)
+                    .map(sid => {
+                        const siswa = db.siswa.find(s => s.id === sid);
+                        return { nama: siswa ? siswa.nama : '?', setor: agg[sid].setor, tarik: agg[sid].tarik, saldo: agg[sid].setor - agg[sid].tarik };
+                    })
+                    .sort((a, b) => a.nama.localeCompare(b.nama));
+
+                if (!daftarAgg.length) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="text-center py-8 text-slate-500 italic text-xs">Belum ada data tabungan${filterSiswaId ? ' untuk siswa ini' : ''}.</td></tr>`;
+                } else {
+                    tbody.innerHTML = daftarAgg.map((r, i) => `<tr class="hover:bg-slate-800/30 transition">
+                        <td class="p-2 text-center text-slate-500">${i + 1}</td>
+                        <td class="p-2 font-bold text-slate-100">${r.nama}</td>
+                        <td class="p-2 text-right font-black font-mono text-emerald-400">${rupiah(r.setor)}</td>
+                        <td class="p-2 text-right font-black font-mono text-red-400">${rupiah(r.tarik)}</td>
+                        <td class="p-2 text-right font-mono text-sm ${r.saldo >= 0 ? 'text-sky-300' : 'text-red-400'}">${rupiah(r.saldo)}</td>
+                    </tr>`).join('');
+                }
+
+                let totSetorAgg = 0, totTarikAgg = 0;
+                daftarAgg.forEach(r => { totSetorAgg += r.setor; totTarikAgg += r.tarik; });
+                const summaryAgg = document.getElementById('rekap-tab-summary');
+                if (summaryAgg) summaryAgg.innerHTML = `
+                    <div class="flex items-center gap-2"><span class="text-pink-400">Siswa Menabung:</span> <span class="font-black text-pink-300">${daftarAgg.length}</span></div>
+                    <div class="flex items-center gap-2"><span class="text-emerald-400">Total Setor:</span> <span class="font-black text-emerald-300">${rupiah(totSetorAgg)}</span></div>
+                    <div class="flex items-center gap-2"><span class="text-red-400">Total Tarik:</span> <span class="font-black text-red-300">${rupiah(totTarikAgg)}</span></div>
+                    <div class="flex items-center gap-2"><span class="text-sky-400">Saldo Bersih:</span> <span class="font-black text-sky-300">${rupiah(totSetorAgg - totTarikAgg)}</span></div>`;
+                return;
+            }
+
             if (!trxDenganSaldo.length) {
                 tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-slate-500 italic text-xs">Belum ada transaksi${filterSiswaId ? ' untuk siswa ini' : ''}${mode !== 'semua' ? ' pada periode ini' : ''}.</td></tr>`;
             } else {
@@ -17406,13 +17560,15 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
 
             // Summary
             let totSetor = 0, totTarik = 0;
+            const siswaMenabungSet = new Set();
             trx.forEach(t => {
-                if (t.jenis === 'setor') totSetor += parseInt(t.nominal) || 0;
+                if (t.jenis === 'setor') { totSetor += parseInt(t.nominal) || 0; siswaMenabungSet.add(t.siswaId); }
                 else totTarik += parseInt(t.nominal) || 0;
             });
             const summary = document.getElementById('rekap-tab-summary');
             if (summary) summary.innerHTML = `
                 <div class="flex items-center gap-2"><span class="text-slate-400">Total Transaksi:</span> <span class="font-black text-slate-100">${trx.length}</span></div>
+                <div class="flex items-center gap-2"><span class="text-pink-400">Siswa Menabung:</span> <span class="font-black text-pink-300">${siswaMenabungSet.size}</span></div>
                 <div class="flex items-center gap-2"><span class="text-emerald-400">Total Setor:</span> <span class="font-black text-emerald-300">${rupiah(totSetor)}</span></div>
                 <div class="flex items-center gap-2"><span class="text-red-400">Total Tarik:</span> <span class="font-black text-red-300">${rupiah(totTarik)}</span></div>
                 <div class="flex items-center gap-2"><span class="text-sky-400">Selisih (Saldo):</span> <span class="font-black text-sky-300">${rupiah(totSetor - totTarik)}</span></div>`;
@@ -17420,12 +17576,33 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
 
         function onRekTabModeChange() {
             const mode = document.getElementById('rekap-tab-mode')?.value || 'semua';
+            document.getElementById('ctrl-tab-harian').classList.toggle('hidden', mode !== 'harian');
+            document.getElementById('ctrl-tab-minggu').classList.toggle('hidden', mode !== 'minggu');
             document.getElementById('ctrl-tab-bulan').classList.toggle('hidden', mode !== 'bulan');
             document.getElementById('ctrl-tab-semester').classList.toggle('hidden', mode !== 'semester');
+            // Set default tanggal hari ini untuk mode harian
+            if (mode === 'harian' && !document.getElementById('rekap-tab-harian-val').value) {
+                document.getElementById('rekap-tab-harian-val').value = getTodayLocalStr();
+            }
+            // Set default minggu ini untuk mode minggu
+            if (mode === 'minggu' && !document.getElementById('rekap-tab-minggu-val').value) {
+                const d = new Date();
+                const onejan = new Date(d.getFullYear(), 0, 1);
+                const wk = Math.ceil((((d - onejan) / 86400000) + onejan.getDay() + 1) / 7);
+                document.getElementById('rekap-tab-minggu-val').value = `${d.getFullYear()}-W${String(wk).padStart(2, '0')}`;
+            }
             // Set default tahun untuk semester
             if (mode === 'semester' && !document.getElementById('rekap-tab-sem-tahun').value) {
                 document.getElementById('rekap-tab-sem-tahun').value = new Date().getFullYear();
             }
+            // Label & kolom header berubah untuk mode Total per Siswa
+            const isTotal = mode === 'total';
+            document.getElementById('th-rekap-tanggal').classList.toggle('hidden', isTotal);
+            document.getElementById('th-rekap-jenis').classList.toggle('hidden', isTotal);
+            document.getElementById('th-rekap-jumlah').textContent = isTotal ? 'Total Setor' : 'Jumlah';
+            document.getElementById('th-rekap-ket').textContent = isTotal ? 'Total Tarik' : 'Keterangan';
+            document.getElementById('th-rekap-saldo').textContent = isTotal ? 'Saldo Akhir' : 'Saldo Saat Itu';
+            document.getElementById('th-rekap-aksi').classList.toggle('hidden', isTotal);
             renderTabunganRekap();
         }
 
@@ -17600,7 +17777,16 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
                 const filterSiswaId = document.getElementById('rekap-tab-siswa')?.value || '';
                 const siswa = filterSiswaId ? db.siswa.find(s => s.id === filterSiswaId) : null;
                 const modeLabel = mode === 'semua' ? 'Semua Waktu'
+                    : mode === 'harian' ? 'Tanggal ' + new Date((document.getElementById('rekap-tab-harian-val')?.value || getTodayLocalStr()) + 'T00:00:00').toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })
+                    : mode === 'minggu' ? (() => {
+                        const wv = document.getElementById('rekap-tab-minggu-val')?.value;
+                        if (!wv) return 'Minggu Ini';
+                        const [mulai, akhir] = getRentangMingguISO(wv);
+                        const fmt = (s) => new Date(s + 'T00:00:00').toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
+                        return 'Minggu ' + fmt(mulai) + ' – ' + fmt(akhir);
+                    })()
                     : mode === 'bulan' ? 'Bulan ' + (document.getElementById('rekap-tab-bulan-val')?.value || '-')
+                    : mode === 'total' ? 'Total Keseluruhan'
                     : 'Semester ' + (document.getElementById('rekap-tab-sem-val')?.value || '?') + ' TA ' + (document.getElementById('rekap-tab-sem-tahun')?.value || '?');
 
                 const namaSekolah = db.profil?.sekolah || 'Madrasah';
@@ -17609,7 +17795,14 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
 
                 // Kumpulkan data tabel
                 const filterTgl = (tglStr) => {
-                    if (mode === 'semua') return true;
+                    if (mode === 'semua' || mode === 'total') return true;
+                    if (mode === 'harian') { const hv = document.getElementById('rekap-tab-harian-val')?.value; return hv ? tglStr === hv : true; }
+                    if (mode === 'minggu') {
+                        const wv = document.getElementById('rekap-tab-minggu-val')?.value;
+                        if (!wv) return true;
+                        const [mulai, akhir] = getRentangMingguISO(wv);
+                        return tglStr >= mulai && tglStr <= akhir;
+                    }
                     if (mode === 'bulan') { const bv = document.getElementById('rekap-tab-bulan-val')?.value; return bv ? tglStr.slice(0,7) === bv : true; }
                     if (mode === 'semester') {
                         const sem = parseInt(document.getElementById('rekap-tab-sem-val')?.value || 1);
@@ -17635,9 +17828,9 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
                     else saldoMap[t.siswaId] -= parseInt(t.nominal) || 0;
                     const tglFmt = new Date(t.tanggal + 'T00:00:00').toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' });
                     return `<tr style="border-bottom:1px solid #e5e7eb;">
-                        <td style="padding:5px 8px;text-align:center;font-size:10px;">${i+1}</td>
-                        <td style="padding:5px 8px;font-size:10px;font-family:monospace;">${tglFmt}</td>
-                        <td style="padding:5px 8px;font-size:10px;font-weight:700;">${s ? s.nama : '?'}</td>
+                        <td style="padding:5px 8px;text-align:center;font-size:10px;color:#111827;">${i+1}</td>
+                        <td style="padding:5px 8px;font-size:10px;font-family:monospace;color:#111827;">${tglFmt}</td>
+                        <td style="padding:5px 8px;font-size:10px;font-weight:700;color:#111827;">${s ? s.nama : '?'}</td>
                         <td style="padding:5px 8px;text-align:center;font-size:10px;font-weight:800;color:${t.jenis==='setor'?'#10b981':'#ef4444'}">${t.jenis==='setor'?'SETOR':'TARIK'}</td>
                         <td style="padding:5px 8px;text-align:right;font-size:10px;font-weight:700;font-family:monospace;color:${t.jenis==='setor'?'#10b981':'#ef4444'}">Rp ${(parseInt(t.nominal)||0).toLocaleString('id-ID')}</td>
                         <td style="padding:5px 8px;font-size:10px;color:#6b7280;">${t.ket||'-'}</td>
@@ -17645,8 +17838,30 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
                     </tr>`;
                 }).join('');
 
+                // Agregat per siswa (dipakai khusus mode Total per Siswa)
+                const aggPdf = {};
+                trx.forEach(t => {
+                    if (!aggPdf[t.siswaId]) aggPdf[t.siswaId] = { setor: 0, tarik: 0 };
+                    if (t.jenis === 'setor') aggPdf[t.siswaId].setor += parseInt(t.nominal) || 0;
+                    else aggPdf[t.siswaId].tarik += parseInt(t.nominal) || 0;
+                });
+                const totalRows = Object.keys(aggPdf)
+                    .map(sid => {
+                        const s = db.siswa.find(x => x.id === sid);
+                        return { nama: s ? s.nama : '?', setor: aggPdf[sid].setor, tarik: aggPdf[sid].tarik, saldo: aggPdf[sid].setor - aggPdf[sid].tarik };
+                    })
+                    .sort((a, b) => a.nama.localeCompare(b.nama))
+                    .map((r, i) => `<tr style="border-bottom:1px solid #e5e7eb;">
+                        <td style="padding:5px 8px;text-align:center;font-size:10px;color:#111827;">${i+1}</td>
+                        <td style="padding:5px 8px;font-size:10px;font-weight:700;color:#111827;">${r.nama}</td>
+                        <td style="padding:5px 8px;text-align:right;font-size:10px;font-weight:700;font-family:monospace;color:#10b981;">Rp ${r.setor.toLocaleString('id-ID')}</td>
+                        <td style="padding:5px 8px;text-align:right;font-size:10px;font-weight:700;font-family:monospace;color:#ef4444;">Rp ${r.tarik.toLocaleString('id-ID')}</td>
+                        <td style="padding:5px 8px;text-align:right;font-size:10px;font-family:monospace;font-weight:700;color:${r.saldo>=0?'#0284c7':'#ef4444'}">Rp ${r.saldo.toLocaleString('id-ID')}</td>
+                    </tr>`).join('');
+
                 let totSetor = 0, totTarik = 0;
-                trx.forEach(t => { if(t.jenis==='setor') totSetor += parseInt(t.nominal)||0; else totTarik += parseInt(t.nominal)||0; });
+                const siswaMenabungSetPdf = new Set();
+                trx.forEach(t => { if(t.jenis==='setor') { totSetor += parseInt(t.nominal)||0; siswaMenabungSetPdf.add(t.siswaId); } else totTarik += parseInt(t.nominal)||0; });
 
                 const ttdElektronik = await buatBlokTTDElektronik(
                     'Laporan Rekapitulasi Tabungan Siswa',
@@ -17656,12 +17871,12 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
                 );
 
                 const html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
-                <style>* { font-family: 'Arial', sans-serif; box-sizing:border-box; } body { color:#111; background:#fff; } table { width:100%; border-collapse:collapse; } th { background:#166534; color:#fff; padding:7px 8px; font-size:10px; text-align:left; }</style>
+                <style>* { font-family: 'Arial', sans-serif; box-sizing:border-box; color:#111827; letter-spacing:normal !important; word-spacing:normal !important; } body { color:#111827; background:#fff; } table { width:100%; border-collapse:collapse; } th { background:#166534; color:#fff; padding:7px 8px; font-size:10px; text-align:left; }</style>
                 </head><body>
-                <div id="pdf-tab-content" style="padding:20px;max-width:900px;margin:0 auto;">
+                <div id="pdf-tab-content" style="padding:20px;max-width:700px;margin:0 auto;">
                     <div style="text-align:center;border-bottom:3px double #166534;padding-bottom:12px;margin-bottom:16px;">
                         <div style="display:inline-block;background:#166534;color:#fff;font-size:9px;font-weight:800;padding:3px 12px;border-radius:20px;margin-bottom:6px;">LAPORAN TABUNGAN SISWA</div>
-                        <h1 style="font-size:18px;font-weight:900;margin:4px 0;">${namaSekolah}</h1>
+                        <h1 style="font-size:18px;font-weight:900;margin:4px 0;color:#111827;">${namaSekolah}</h1>
                         <p style="font-size:11px;color:#6b7280;margin:2px 0;">Wali Kelas: ${waliKelas} &nbsp;|&nbsp; Periode: ${modeLabel}${siswa ? ' &nbsp;|&nbsp; Siswa: ' + siswa.nama : ''}</p>
                         <p style="font-size:10px;color:#9ca3af;margin-top:4px;">Dicetak: ${now}</p>
                     </div>
@@ -17670,18 +17885,19 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
                         <tbody>${trxRows || '<tr><td colspan="7" style="text-align:center;padding:20px;color:#9ca3af;font-style:italic;">Tidak ada data transaksi pada periode ini.</td></tr>'}</tbody>
                     </table>
                     <div style="margin-top:16px;padding-top:12px;border-top:2px solid #e5e7eb;display:flex;gap:24px;font-size:11px;">
-                        <span>Total Transaksi: <b>${trx.length}</b></span>
+                        <span style="color:#111827;">Total Transaksi: <b>${trx.length}</b></span>
+                        <span style="color:#db2777;">Siswa Menabung: <b>${siswaMenabungSetPdf.size}</b></span>
                         <span style="color:#10b981;">Total Setor: <b>Rp ${totSetor.toLocaleString('id-ID')}</b></span>
                         <span style="color:#ef4444;">Total Tarik: <b>Rp ${totTarik.toLocaleString('id-ID')}</b></span>
                         <span style="color:#0284c7;">Saldo Bersih: <b>Rp ${(totSetor-totTarik).toLocaleString('id-ID')}</b></span>
                     </div>
-                    <div style="margin-top:20px;display:flex;justify-content:flex-end;">
+                    <div style="margin-top:20px;display:flex;justify-content:flex-end;page-break-inside:avoid;">
                         <div style="text-align:center;min-width:200px;">
                             <p style="font-size:10px;color:#374151;margin:0 0 2px 0;">${now}</p>
                             <p style="font-size:10px;color:#374151;margin:0 0 6px 0;">Wali Kelas,</p>
                             ${ttdElektronik}
                             <div style="border-bottom:1px solid #374151;width:80%;margin:4px auto 4px;"></div>
-                            <p style="font-size:11px;font-weight:800;margin:4px 0 0 0;">${waliKelas}</p>
+                            <p style="font-size:11px;font-weight:800;margin:4px 0 0 0;color:#111827;">${waliKelas}</p>
                         </div>
                     </div>
                     <p style="text-align:center;font-size:9px;color:#9ca3af;margin-top:12px;border-top:1px dashed #d1d5db;padding-top:8px;">Dibuat oleh e-Rapot Madrasah v6.1</p>
@@ -17691,9 +17907,228 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
                 container.style.cssText = 'position:fixed;left:-9999px;top:-9999px;';
                 container.innerHTML = html;
                 document.body.appendChild(container);
-                const opt = { margin: 0.4, filename: `Rekap_Tabungan_${modeLabel.replace(/\s/g,'_')}.pdf`, image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2 }, jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' } };
+                const opt = { margin: 0.4, filename: `Rekap_Tabungan_${modeLabel.replace(/\s/g,'_')}.pdf`, image: { type: 'jpeg', quality: 1 }, html2canvas: { scale: 2, useCORS: true, foreignObjectRendering: true }, jsPDF: { unit: 'in', format: 'a4', orientation: 'portrait' }, pagebreak: { mode: ['css', 'legacy'], avoid: ['tr', 'div'] } };
                 html2pdf().set(opt).from(container.querySelector('#pdf-tab-content')).save().then(() => { document.body.removeChild(container); });
             });
+        }
+
+        // ============================================
+        // DAFTAR PEMASUKAN HARIAN TABUNGAN — Cetak Grid Bulanan (F4 Landscape)
+        // Form kosong untuk diisi tangan oleh bendahara/wali kelas setiap hari
+        // ============================================
+
+        function cetakDaftarHarianTabungan() {
+            const now = new Date();
+            const defBulan = String(now.getMonth() + 1).padStart(2, '0');
+            const defTahun = now.getFullYear();
+
+            Swal.fire({
+                title: 'Cetak Daftar Harian Tabungan',
+                html: `
+                    <p style="font-size:12px;color:#94a3b8;margin-bottom:10px;text-align:left;">Pilih bulan &amp; tahun untuk daftar pemasukan harian (form kosong, diisi tangan).</p>
+                    <input type="month" id="swal-dht-bulan" class="swal2-input" value="${defTahun}-${defBulan}">
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Cetak',
+                cancelButtonText: 'Batal',
+                preConfirm: () => {
+                    const v = document.getElementById('swal-dht-bulan').value;
+                    if (!v) { Swal.showValidationMessage('Pilih bulan terlebih dahulu'); return false; }
+                    return v;
+                }
+            }).then(res => {
+                if (!res.isConfirmed) return;
+                const [tahun, bulan] = res.value.split('-').map(Number);
+                renderDaftarHarianTabungan(tahun, bulan);
+            });
+        }
+
+        function renderDaftarHarianTabungan(tahun, bulan) {
+            const BULAN_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+            const namaBulan = BULAN_ID[bulan - 1];
+            const jmlHari = new Date(tahun, bulan, 0).getDate();
+
+            const namaSekolah = db.profil?.sekolah || 'Madrasah';
+            const kelas = db.raporSettings?.kelas || '-';
+            const waliKelas = db.profil?.wali || '-';
+
+            const siswaList = db.siswa || [];
+            const jmlBarisKosong = 3; // baris cadangan kosong di bawah daftar siswa
+            const totalBaris = siswaList.length + jmlBarisKosong;
+
+            // ---- Hitung lebar kolom (mm) agar selalu pas di F4 landscape, berapapun jumlah hari ----
+            const LEBAR_CETAK = 314; // mm, F4 landscape (330mm) dikurangi margin 8mm kiri+kanan
+            const W_NO = 8, W_NAMA = 34, W_TOTAL = 13; // mm
+            const sisaUntukTanggal = LEBAR_CETAK - W_NO - W_NAMA - (W_TOTAL * 2);
+            const wTanggalRaw = sisaUntukTanggal / jmlHari;
+            const W_TGL = Math.floor(wTanggalRaw * 100) / 100; // mm, dibulatkan ke bawah 2 desimal
+            // sisa pembulatan dibuang ke kolom Nama supaya total tidak pernah melebihi lebar cetak
+            const sisaPembulatan = sisaUntukTanggal - (W_TGL * jmlHari);
+            const W_NAMA_FINAL = W_NAMA + sisaPembulatan;
+
+            let colgroup = `<col style="width:${W_NO}mm"><col style="width:${W_NAMA_FINAL}mm">`;
+            for (let d = 1; d <= jmlHari; d++) colgroup += `<col style="width:${W_TGL}mm">`;
+            colgroup += `<col style="width:${W_TOTAL}mm"><col style="width:${W_TOTAL}mm">`;
+
+            // ---- Header tabel ----
+            let headerTanggal = '';
+            for (let d = 1; d <= jmlHari; d++) {
+                headerTanggal += `<th class="dht-th-tgl">${d}</th>`;
+            }
+            const thead = `
+                <thead>
+                    <tr>
+                        <th rowspan="2" class="dht-th-no">No</th>
+                        <th rowspan="2" class="dht-th-nama">NAMA SISWA</th>
+                        <th colspan="${jmlHari}" class="dht-th-tanggal-label">TANGGAL</th>
+                        <th rowspan="2" class="dht-th-vert">Jumlah<br>Bln Ini</th>
+                        <th rowspan="2" class="dht-th-vert">Jumlah<br>Berjalan</th>
+                    </tr>
+                    <tr>${headerTanggal}</tr>
+                </thead>`;
+
+            // ---- Ambil data transaksi tabungan sungguhan (setor - tarik) per siswa & tanggal ----
+            const tabunganList = db.tabungan || [];
+            const bulanStr = String(bulan).padStart(2, '0');
+            const tglAkhirBulan = `${tahun}-${bulanStr}-${String(jmlHari).padStart(2, '0')}`;
+
+            // Nominal bersih (setor - tarik) seorang siswa pada satu tanggal tertentu
+            function nominalTanggal(siswaId, tgl) {
+                return tabunganList
+                    .filter(t => t.siswaId === siswaId && t.tanggal === tgl)
+                    .reduce((sum, t) => sum + (t.jenis === 'setor' ? (parseInt(t.nominal) || 0) : -(parseInt(t.nominal) || 0)), 0);
+            }
+            // Saldo kumulatif seorang siswa sampai akhir bulan yang dicetak (termasuk transaksi bulan-bulan sebelumnya)
+            function saldoSampaiAkhirBulan(siswaId) {
+                return tabunganList
+                    .filter(t => t.siswaId === siswaId && t.tanggal <= tglAkhirBulan)
+                    .reduce((sum, t) => sum + (t.jenis === 'setor' ? (parseInt(t.nominal) || 0) : -(parseInt(t.nominal) || 0)), 0);
+            }
+            // Tampilkan nominal dalam satuan ribuan (mengikuti footnote form), kosong jika 0
+            function fmtRibuan(nominalRupiah) {
+                if (!nominalRupiah) return '';
+                return Math.round(nominalRupiah / 1000).toLocaleString('id-ID');
+            }
+
+            // ---- Baris data siswa ----
+            let bodyRows = '';
+            const totalPerTanggal = {}; // total (rupiah) seluruh siswa per tanggal, untuk baris footer
+            for (let d = 1; d <= jmlHari; d++) totalPerTanggal[d] = 0;
+
+            siswaList.forEach((s, i) => {
+                let cells = '';
+                let totalBulanIni = 0;
+                for (let d = 1; d <= jmlHari; d++) {
+                    const tgl = `${tahun}-${bulanStr}-${String(d).padStart(2, '0')}`;
+                    const nom = nominalTanggal(s.id, tgl);
+                    totalBulanIni += nom;
+                    totalPerTanggal[d] += nom;
+                    cells += `<td class="dht-td">${fmtRibuan(nom)}</td>`;
+                }
+                const saldoBerjalan = saldoSampaiAkhirBulan(s.id);
+                bodyRows += `<tr><td class="dht-td-no">${i + 1}</td><td class="dht-td-nama">${s.nama}</td>${cells}<td class="dht-td">${fmtRibuan(totalBulanIni)}</td><td class="dht-td">${fmtRibuan(saldoBerjalan)}</td></tr>`;
+            });
+            for (let k = 0; k < jmlBarisKosong; k++) {
+                let cells = '';
+                for (let d = 1; d <= jmlHari; d++) cells += `<td class="dht-td"></td>`;
+                bodyRows += `<tr><td class="dht-td-no"></td><td class="dht-td-nama"></td>${cells}<td class="dht-td"></td><td class="dht-td"></td></tr>`;
+            }
+
+            // ---- Baris footer total & paraf ----
+            const buatBarisFooter = (label, cellPerTanggal, extraKolom1, extraKolom2) => {
+                let cells = '';
+                for (let d = 1; d <= jmlHari; d++) cells += `<td class="dht-td">${cellPerTanggal ? (cellPerTanggal[d] || '') : ''}</td>`;
+                return `<tr><td colspan="2" class="dht-td-footer-label">${label}</td>${cells}<td class="dht-td">${extraKolom1 || ''}</td><td class="dht-td">${extraKolom2 || ''}</td></tr>`;
+            };
+
+            // Baris "Jumlah Hari Ini": total setoran seluruh siswa pada tanggal tsb
+            const hariIniCells = {};
+            // Baris "Jumlah Berjalan": akumulasi berjalan dari total harian di atas
+            const berjalanCells = {};
+            // Cari tanggal terakhir yang benar-benar ada transaksi, supaya saldo berjalan
+            // tidak "diteruskan" mengisi tanggal-tanggal setelahnya yang belum terjadi
+            let lastActiveDay = 0;
+            for (let d = 1; d <= jmlHari; d++) {
+                if (totalPerTanggal[d] !== 0) lastActiveDay = d;
+            }
+            let running = 0;
+            for (let d = 1; d <= jmlHari; d++) {
+                hariIniCells[d] = fmtRibuan(totalPerTanggal[d]);
+                running += totalPerTanggal[d];
+                berjalanCells[d] = (d <= lastActiveDay) ? fmtRibuan(running) : '';
+            }
+            const grandTotalBulan = Object.values(totalPerTanggal).reduce((a, b) => a + b, 0);
+            const grandSaldoBerjalan = siswaList.reduce((sum, s) => sum + saldoSampaiAkhirBulan(s.id), 0);
+
+            const footerRows = buatBarisFooter('Jumlah Hari Ini', hariIniCells, fmtRibuan(grandTotalBulan), fmtRibuan(grandSaldoBerjalan))
+                + buatBarisFooter('Jumlah Berjalan', berjalanCells, '', fmtRibuan(grandSaldoBerjalan))
+                + buatBarisFooter('Paraf'); // tetap kosong, diisi tanda tangan manual
+
+            const html = `
+                <div id="dht-content">
+                    <div class="dht-header">
+                        <h1>DAFTAR PEMASUKAN HARIAN KEUANGAN TABUNGAN</h1>
+                        <h2>KELAS ${kelas}</h2>
+                        <h3>BULAN : ${namaBulan.toUpperCase()} &nbsp;&nbsp;&nbsp; TAHUN : ${tahun}</h3>
+                    </div>
+                    <table class="dht-table">
+                        <colgroup>${colgroup}</colgroup>
+                        ${thead}
+                        <tbody>${bodyRows}${footerRows}</tbody>
+                    </table>
+                    <p class="dht-footnote">*Nominal ditulis dalam satuan ribuan rupiah. Contoh: 5 = Rp5.000, 100 = Rp100.000, 25 = Rp25.000.</p>
+                    <div class="dht-ttd">
+                        <div>Wali Kelas : ${waliKelas}</div>
+                    </div>
+                </div>`;
+
+            const printWin = window.open('', '_blank', 'width=1100,height=750');
+            if (!printWin) return Swal.fire('Peringatan', 'Popup diblokir browser. Izinkan popup untuk mencetak.', 'warning');
+            printWin.document.write(`<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Daftar Harian Tabungan - ${kelas} - ${namaBulan} ${tahun}</title>
+<style>
+  @page { size: 215mm 330mm landscape; margin: 8mm; }
+  * { box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color: #111; background: #fff; margin: 0; padding: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #dht-content { width: 314mm; }
+  .dht-header { text-align: center; margin-bottom: 3mm; }
+  .dht-header h1 { font-size: 13px; font-weight: 800; margin: 0; }
+  .dht-header h2 { font-size: 12px; font-weight: 700; margin: 1mm 0 0; }
+  .dht-header h3 { font-size: 10px; font-weight: 600; margin: 1mm 0 0; }
+  table.dht-table { width: 314mm; border-collapse: collapse; table-layout: fixed; }
+  .dht-th-no, .dht-th-nama, .dht-th-tanggal-label, .dht-th-vert, .dht-th-tgl { border: 0.5px solid #333; background: #e8e8e8; font-size: 7px; font-weight: 700; padding: 1px; text-align: center; vertical-align: middle; overflow: hidden; }
+  .dht-th-nama { text-align: left; padding-left: 2px; }
+  .dht-th-vert { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 6.5px; line-height: 1.1; padding: 2px 0; }
+  .dht-th-tgl { font-size: 6.5px; height: 5mm; }
+  .dht-td, .dht-td-no, .dht-td-nama, .dht-td-footer-label { border: 0.5px solid #333; font-size: 6.5px; height: 5mm; padding: 0 1px; overflow: hidden; }
+  .dht-td-no { text-align: center; }
+  .dht-td-nama { text-align: left; padding-left: 2px; white-space: nowrap; }
+  .dht-td-footer-label { font-weight: 700; text-align: left; padding-left: 2px; }
+  .dht-footnote { font-size: 8px; color: #444; margin-top: 2mm; }
+  .dht-ttd { margin-top: 4mm; text-align: right; font-size: 10px; }
+  tr { page-break-inside: avoid; break-inside: avoid; }
+  .no-print { position: sticky; top: 0; z-index: 999; background: #1e1b4b; padding: 10px 16px; text-align: center; }
+  .no-print button { background: #4338ca; color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-size: 14px; font-weight: bold; font-family: sans-serif; cursor: pointer; margin: 0 5px; }
+  .no-print button:last-child { background: #475569; }
+  @media print { .no-print { display: none !important; } }
+</style>
+</head>
+<body>
+<div class="no-print">
+  <button onclick="window.print()">🖨️ Cetak / Simpan PDF (F4 Landscape)</button>
+  <button onclick="window.close()">✕ Tutup</button>
+</div>
+${html}
+<script>
+document.fonts.ready.then(function() { setTimeout(function() { window.print(); }, 500); }).catch(function(){ setTimeout(function(){ window.print(); }, 800); });
+<\/script>
+</body>
+</html>`);
+            printWin.document.close();
+            printWin.focus();
         }
 
         // ============================================
@@ -25496,8 +25931,7 @@ Contoh:
     // END LEGGER KELAS MODULE v2
     // =============================================
     </script>
-</body>
-</html>
+
 <!-- ============================================================
      MODAL EDIT NILAI LEGGER — fixed overlay (di luar semua container)
      ============================================================ -->
@@ -25610,3 +26044,5 @@ leggerRenderTable = function() {
 // END PATCH LEGGER EDIT
 // ============================================================
 </script>
+</body>
+</html>
