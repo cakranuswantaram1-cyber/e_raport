@@ -1085,9 +1085,28 @@
                         </div>
                         <div class="flex gap-2">
                             <button onclick="generatePiketOtomatis()" class="bg-purple-600/20 text-purple-400 border border-purple-600/50 hover:bg-purple-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg"><i class="fas fa-magic mr-1"></i> Acak Piket Otomatis</button>
+                            <input type="file" id="input-impor-kalender-jadwal" accept=".docx" class="hidden" onchange="mulaiImporKalenderJadwal(this)">
+                            <button onclick="pilihFileImporKalenderJadwal()" class="bg-sky-700 hover:bg-sky-600 text-white font-bold text-xs px-3 py-2 rounded-lg"><i class="fas fa-file-word mr-1"></i> Impor dari Word</button>
                             <button onclick="openModalJadwalMassal()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs px-3 py-2 rounded-lg"><i class="fas fa-paste mr-1"></i> Atur Jadwal (Massal)</button>
                         </div>
                     </div>
+                    <!-- MASTER GURU -->
+                    <div class="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+                        <div class="p-3 border-b border-slate-800 bg-slate-950/50 flex justify-between items-center flex-wrap gap-2">
+                            <div>
+                                <h4 class="text-sm font-bold text-slate-100 flex items-center gap-2"><i class="fas fa-chalkboard-teacher text-amber-400"></i> Master Guru</h4>
+                                <p class="text-[10px] text-slate-400 mt-0.5">Input guru sekali → otomatis muncul di semua jadwal sesuai mapel yang diajar</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button onclick="syncGuruKeJadwal()" class="bg-blue-700/30 text-blue-400 border border-blue-600/50 hover:bg-blue-600 hover:text-white transition font-bold text-xs px-3 py-2 rounded-lg flex items-center gap-1.5"><i class="fas fa-sync-alt text-xs"></i> Sinkron ke Jadwal</button>
+                                <button onclick="openModalMasterGuru()" class="bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs px-3 py-2 rounded-lg flex items-center gap-1.5"><i class="fas fa-plus"></i> Tambah Guru</button>
+                            </div>
+                        </div>
+                        <div id="master-guru-list" class="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                            <div class="text-[10px] text-slate-500 italic text-center py-3 col-span-full">Belum ada data guru. Klik <b class="text-amber-400">Tambah Guru</b>.</div>
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4" id="jadwal-container">
                     </div>
                 </section>
@@ -1794,49 +1813,49 @@
                     <!-- Filter Panel -->
                     <div class="bg-slate-900 rounded-xl border border-slate-800 p-4">
                         <div class="flex flex-wrap gap-3 items-end">
-                            <div>
+                            <div class="w-full sm:w-auto">
                                 <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Mode Rekap</label>
-                                <select id="rkabs-mode" onchange="onRkAbsModeChange()" class="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-100 outline-none focus:border-green-500">
+                                <select id="rkabs-mode" onchange="onRkAbsModeChange()" class="w-full sm:w-auto bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-100 outline-none focus:border-green-500">
                                     <option value="minggu">Per Minggu</option>
                                     <option value="bulan">Per Bulan</option>
                                     <option value="semester">Per Semester</option>
                                 </select>
                             </div>
                             <!-- Filter Minggu -->
-                            <div id="rkabs-filter-minggu" class="flex gap-2 items-end">
-                                <div>
+                            <div id="rkabs-filter-minggu" class="flex gap-2 items-end w-full sm:w-auto">
+                                <div class="flex-1 sm:flex-none">
                                     <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Tanggal Mulai Minggu</label>
-                                    <input type="date" id="rkabs-minggu-mulai" onchange="renderRekapAbsensi()" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-100 outline-none focus:border-green-500">
+                                    <input type="date" id="rkabs-minggu-mulai" onchange="renderRekapAbsensi()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-100 outline-none focus:border-green-500">
                                 </div>
                             </div>
                             <!-- Filter Bulan -->
-                            <div id="rkabs-filter-bulan" class="hidden">
+                            <div id="rkabs-filter-bulan" class="hidden w-full sm:w-auto">
                                 <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Bulan</label>
-                                <input type="month" id="rkabs-bulan-val" onchange="renderRekapAbsensi()" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-100 outline-none focus:border-green-500">
+                                <input type="month" id="rkabs-bulan-val" onchange="renderRekapAbsensi()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-100 outline-none focus:border-green-500">
                             </div>
                             <!-- Filter Semester -->
-                            <div id="rkabs-filter-semester" class="hidden flex gap-2 items-end">
-                                <div>
+                            <div id="rkabs-filter-semester" class="hidden flex gap-2 items-end w-full sm:w-auto">
+                                <div class="flex-1 sm:flex-none">
                                     <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Semester</label>
-                                    <select id="rkabs-semester-val" onchange="renderRekapAbsensi()" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-bold text-slate-100 outline-none focus:border-green-500">
+                                    <select id="rkabs-semester-val" onchange="renderRekapAbsensi()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-bold text-slate-100 outline-none focus:border-green-500">
                                         <option value="1">Semester 1 (Jul–Des)</option>
                                         <option value="2">Semester 2 (Jan–Jun)</option>
                                     </select>
                                 </div>
-                                <div>
+                                <div class="w-24 shrink-0">
                                     <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Tahun</label>
-                                    <input type="number" id="rkabs-semester-tahun" onchange="renderRekapAbsensi()" min="2020" max="2099" placeholder="Tahun" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-100 outline-none focus:border-green-500 w-24">
+                                    <input type="number" id="rkabs-semester-tahun" onchange="renderRekapAbsensi()" min="2020" max="2099" placeholder="Tahun" class="bg-slate-950 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-100 outline-none focus:border-green-500 w-full">
                                 </div>
                             </div>
                             <!-- Tombol aksi -->
-                            <div class="flex gap-2 ml-auto">
-                                <button onclick="exportRekapAbsensiCSV()" class="bg-slate-800 hover:bg-slate-700 text-blue-400 font-bold text-xs px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5">
+                            <div class="grid grid-cols-3 sm:flex gap-2 sm:ml-auto w-full sm:w-auto">
+                                <button onclick="exportRekapAbsensiCSV()" class="bg-slate-800 hover:bg-slate-700 text-blue-400 font-bold text-xs px-2 sm:px-3 py-2 sm:py-1.5 rounded-lg border border-slate-700 transition flex items-center justify-center gap-1.5">
                                     <i class="fas fa-file-csv"></i> CSV
                                 </button>
-                                <button onclick="cetakRekapAbsensiPDF()" class="bg-green-900/30 text-green-400 border border-green-900/50 hover:bg-green-600 hover:text-white transition font-bold text-xs px-4 py-1.5 rounded-lg flex items-center gap-1.5">
+                                <button onclick="cetakRekapAbsensiPDF()" class="bg-green-900/30 text-green-400 border border-green-900/50 hover:bg-green-600 hover:text-white transition font-bold text-xs px-2 sm:px-4 py-2 sm:py-1.5 rounded-lg flex items-center justify-center gap-1.5">
                                     <i class="fas fa-file-pdf"></i> Cetak PDF
                                 </button>
-                                <button onclick="cetakRekapAbsensiHarianPDF()" class="bg-blue-900/30 text-blue-300 border border-blue-800/50 hover:bg-blue-600 hover:text-white transition font-bold text-xs px-4 py-1.5 rounded-lg flex items-center gap-1.5">
+                                <button onclick="cetakRekapAbsensiHarianPDF()" class="bg-blue-900/30 text-blue-300 border border-blue-800/50 hover:bg-blue-600 hover:text-white transition font-bold text-xs px-2 sm:px-4 py-2 sm:py-1.5 rounded-lg flex items-center justify-center gap-1.5">
                                     <i class="fas fa-calendar-alt"></i> PDF Harian
                                 </button>
                             </div>
@@ -1861,7 +1880,7 @@
                             <p class="text-[10px] font-bold text-blue-400 uppercase tracking-wider">Izin</p>
                             <h4 id="rkabs-stat-izin" class="text-2xl font-black text-blue-300 mt-1">0</h4>
                         </div>
-                        <div class="bg-slate-900 p-4 rounded-xl border border-red-900/30 text-center">
+                        <div class="col-span-2 lg:col-span-1 bg-slate-900 p-4 rounded-xl border border-red-900/30 text-center">
                             <p class="text-[10px] font-bold text-red-400 uppercase tracking-wider">Alfa</p>
                             <h4 id="rkabs-stat-alfa" class="text-2xl font-black text-red-300 mt-1">0</h4>
                         </div>
@@ -1870,7 +1889,9 @@
                     <!-- Tabel Rekap -->
                     <div id="rkabs-belum-box" class="hidden"></div>
 
-                    <div class="bg-slate-900 rounded-xl border border-slate-800 overflow-x-auto shadow-sm" id="rkabs-print-area">
+                    <div id="rkabs-cards" class="md:hidden space-y-2.5"></div>
+
+                    <div class="hidden md:block bg-slate-900 rounded-xl border border-slate-800 overflow-x-auto shadow-sm" id="rkabs-print-area">
                         <div id="rkabs-print-header" class="p-5 text-center border-b border-slate-800 hidden bg-slate-900 text-white">
                             <h2 class="text-xl font-black uppercase" id="rkabs-print-title-sekolah">REKAP ABSENSI SISWA</h2>
                             <p class="text-sm font-bold text-slate-300 mt-1" id="rkabs-print-subtitle"></p>
@@ -3801,7 +3822,11 @@
                             <p class="text-[11px] text-slate-400 mt-1">Buat modul ajar lengkap sesuai format terbaru Kemdikbud — otomatis menarik data CP, TP, Materi, dan Profil Pelajar Pancasila.</p>
                         </div>
                         <div class="flex gap-2 shrink-0 z-10">
-                            <button onclick="openModalModulAjar()" class="bg-lime-600 hover:bg-lime-500 text-white font-bold text-xs px-4 py-2.5 rounded-lg transition shadow-md flex items-center gap-2">
+                            <input type="file" id="input-impor-modul-ajar" accept=".docx" class="hidden" onchange="mulaiImporModulAjar(this)">
+                            <button onclick="pilihFileImporModulAjar()" class="flex-1 md:flex-none justify-center bg-sky-700 hover:bg-sky-600 text-white font-bold text-xs px-4 py-2.5 rounded-lg transition shadow-md flex items-center gap-2">
+                                <i class="fas fa-file-word"></i> Impor dari Word
+                            </button>
+                            <button onclick="openModalModulAjar()" class="flex-1 md:flex-none justify-center bg-lime-600 hover:bg-lime-500 text-white font-bold text-xs px-4 py-2.5 rounded-lg transition shadow-md flex items-center gap-2">
                                 <i class="fas fa-plus"></i> Buat Modul Baru
                             </button>
                         </div>
@@ -4885,6 +4910,9 @@
                                 </div>
                                 <p class="text-xs text-sky-200/70 max-w-lg">Pantau sisa hari belajar efektif semester ini. Hari libur, Sabtu & Minggu otomatis tidak dihitung.</p>
                             </div>
+                            <button onclick="pilihFileImporKalenderJadwal()" class="bg-slate-800/80 hover:bg-slate-700 border border-sky-700/50 text-sky-200 font-bold text-xs px-4 py-2 rounded-lg shadow transition flex items-center gap-2">
+                                <i class="fas fa-file-word"></i> Impor dari Word
+                            </button>
                             <button onclick="simpanSettingHariEfektif()" class="bg-gradient-to-r from-sky-600 to-cyan-600 hover:from-sky-500 hover:to-cyan-500 text-white font-bold text-xs px-4 py-2 rounded-lg shadow transition flex items-center gap-2">
                                 <i class="fas fa-save"></i> Simpan Pengaturan
                             </button>
@@ -5515,6 +5543,83 @@
         </div>
     </div>
     
+    <!-- MODAL MASTER GURU -->
+    <div id="modal-master-guru" class="fixed inset-0 bg-slate-950/85 z-[76] hidden flex justify-center items-center p-4">
+        <div class="bg-slate-900 border border-amber-700/40 rounded-xl max-w-md p-5 space-y-4 modal-enter w-full shadow-2xl">
+            <div class="flex items-center gap-2">
+                <div class="w-7 h-7 bg-amber-600 rounded-lg flex items-center justify-center"><i class="fas fa-chalkboard-teacher text-white text-xs"></i></div>
+                <h4 class="text-sm font-bold text-white" id="modal-mg-title">Tambah Guru</h4>
+            </div>
+            <input type="hidden" id="form-mg-id">
+            <div>
+                <label class="block text-[10px] text-slate-400 mb-1">Nama Guru <span class="text-red-400">*</span></label>
+                <input type="text" id="form-mg-nama" placeholder="cth: Pak Budi, S.Pd" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-sm text-white outline-none focus:border-amber-500 transition" autocomplete="off">
+            </div>
+            <div>
+                <label class="block text-[10px] text-slate-400 mb-1">Mapel yang Diajar <span class="text-slate-500">(pisah dengan Enter atau koma)</span></label>
+                <div id="mg-chip-container" class="min-h-[40px] bg-slate-950 border border-slate-700 rounded-lg p-2 flex flex-wrap gap-1.5 cursor-text" onclick="document.getElementById('form-mg-mapel-input').focus()">
+                    <!-- chips akan muncul di sini -->
+                    <input type="text" id="form-mg-mapel-input" placeholder="Ketik nama mapel, tekan Enter atau koma..." class="bg-transparent outline-none text-xs text-white flex-1 min-w-[140px] py-0.5" autocomplete="off">
+                </div>
+                <p class="text-[9px] text-slate-500 mt-1">Contoh: Matematika → Enter → IPAS → Enter → SBDP</p>
+            </div>
+            <!-- Mapel dari daftar yang sudah ada (shortcut) -->
+            <div id="mg-mapel-shortcut" class="hidden">
+                <label class="block text-[10px] text-slate-400 mb-1.5">Pilih cepat dari daftar mapel:</label>
+                <div id="mg-mapel-shortcut-list" class="flex flex-wrap gap-1.5"></div>
+            </div>
+            <div class="flex justify-between items-center gap-2 pt-1">
+                <button onclick="hapusMasterGuru()" id="btn-hapus-mg" class="px-3 py-1.5 rounded-lg bg-red-900/40 text-red-400 border border-red-900/50 hover:bg-red-600 hover:text-white text-xs font-bold transition hidden"><i class="fas fa-trash mr-1"></i> Hapus</button>
+                <div class="flex gap-2 ml-auto">
+                    <button onclick="closeModalMasterGuru()" class="px-4 py-1.5 rounded-lg bg-slate-800 text-xs text-slate-400 hover:bg-slate-700">Batal</button>
+                    <button onclick="saveFormMasterGuru()" class="px-4 py-1.5 rounded-lg bg-amber-600 text-xs text-white font-bold hover:bg-amber-500">Simpan & Sinkron</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL EDIT / TAMBAH JADWAL PER BARIS -->
+    <div id="modal-edit-jadwal" class="fixed inset-0 bg-slate-950/80 z-[75] hidden flex justify-center items-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-xl max-w-sm p-5 space-y-4 modal-enter w-full shadow-2xl">
+            <div class="flex items-center gap-2">
+                <div class="w-7 h-7 bg-emerald-600 rounded-lg flex items-center justify-center"><i class="fas fa-calendar-edit text-white text-xs"></i></div>
+                <h4 class="text-sm font-bold text-white" id="modal-edit-jadwal-title">Edit Jadwal</h4>
+            </div>
+            <input type="hidden" id="form-ej-hari">
+            <input type="hidden" id="form-ej-index">
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="block text-[10px] text-slate-400 mb-1">JP (Jam Pelajaran)</label>
+                    <input type="text" id="form-ej-jp" placeholder="cth: 1, 2-3, 5-6" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-white outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-slate-400 mb-1">Jam Mulai</label>
+                    <input type="time" id="form-ej-mulai" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-white outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-slate-400 mb-1">Jam Selesai</label>
+                    <input type="time" id="form-ej-selesai" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-white outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                    <label class="block text-[10px] text-slate-400 mb-1">Mapel / Mata Pelajaran</label>
+                    <input type="text" id="form-ej-mapel" placeholder="cth: Matematika" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-white outline-none focus:border-emerald-500 col-span-1">
+                </div>
+            </div>
+            <div>
+                <label class="block text-[10px] text-slate-400 mb-1">Nama Guru</label>
+                <input type="text" id="form-ej-guru" placeholder="cth: Pak Ahmad, S.Pd" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-white outline-none focus:border-emerald-500">
+                <p class="text-[9px] text-slate-500 mt-1">Kosongkan jika tidak ada guru / belum diisi</p>
+            </div>
+            <div class="flex justify-between items-center gap-2 pt-1">
+                <button onclick="hapusBarisJadwal()" id="btn-hapus-ej" class="px-3 py-1.5 rounded-lg bg-red-900/40 text-red-400 border border-red-900/50 hover:bg-red-600 hover:text-white text-xs font-bold transition hidden"><i class="fas fa-trash mr-1"></i> Hapus Baris</button>
+                <div class="flex gap-2 ml-auto">
+                    <button onclick="closeModalEditJadwal()" class="px-4 py-1.5 rounded-lg bg-slate-800 text-xs text-slate-400 hover:bg-slate-700">Batal</button>
+                    <button onclick="saveFormEditJadwal()" class="px-4 py-1.5 rounded-lg bg-emerald-600 text-xs text-white font-bold hover:bg-emerald-500">Simpan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-jadwal-massal" class="fixed inset-0 bg-slate-950/80 z-[70] hidden flex justify-center items-center p-4">
         <div class="bg-slate-900 border border-slate-800 rounded-xl max-w-lg p-6 space-y-4 modal-enter w-full">
             <h4 class="text-sm font-bold text-white">Paste Massal Jadwal Pelajaran</h4>
@@ -6643,6 +6748,7 @@
             pinjaman: [], cicilanPinjaman: [], // Pinjaman (siswa/guru/lainnya) & cicilan pembayarannya
             temaKokurikuler: [], // Tema Ko-Kurikuler
             nilaiKokurikuler: {}, // Nilai Ko-Kurikuler per siswa per tema {siswaId: {temaId: {predikat:'SB', ket:'...'}}}
+            masterGuru: [], // Master data guru: [{id, nama, mapel: ['Matematika','IPAS']}]
             mapelGuru: [], // Daftar mapel guru luar (Bahasa Inggris, Bahasa Arab, dll) [{id, nama, kkm}]
             nilaiRaporGuru: {}, // Nilai akhir rapor dari guru mapel luar: {siswaId_mapelId: nilaiAkhir}
             remedial: {}, // Remedial: {siswaId_mapelId_jenis: nilaiRemedial} — nilai remedial terkini (bisa berubah)
@@ -6710,6 +6816,7 @@
         db.acaraList = db.acaraList || [];
         db.simulasiMapel = db.simulasiMapel || [];
         db.nilaiSimulasi = db.nilaiSimulasi || {};
+        db.masterGuru = db.masterGuru || [];
         // FIX #1 lanjutan: deep merge raporSettings agar field baru tidak hilang
         db.raporSettings = { ...defaultDB.raporSettings, ...(db.raporSettings || {}) };
         
@@ -6983,16 +7090,21 @@
                 }
             }
 
+            const guruLabel = (j) => {
+                const g = j.guru && j.guru !== '-' ? j.guru : null;
+                return g ? `<span class="flex items-center gap-1 text-[10px] text-amber-300 font-semibold"><i class="fas fa-chalkboard-teacher text-amber-400"></i> ${g}</span>` : `<span class="text-[10px] text-slate-600 italic">Guru belum diisi</span>`;
+            };
+
             let html = '';
             if (activeMapel) {
-                html += `<div class="bg-emerald-900/30 border border-emerald-900/50 p-2 rounded relative overflow-hidden">
+                html += `<div class="bg-emerald-900/30 border border-emerald-900/50 p-2.5 rounded relative overflow-hidden">
                             <div class="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>
                             <div class="pl-2">
-                                <span class="text-[9px] uppercase font-bold text-emerald-400 tracking-wider">Sedang Berlangsung</span>
-                                <h5 class="text-sm font-black text-slate-100">${activeMapel.mapel}</h5>
-                                <div class="flex justify-between items-center mt-1">
-                                    <span class="text-[10px] text-slate-400"><i class="fas fa-clock mr-1"></i> ${activeMapel.mulai} - ${activeMapel.selesai}</span>
-                                    <span class="text-[10px] bg-slate-800 px-1.5 py-0.5 rounded text-amber-400 font-bold"><i class="fas fa-user-tie"></i> ${activeMapel.guru}</span>
+                                <span class="text-[9px] uppercase font-bold text-emerald-400 tracking-wider">🟢 Sedang Berlangsung</span>
+                                <h5 class="text-sm font-black text-slate-100 mt-0.5">${activeMapel.mapel}</h5>
+                                <div class="flex justify-between items-center mt-1.5 flex-wrap gap-1">
+                                    <span class="text-[10px] text-slate-400"><i class="fas fa-clock mr-1"></i>${activeMapel.mulai} – ${activeMapel.selesai}</span>
+                                    ${guruLabel(activeMapel)}
                                 </div>
                             </div>
                          </div>`;
@@ -7003,12 +7115,13 @@
             if (nextMapel) {
                 let nStart = parseInt(nextMapel.mulai.split(':')[0])*60 + parseInt(nextMapel.mulai.split(':')[1]);
                 let diffMins = nStart - currentTotalMins;
-                html += `<div class="bg-slate-900/80 border border-slate-800 p-2 rounded mt-2">
-                            <span class="text-[9px] uppercase font-bold text-blue-400 tracking-wider">Selanjutnya (dalam ${diffMins} mnt)</span>
-                            <div class="flex justify-between items-center">
+                html += `<div class="bg-slate-900/80 border border-slate-800 p-2.5 rounded mt-2">
+                            <span class="text-[9px] uppercase font-bold text-blue-400 tracking-wider">⏭ Selanjutnya · ${diffMins} mnt lagi</span>
+                            <div class="flex justify-between items-center mt-1 flex-wrap gap-1">
                                 <h5 class="text-xs font-bold text-slate-200">${nextMapel.mapel}</h5>
-                                <span class="text-[10px] text-slate-400">${nextMapel.mulai}</span>
+                                <span class="text-[10px] text-slate-400"><i class="fas fa-clock mr-1"></i>${nextMapel.mulai}</span>
                             </div>
+                            <div class="mt-1">${guruLabel(nextMapel)}</div>
                          </div>`;
             } else if (activeMapel && !nextMapel) {
                 html += `<div class="text-[10px] text-slate-500 mt-2 text-center">Ini adalah jam terakhir untuk hari ini.</div>`;
@@ -7136,7 +7249,7 @@
 
             if(tabId === 'dashboard') loadDashboardData();
             if(tabId === 'siswa') renderSiswaTable();
-            if(tabId === 'jadwal') renderJadwalTab();
+            if(tabId === 'jadwal') { renderJadwalTab(); renderMasterGuruList(); }
             if(tabId === 'buatsoal') { 
                 let s=document.getElementById('ai-soal-mapel'); 
                 s.innerHTML=db.mapel.map(m=>`<option value="${m.nama}">${m.nama}</option>`).join('') || '<option value="Umum">Umum</option>';
@@ -7787,12 +7900,18 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             const cards = hari.map(h => {
                 let jHTML = '';
                 if(db.jadwal[h] && db.jadwal[h].length > 0) {
-                    let rows = db.jadwal[h].map(j => `<tr>
+                    let rows = db.jadwal[h].map((j, idx) => `<tr class="hover:bg-slate-800/60 group">
                             <td class="p-1 text-center font-bold text-slate-300">${j.jp || '-'}</td>
-                            <td class="p-1 text-slate-400 font-mono">${j.mulai} - ${j.selesai}</td>
-                            <td class="p-1"><div class="font-bold text-emerald-400">${j.mapel}</div><div class="text-[9px] text-slate-500">${j.guru}</div></td>
+                            <td class="p-1 text-slate-400 font-mono whitespace-nowrap">${j.mulai} - ${j.selesai}</td>
+                            <td class="p-1">
+                                <div class="font-bold text-emerald-400">${j.mapel}</div>
+                                <div class="text-[9px] text-slate-500">${j.guru && j.guru !== '-' ? j.guru : '<span class="italic text-slate-600">Guru belum diisi</span>'}</div>
+                            </td>
+                            <td class="p-1 text-right">
+                                <button onclick="openModalEditJadwal('${h}', ${idx})" class="text-blue-400 hover:text-blue-200 opacity-60 hover:opacity-100 transition" title="Edit baris ini"><i class="fas fa-pencil-alt text-[9px]"></i></button>
+                            </td>
                         </tr>`).join('');
-                    jHTML = `<table class="w-full text-left text-[10px]"><thead class="bg-slate-800 text-slate-400"><tr><th class="p-1 text-center w-8">JP</th><th class="p-1 w-20">Waktu</th><th class="p-1">Mapel & Guru</th></tr></thead><tbody class="divide-y divide-slate-800">${rows}</tbody></table>`;
+                    jHTML = `<table class="w-full text-left text-[10px]"><thead class="bg-slate-800 text-slate-400"><tr><th class="p-1 text-center w-8">JP</th><th class="p-1 w-20">Waktu</th><th class="p-1">Mapel & Guru</th><th class="p-1 w-6"></th></tr></thead><tbody class="divide-y divide-slate-800">${rows}</tbody></table>`;
                 } else {
                     jHTML = '<div class="text-slate-500 text-[10px] italic py-2 text-center border border-dashed border-slate-700 rounded bg-slate-950/50">Kosong / Libur</div>';
                 }
@@ -7801,6 +7920,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                 return `<div class="bg-slate-900 rounded-xl border border-slate-800 flex flex-col overflow-hidden">
                     <div class="p-3 border-b border-slate-800 bg-slate-950/50 flex justify-between items-center">
                         <h4 class="font-bold text-emerald-400 text-sm"><i class="fas fa-calendar-day mr-1"></i> ${h}</h4>
+                        <button onclick="openModalTambahJadwal('${h}')" class="text-[10px] bg-emerald-700/30 text-emerald-400 border border-emerald-700/50 hover:bg-emerald-600 hover:text-white transition font-bold px-2 py-1 rounded-lg flex items-center gap-1"><i class="fas fa-plus text-[9px]"></i> Tambah JP</button>
                     </div>
                     <div class="p-3 flex-1 overflow-x-auto">
                         <div class="text-[10px] font-bold text-slate-400 mb-1 uppercase">Struktur Jadwal</div>
@@ -7813,6 +7933,279 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                 </div>`;
             });
             c.innerHTML = cards.join('');
+        }
+
+        function openModalTambahJadwal(hari) {
+            document.getElementById('modal-edit-jadwal-title').textContent = 'Tambah JP — ' + hari;
+            document.getElementById('form-ej-hari').value = hari;
+            document.getElementById('form-ej-index').value = '-1'; // -1 = baru
+            document.getElementById('form-ej-jp').value = '';
+            document.getElementById('form-ej-mulai').value = '';
+            document.getElementById('form-ej-selesai').value = '';
+            document.getElementById('form-ej-mapel').value = '';
+            document.getElementById('form-ej-guru').value = '';
+            document.getElementById('btn-hapus-ej').classList.add('hidden');
+            document.getElementById('modal-edit-jadwal').classList.remove('hidden');
+        }
+
+        function openModalEditJadwal(hari, idx) {
+            const j = db.jadwal[hari][idx];
+            if(!j) return;
+            document.getElementById('modal-edit-jadwal-title').textContent = 'Edit JP — ' + hari;
+            document.getElementById('form-ej-hari').value = hari;
+            document.getElementById('form-ej-index').value = idx;
+            document.getElementById('form-ej-jp').value = j.jp || '';
+            document.getElementById('form-ej-mulai').value = j.mulai || '';
+            document.getElementById('form-ej-selesai').value = j.selesai || '';
+            document.getElementById('form-ej-mapel').value = j.mapel || '';
+            document.getElementById('form-ej-guru').value = (j.guru && j.guru !== '-') ? j.guru : '';
+            document.getElementById('btn-hapus-ej').classList.remove('hidden');
+            document.getElementById('modal-edit-jadwal').classList.remove('hidden');
+        }
+
+        function closeModalEditJadwal() {
+            document.getElementById('modal-edit-jadwal').classList.add('hidden');
+        }
+
+        function saveFormEditJadwal() {
+            const hari = document.getElementById('form-ej-hari').value;
+            const idx = parseInt(document.getElementById('form-ej-index').value);
+            const jp = document.getElementById('form-ej-jp').value.trim();
+            const mulai = document.getElementById('form-ej-mulai').value.trim();
+            const selesai = document.getElementById('form-ej-selesai').value.trim();
+            const mapel = document.getElementById('form-ej-mapel').value.trim();
+            const guru = document.getElementById('form-ej-guru').value.trim() || '-';
+
+            if(!mapel) return Swal.fire('Gagal', 'Nama mapel wajib diisi.', 'error');
+            if(!mulai || !selesai) return Swal.fire('Gagal', 'Jam mulai dan selesai wajib diisi.', 'error');
+
+            const data = { jp, mulai, selesai, mapel, guru };
+
+            if(!db.jadwal[hari]) db.jadwal[hari] = [];
+
+            if(idx === -1) {
+                db.jadwal[hari].push(data);
+            } else {
+                db.jadwal[hari][idx] = data;
+            }
+
+            saveDB();
+            closeModalEditJadwal();
+            renderJadwalTab();
+            Swal.fire({ icon: 'success', title: 'Tersimpan', text: `Jadwal ${hari} diperbarui.`, timer: 1200, showConfirmButton: false });
+        }
+
+        function hapusBarisJadwal() {
+            const hari = document.getElementById('form-ej-hari').value;
+            const idx = parseInt(document.getElementById('form-ej-index').value);
+            if(idx < 0) return;
+            Swal.fire({ title: 'Hapus baris ini?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus' }).then(r => {
+                if(r.isConfirmed) {
+                    db.jadwal[hari].splice(idx, 1);
+                    saveDB();
+                    closeModalEditJadwal();
+                    renderJadwalTab();
+                }
+            });
+        }
+
+        // ============================================================
+        // MASTER GURU
+        // ============================================================
+        let _mgChips = []; // chips sementara di modal
+
+        function renderMasterGuruList() {
+            const el = document.getElementById('master-guru-list');
+            if(!el) return;
+            if(!db.masterGuru || db.masterGuru.length === 0) {
+                el.innerHTML = '<div class="text-[10px] text-slate-500 italic text-center py-3 col-span-full">Belum ada data guru. Klik <b class="text-amber-400">Tambah Guru</b>.</div>';
+                return;
+            }
+            el.innerHTML = db.masterGuru.map(g => {
+                const chips = (g.mapel||[]).map(m => `<span class="bg-slate-700 text-slate-200 text-[9px] px-1.5 py-0.5 rounded">${m}</span>`).join('');
+                return `<div class="bg-slate-800/60 border border-slate-700/50 rounded-lg p-2.5 flex flex-col gap-1.5 hover:border-amber-600/40 transition">
+                    <div class="flex justify-between items-start gap-1">
+                        <div class="font-bold text-sm text-amber-300 leading-tight">${g.nama}</div>
+                        <button onclick="openModalMasterGuru('${g.id}')" class="text-slate-500 hover:text-amber-400 transition shrink-0 ml-1" title="Edit guru ini"><i class="fas fa-pencil-alt text-[10px]"></i></button>
+                    </div>
+                    <div class="flex flex-wrap gap-1">${chips || '<span class="text-[9px] text-slate-600 italic">Belum ada mapel</span>'}</div>
+                </div>`;
+            }).join('');
+        }
+
+        function openModalMasterGuru(id) {
+            _mgChips = [];
+            const mg = id ? db.masterGuru.find(g => g.id === id) : null;
+            document.getElementById('modal-mg-title').textContent = mg ? 'Edit Guru' : 'Tambah Guru';
+            document.getElementById('form-mg-id').value = mg ? mg.id : '';
+            document.getElementById('form-mg-nama').value = mg ? mg.nama : '';
+            document.getElementById('btn-hapus-mg').classList.toggle('hidden', !mg);
+            if(mg && mg.mapel) _mgChips = [...mg.mapel];
+            _renderMgChips();
+
+            // Shortcut dari mapel yg sudah ada di jadwal
+            const semuaMapel = new Set();
+            const hari = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+            hari.forEach(h => { (db.jadwal[h]||[]).forEach(j => { if(j.mapel && j.mapel !== '-') semuaMapel.add(j.mapel); }); });
+            // Tambah dari db.mapel juga
+            (db.mapel||[]).forEach(m => { if(m.nama) semuaMapel.add(m.nama); });
+            const shortcutEl = document.getElementById('mg-mapel-shortcut');
+            const listEl = document.getElementById('mg-mapel-shortcut-list');
+            if(semuaMapel.size > 0) {
+                shortcutEl.classList.remove('hidden');
+                listEl.innerHTML = [...semuaMapel].sort().map(m => `<button type="button" onclick="mgToggleShortcut('${m.replace(/'/g,"\\'")}')" id="mgsc-${CSS.escape(m)}" class="mgsc-btn text-[10px] px-2 py-1 rounded-lg border font-semibold transition ${_mgChips.includes(m) ? 'bg-amber-600 border-amber-500 text-white' : 'bg-slate-800 border-slate-600 text-slate-300 hover:border-amber-500 hover:text-amber-300'}">${m}</button>`).join('');
+            } else {
+                shortcutEl.classList.add('hidden');
+            }
+
+            document.getElementById('modal-master-guru').classList.remove('hidden');
+            setTimeout(() => document.getElementById('form-mg-nama').focus(), 100);
+
+            // Event listener input
+            const inp = document.getElementById('form-mg-mapel-input');
+            inp.onkeydown = function(e) {
+                if(e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    const val = inp.value.replace(/,/g,'').trim();
+                    if(val) { mgAddChip(val); inp.value = ''; }
+                } else if(e.key === 'Backspace' && inp.value === '' && _mgChips.length > 0) {
+                    _mgChips.pop();
+                    _renderMgChips();
+                    _refreshShortcutBtns();
+                }
+            };
+        }
+
+        function mgToggleShortcut(mapel) {
+            const idx = _mgChips.indexOf(mapel);
+            if(idx >= 0) { _mgChips.splice(idx, 1); } else { _mgChips.push(mapel); }
+            _renderMgChips();
+            _refreshShortcutBtns();
+        }
+
+        function mgAddChip(val) {
+            const v = val.trim();
+            if(!v || _mgChips.includes(v)) return;
+            _mgChips.push(v);
+            _renderMgChips();
+            _refreshShortcutBtns();
+        }
+
+        function mgRemoveChip(idx) {
+            _mgChips.splice(idx, 1);
+            _renderMgChips();
+            _refreshShortcutBtns();
+        }
+
+        function _renderMgChips() {
+            const container = document.getElementById('mg-chip-container');
+            const inp = document.getElementById('form-mg-mapel-input');
+            // Hapus chips lama
+            container.querySelectorAll('.mg-chip').forEach(el => el.remove());
+            // Tambah chips baru sebelum input
+            _mgChips.forEach((m, i) => {
+                const chip = document.createElement('span');
+                chip.className = 'mg-chip flex items-center gap-1 bg-amber-700/40 text-amber-200 border border-amber-600/50 text-[10px] px-2 py-0.5 rounded-full font-semibold';
+                chip.innerHTML = `${m} <button type="button" onclick="mgRemoveChip(${i})" class="text-amber-400 hover:text-white leading-none ml-0.5">×</button>`;
+                container.insertBefore(chip, inp);
+            });
+            inp.placeholder = _mgChips.length > 0 ? 'Tambah mapel lagi...' : 'Ketik nama mapel, tekan Enter atau koma...';
+        }
+
+        function _refreshShortcutBtns() {
+            document.querySelectorAll('.mgsc-btn').forEach(btn => {
+                // ambil nama mapel dari text content
+                const m = btn.textContent.trim();
+                if(_mgChips.includes(m)) {
+                    btn.className = btn.className.replace('bg-slate-800 border-slate-600 text-slate-300 hover:border-amber-500 hover:text-amber-300','bg-amber-600 border-amber-500 text-white');
+                } else {
+                    btn.className = btn.className.replace('bg-amber-600 border-amber-500 text-white','bg-slate-800 border-slate-600 text-slate-300 hover:border-amber-500 hover:text-amber-300');
+                }
+            });
+        }
+
+        function closeModalMasterGuru() {
+            document.getElementById('modal-master-guru').classList.add('hidden');
+            const inp = document.getElementById('form-mg-mapel-input');
+            inp.onkeydown = null;
+        }
+
+        function saveFormMasterGuru() {
+            // Ambil chip yang belum dienter
+            const inp = document.getElementById('form-mg-mapel-input');
+            const pending = inp.value.replace(/,/g,'').trim();
+            if(pending) { mgAddChip(pending); inp.value = ''; }
+
+            const nama = document.getElementById('form-mg-nama').value.trim();
+            if(!nama) return Swal.fire('Gagal', 'Nama guru wajib diisi.', 'error');
+
+            const id = document.getElementById('form-mg-id').value || ('mg_' + Date.now());
+            const existing = db.masterGuru.findIndex(g => g.id === id);
+            const data = { id, nama, mapel: [..._mgChips] };
+
+            if(existing >= 0) { db.masterGuru[existing] = data; }
+            else { db.masterGuru.push(data); }
+
+            saveDB();
+            closeModalMasterGuru();
+            renderMasterGuruList();
+            // Auto sync
+            const jumlahSync = _doSyncGuruKeJadwal();
+            if(jumlahSync > 0) {
+                renderJadwalTab();
+                Swal.fire({ icon: 'success', title: 'Tersimpan & Tersinkron!', html: `<b>${nama}</b> disimpan.<br>Nama guru otomatis diisi di <b>${jumlahSync}</b> baris jadwal.`, timer: 2000, showConfirmButton: false });
+            } else {
+                Swal.fire({ icon: 'success', title: 'Tersimpan', text: `${nama} berhasil disimpan. Belum ada jadwal yang cocok untuk disinkronkan.`, timer: 1800, showConfirmButton: false });
+            }
+        }
+
+        function hapusMasterGuru() {
+            const id = document.getElementById('form-mg-id').value;
+            if(!id) return;
+            const g = db.masterGuru.find(x => x.id === id);
+            Swal.fire({ title: `Hapus ${g ? g.nama : 'guru ini'}?`, text: 'Data guru ini akan dihapus dari Master Guru. Jadwal yang sudah terisi tidak akan berubah.', icon: 'warning', showCancelButton: true, confirmButtonColor: '#ef4444', confirmButtonText: 'Ya, Hapus' }).then(r => {
+                if(r.isConfirmed) {
+                    db.masterGuru = db.masterGuru.filter(x => x.id !== id);
+                    saveDB();
+                    closeModalMasterGuru();
+                    renderMasterGuruList();
+                    Swal.fire({ icon: 'success', title: 'Dihapus', timer: 1200, showConfirmButton: false });
+                }
+            });
+        }
+
+        function _doSyncGuruKeJadwal() {
+            if(!db.masterGuru || db.masterGuru.length === 0) return 0;
+            const hari = ['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+            // Buat map: mapelLower -> namaGuru (kalau ada 2 guru 1 mapel, guru terakhir yg menang)
+            const mapelToGuru = {};
+            db.masterGuru.forEach(g => {
+                (g.mapel||[]).forEach(m => {
+                    mapelToGuru[m.toLowerCase().trim()] = g.nama;
+                });
+            });
+            let count = 0;
+            hari.forEach(h => {
+                (db.jadwal[h]||[]).forEach(j => {
+                    const key = (j.mapel||'').toLowerCase().trim();
+                    if(mapelToGuru[key]) {
+                        j.guru = mapelToGuru[key];
+                        count++;
+                    }
+                });
+            });
+            if(count > 0) saveDB();
+            return count;
+        }
+
+        function syncGuruKeJadwal() {
+            const jumlah = _doSyncGuruKeJadwal();
+            renderJadwalTab();
+            if(jumlah > 0) {
+                Swal.fire({ icon: 'success', title: 'Sinkronisasi Selesai', text: `${jumlah} baris jadwal berhasil diisi nama gurunya.`, timer: 1800, showConfirmButton: false });
+            } else {
+                Swal.fire({ icon: 'info', title: 'Tidak Ada yang Cocok', text: 'Semua nama mapel di jadwal sudah terisi, atau belum ada mapel yang cocok dengan data Master Guru.', timer: 2000, showConfirmButton: false });
+            }
         }
         
         function openModalJadwalMassal() { 
@@ -16893,7 +17286,7 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
                                 <span class="text-[9px] font-bold border ${semBadge} px-2 py-0.5 rounded-full">Sem ${m.semester || 1}</span>
                                 ${isLengkap ? '<span class="text-[9px] font-bold text-emerald-400 bg-emerald-900/30 border border-emerald-800/40 px-2 py-0.5 rounded-full"><i class="fas fa-check mr-0.5"></i>Siap Cetak</span>' : '<span class="text-[9px] text-amber-400 border border-amber-800/40 px-2 py-0.5 rounded-full">Belum Lengkap</span>'}
                             </div>
-                            <h4 class="font-black text-white text-sm leading-tight">${mapel?.nama || '—'}</h4>
+                            <h4 class="font-black text-white text-sm leading-tight">${mapel?.nama || '—'}${m.babJudul ? ' — Bab ' + m.babNo + ' ' + m.babJudul : ''}</h4>
                             <p class="text-[10px] text-slate-400 mt-0.5">${m.penyusun || 'Penyusun belum diisi'} • ${m.jenjang || '—'}</p>
                         </div>
                     </div>
@@ -17148,6 +17541,615 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             document.getElementById('form-ma-pertemuan-container').innerHTML = '';
             _maPertemuanCount = 0;
             (m.pertemuan || [{ no:1 }]).forEach(pt => tambahPertemuanMA(pt));
+        }
+
+        // ============================================================
+        // IMPOR MODUL AJAR DARI WORD (.docx) — parser
+        // Membaca modul ajar berformat standar (Bab → Informasi Umum, Komponen Inti, Pertemuan)
+        // dan mengubahnya menjadi data CP, Materi, TP, dan Modul Ajar.
+        // ============================================================
+        function parseModulAjarHtml(html) {
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const kids = Array.from(doc.body.children);
+            const norm = s => (s || '').replace(/\s+/g, ' ').trim();
+            const safe = s => (s || '').replace(/"/g, '\u201D').replace(/<(?=[A-Za-z\/!])/g, '\u2039');
+            const txt = el => norm(el.textContent);
+            const cellText = c => {
+                const parts = [];
+                Array.from(c.children).forEach(ch => {
+                    if (/^(UL|OL)$/.test(ch.tagName)) Array.from(ch.querySelectorAll('li')).forEach(li => parts.push('\u2022 ' + norm(li.textContent)));
+                    else parts.push(norm(ch.textContent));
+                });
+                return (parts.length ? parts.filter(Boolean).join('\n') : norm(c.textContent));
+            };
+            const rowsOf = t => Array.from(t.rows).map(r => Array.from(r.cells).map(cellText));
+            const listItems = els => { const out = []; els.forEach(e => { if (/^(UL|OL)$/.test(e.tagName)) Array.from(e.querySelectorAll('li')).forEach(li => out.push(norm(li.textContent))); }); return out; };
+            const titleCase = s => s.toLowerCase().split(' ').map((w, i) => (i > 0 && /^(yang|dan|di|ke|dari|untuk|melalui|dengan|pada|atau)$/.test(w)) ? w : w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+            // ---- Sampul / meta ----
+            const firstH1 = kids.findIndex(k => k.tagName === 'H1');
+            if (firstH1 < 0) throw new Error('Format tidak dikenali: tidak ditemukan judul bab (Heading 1).');
+            const meta = { mapel: '', fase: 'C', kelas: '', semester: '1', tahun: '', penyusun: '', jumlahMurid: '' };
+            const tocTitle = {};
+            for (let i = 0; i < firstH1; i++) {
+                const t = txt(kids[i]);
+                let m;
+                if ((m = t.match(/^MODUL AJAR\s*\u2022\s*(.+)$/i))) meta.mapel = titleCase(m[1]);
+                if ((m = t.match(/Fase\s+([A-F])\s*\|\s*Kelas\s+(.+?)\s*\|\s*Semester\s+\S+\s*\((\w+)\)/i))) { meta.fase = m[1].toUpperCase(); meta.kelas = m[2]; meta.semester = /genap/i.test(m[3]) ? '2' : '1'; }
+                if ((m = t.match(/^Penyusun\s*:\s*(.+)$/i))) meta.penyusun = m[1];
+                if ((m = t.match(/^Tahun Ajaran\s*:\s*(\d{4}\/\d{4})/i))) meta.tahun = m[1];
+                if ((m = t.match(/^Bab\s+(\d+)\s+(.+?)\s+\d+$/i))) tocTitle[m[1]] = m[2];
+            }
+            // mapel dari sampul bab bila belum ada
+            const h1s = [];
+            kids.forEach((k, i) => { if (k.tagName === 'H1') h1s.push(i); });
+
+            const babs = h1s.map((hi, bi) => {
+                const end = bi + 1 < h1s.length ? h1s[bi + 1] : kids.length;
+                const seg = kids.slice(hi + 1, end);
+                // nomor bab
+                let nomor = bi + 1;
+                for (let j = hi - 1; j >= Math.max(0, hi - 4); j--) { const m = txt(kids[j]).match(/^BAB\s+(\d+)$/i); if (m) { nomor = parseInt(m[1]); break; } }
+                const judul = tocTitle[nomor] || titleCase(txt(kids[hi]));
+                const bab = { nomor, judul, jp: '', jumlahPertemuan: '', periode: '', bukuTeks: '', cp: [], kompAwal: [], tp: [], pemahaman: [], pemantik: [], sarana: [], modelTeks: '', pertemuan: [], asmtDiag: '', asmtForm: '', asmtSum: '', pengayaan: '', remedial: '', refleksiGuru: '', refleksiMurid: '' };
+
+                // cover
+                for (const k of seg) {
+                    if (k.tagName === 'H2') break;
+                    const t = txt(k); let m;
+                    if ((m = t.match(/^Alokasi Waktu\s*:\s*(\d+)\s*JP(?:\s*\((\d+)\s*pertemuan)?/i))) { bab.jp = m[1]; bab.jumlahPertemuan = m[2] || ''; }
+                    if ((m = t.match(/^Periode Materi\s*:\s*(.+)$/i))) bab.periode = m[1];
+                    if ((m = t.match(/^Buku Teks\s*:\s*(.+)$/i))) bab.bukuTeks = m[1];
+                }
+
+                // pecah seksi H3 bernomor
+                const sec = {};
+                let cur = null;
+                seg.forEach(k => {
+                    if (k.tagName === 'H2') { cur = null; return; }
+                    if (k.tagName === 'H3') {
+                        const m = txt(k).match(/^\d+\.\s*(.+)$/);
+                        cur = m ? m[1].toLowerCase() : null;
+                        if (cur) sec[cur] = [];
+                        return;
+                    }
+                    if (cur) sec[cur].push(k);
+                });
+                const get = prefix => { const key = Object.keys(sec).find(k => k.startsWith(prefix)); return key ? sec[key] : []; };
+
+                // CP
+                get('capaian pembelajaran').filter(k => k.tagName === 'TABLE').slice(0, 1).forEach(t => {
+                    rowsOf(t).slice(1).forEach(r => { if (r[0] && r[1]) bab.cp.push({ elemen: r[0], deskripsi: r[1], tp: (r[2] || '').match(/\d+\.[A-Z]/g) || [] }); });
+                });
+                bab.kompAwal = listItems(get('kompetensi awal'));
+                bab.sarana = listItems(get('sarana'));
+                bab.modelTeks = get('model, pendekatan').filter(k => k.tagName === 'P').map(txt).filter(t => /^(Model|Pendekatan|Metode)\s*:/i.test(t)).join('\n');
+                bab.pemahaman = listItems(get('pemahaman bermakna'));
+                bab.pemantik = listItems(get('pertanyaan pemantik'));
+
+                // TP
+                const tpSec = get('tujuan pembelajaran');
+                const tpTable = tpSec.find(k => k.tagName === 'TABLE');
+                if (tpTable) rowsOf(tpTable).slice(1).forEach(r => {
+                    if (!/^\d+\.[A-Z]$/.test(r[0] || '')) return;
+                    let t = norm(r.slice(1).join(' '));
+                    if (!/[.!?]$/.test(t)) t += '.';
+                    bab.tp.push({ kode: r[0], tujuan: t, jp: '', materi: '' });
+                });
+
+                // Rencana pertemuan -> materi per TP + JP per TP
+                const rencana = get('rencana pertemuan');
+                const rencTable = rencana.find(k => k.tagName === 'TABLE');
+                if (rencTable) rowsOf(rencTable).slice(1).forEach(r => {
+                    if (r.length < 6) return;
+                    const materi = r[4] || '';
+                    let mm; const reTP = /(\d+\.[A-Z])(?:\s*\((\d+)\s*(?:dari\s*\d+\s*)?JP\))?/g;
+                    while ((mm = reTP.exec(r[5] || ''))) {
+                        const tp = bab.tp.find(x => x.kode === mm[1]); if (!tp) continue;
+                        if (!tp.materi) tp.materi = materi.replace(/\s+/g, ' ');
+                        if (mm[2]) tp._jpSum = (tp._jpSum || 0) + parseInt(mm[2]);
+                    }
+                });
+                rencana.filter(k => k.tagName === 'P').forEach(p => {
+                    const t = txt(p);
+                    if (/^Alokasi per TP/i.test(t)) { let m; const re = /(\d+\.[A-Z])\s*=\s*(\d+)\s*JP/g; while ((m = re.exec(t))) { const tp = bab.tp.find(x => x.kode === m[1]); if (tp) tp.jp = m[2]; } }
+                });
+                bab.tp.forEach(tp => { if (!tp.jp && tp._jpSum) tp.jp = String(tp._jpSum); delete tp._jpSum; if (!tp.materi) tp.materi = judul; });
+                // elemen CP per TP (pertama yang memuat kode)
+                bab.tp.forEach(tp => { const c = bab.cp.find(x => x.tp.includes(tp.kode)); tp.elemen = c ? c.elemen : ''; });
+
+                // Pertemuan
+                const kp = get('kegiatan pembelajaran per pertemuan');
+                for (let i = 0; i < kp.length; i++) {
+                    if (kp[i].tagName !== 'H4') continue;
+                    const m = txt(kp[i]).match(/^Pertemuan\s+(\d+)\s*[\u2022\u00B7\-\u2013]\s*(.*)$/i);
+                    if (!m) continue;
+                    const pt = { no: parseInt(m[1]), judul: m[2], hari: '', alokasi: '', tujuan: '', pendahuluan: '', inti: '', penutup: '' };
+                    let infoT = null, stepT = null;
+                    for (let j = i + 1; j < kp.length && kp[j].tagName !== 'H4'; j++) {
+                        if (kp[j].tagName === 'TABLE') { if (!infoT) infoT = kp[j]; else if (!stepT) stepT = kp[j]; }
+                    }
+                    if (infoT) rowsOf(infoT).forEach(r => {
+                        const key = (r[0] || '').toLowerCase();
+                        if (key.startsWith('hari')) pt.hari = (r[1] || '').replace(/\s*\(Prosem.*?\)/i, '');
+                        else if (key.startsWith('alokasi')) pt.alokasi = (r[1] || '').replace(/\s*\(([^;)]*)[;)].*$/, ' ($1)').replace(/\(\s*\)/, '').trim();
+                        else if (key.startsWith('tujuan')) pt.tujuan = r[1] || '';
+                    });
+                    if (stepT) {
+                        let bag = null;
+                        const buf = { pendahuluan: [], inti: [], penutup: [] };
+                        rowsOf(stepT).forEach(r => {
+                            const first = (r[0] || '').toUpperCase();
+                            if (/^PENDAHULUAN/.test(first)) { bag = 'pendahuluan'; return; }
+                            if (/^(KEGIATAN )?INTI\b/.test(first)) { bag = 'inti'; return; }
+                            if (/^PENUTUP\s*\(/.test(first) && r.length === 1) { bag = 'penutup'; return; }
+                            if (!bag || r.length < 2 || /^TAHAP$/i.test(first)) return;
+                            const menit = r[2] ? ` (${r[2]} menit)` : '';
+                            buf[bag].push(`${r[0].replace(/\n/g, ' ')}${menit}: ${(r[1] || '').replace(/\n+/g, ' ')}`);
+                        });
+                        pt.pendahuluan = buf.pendahuluan.join('\n');
+                        pt.inti = buf.inti.join('\n');
+                        pt.penutup = buf.penutup.join('\n');
+                    }
+                    bab.pertemuan.push(pt);
+                }
+
+                // Asesmen
+                const asmBlocks = get('asesmen');
+                const asm = asmBlocks.find(k => k.tagName === 'TABLE' && /^jenis/i.test((rowsOf(k)[0] || [''])[0]));
+                if (asm) rowsOf(asm).slice(1).forEach(r => {
+                    const jenis = (r[0] || '').toLowerCase();
+                    const isi = r.slice(1).filter(Boolean).join('. ').replace(/\n+/g, '; ');
+                    if (jenis.startsWith('diagnostik')) bab.asmtDiag = isi;
+                    else if (jenis.startsWith('formatif')) bab.asmtForm = isi;
+                    else if (jenis.startsWith('sumatif')) bab.asmtSum = isi;
+                });
+                else {
+                    let jenisNow = '';
+                    const bucket = { diagnostik: [], formatif: [], sumatif: [] };
+                    asmBlocks.forEach(k => {
+                        if (k.tagName === 'H4') { const t = txt(k).toLowerCase(); jenisNow = ['diagnostik', 'formatif', 'sumatif'].find(j => t.includes(j)) || ''; return; }
+                        if (!jenisNow) return;
+                        if (k.tagName === 'P') bucket[jenisNow].push(txt(k));
+                        else if (k.tagName === 'TABLE' && jenisNow === 'sumatif') {
+                            const rs = rowsOf(k); if (rs[0] && rs[0].length === 2) rs.forEach(r => bucket.sumatif.push(r[0] + ': ' + r[1].replace(/\n+/g, '; ')));
+                        }
+                    });
+                    bab.asmtDiag = bucket.diagnostik.join(' ');
+                    bab.asmtForm = bucket.formatif.join(' ');
+                    bab.asmtSum = bucket.sumatif.join('\n');
+                }
+
+                // Pengayaan & Remedial
+                const pr = get('pengayaan').find(k => k.tagName === 'TABLE');
+                if (pr) rowsOf(pr).forEach(r => {
+                    const lab = (r[0] || '').toLowerCase();
+                    const isi = (r[1] || '').replace(/\n+/g, ' ');
+                    if (lab.startsWith('pengayaan')) bab.pengayaan = isi;
+                    else if (lab.startsWith('remedial')) bab.remedial = isi;
+                });
+
+                // Refleksi
+                const rf = get('refleksi');
+                let rfNow = '';
+                const rfBuf = { guru: [], murid: [] };
+                rf.forEach(k => {
+                    if (k.tagName === 'H4') { const t = txt(k).toLowerCase(); rfNow = /^refleksi guru/.test(t) ? 'guru' : /^refleksi murid/.test(t) ? 'murid' : ''; return; }
+                    if (!rfNow) return;
+                    if (k.tagName === 'UL') listItems([k]).forEach(x => rfBuf[rfNow].push('\u2022 ' + x));
+                    else if (k.tagName === 'P') { const t = txt(k); if (rfNow === 'murid' && !/^Nama\s*:/i.test(t)) rfBuf.murid.push(t); }
+                    else if (k.tagName === 'TABLE') {
+                        const rs = rowsOf(k);
+                        if (rs[0] && rs[0].length === 1) rfBuf[rfNow].push(rs[0][0].replace(/\n+/g, ' ').replace(/\u2026+|\.{4,}|\u2026/g, '...'));
+                        else if (rs[0] && /^no$/i.test(rs[0][0])) rs.slice(1).forEach(r => { if (r[1]) rfBuf[rfNow].push(r[0] + '. ' + r[1]); });
+                    }
+                });
+                bab.refleksiGuru = rfBuf.guru.join('\n');
+                bab.refleksiMurid = rfBuf.murid.join('\n');
+
+                Object.keys(bab).forEach(k => { if (typeof bab[k] === 'string') bab[k] = bab[k]; });
+                bab.pertemuan.forEach(p => { ['judul', 'alokasi', 'pendahuluan', 'inti', 'penutup', 'tujuan', 'hari'].forEach(f => p[f] = safe(p[f])); });
+                return bab;
+            });
+            if (!meta.mapel) meta.mapel = 'Bahasa Indonesia';
+            return { meta, babs };
+        }
+
+        function pilihFileImporModulAjar() {
+            const el = document.getElementById('input-impor-modul-ajar');
+            if (el) el.click();
+        }
+
+        async function mulaiImporModulAjar(inputEl) {
+            const file = inputEl && inputEl.files && inputEl.files[0];
+            if (inputEl) inputEl.value = '';
+            if (!file) return;
+            if (!/\.docx$/i.test(file.name)) {
+                return Swal.fire({ title: 'Format belum didukung', text: 'Pilih file Word berekstensi .docx', icon: 'warning', background: '#1e293b', color: '#f8fafc' });
+            }
+            let hasil;
+            try {
+                Swal.fire({ title: 'Membaca modul ajar...', text: 'Mohon tunggu sebentar', allowOutsideClick: false, didOpen: () => Swal.showLoading(), background: '#1e293b', color: '#f8fafc' });
+                await lazyLoad('https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js', 'mammoth');
+                const buf = await file.arrayBuffer();
+                const res = await window.mammoth.convertToHtml({ arrayBuffer: buf }, { convertImage: window.mammoth.images.imgElement(() => ({ src: '' })) });
+                hasil = parseModulAjarHtml(res.value);
+            } catch (e) {
+                console.warn('Impor modul ajar gagal:', e);
+                return Swal.fire({ title: 'Gagal membaca file', text: (e && e.message) ? e.message : 'File tidak bisa dibaca. Pastikan koneksi internet aktif dan format modul sesuai.', icon: 'error', background: '#1e293b', color: '#f8fafc' });
+            }
+            if (!hasil.babs.length) {
+                return Swal.fire({ title: 'Tidak ada bab', text: 'Struktur bab tidak ditemukan di file ini.', icon: 'error', background: '#1e293b', color: '#f8fafc' });
+            }
+            const mapelAda = db.mapel.some(m => (m.nama || '').trim().toLowerCase() === hasil.meta.mapel.toLowerCase());
+            const totTP = hasil.babs.reduce((s, b) => s + b.tp.length, 0);
+            const totPtm = hasil.babs.reduce((s, b) => s + b.pertemuan.length, 0);
+            const babList = hasil.babs.map(b => `<li>Bab ${b.nomor} ${b.judul} <span style="color:#94a3b8">— ${b.tp.length} TP, ${b.pertemuan.length} pertemuan${b.jp ? ', ' + b.jp + ' JP' : ''}</span></li>`).join('');
+            const konfirmasi = await Swal.fire({
+                title: 'Impor modul ajar?',
+                html: `<div style="text-align:left;font-size:13px;line-height:1.7;">
+                    <div><b>${hasil.meta.mapel}</b> • Fase ${hasil.meta.fase} • Kelas ${hasil.meta.kelas} • Semester ${hasil.meta.semester} • ${hasil.meta.tahun}</div>
+                    <ul style="margin:8px 0 8px 18px;list-style:disc;">${babList}</ul>
+                    <div>Total: <b>${hasil.babs.length}</b> modul, <b>${totTP}</b> TP, <b>${totPtm}</b> pertemuan.</div>
+                    <div style="margin-top:6px;color:#94a3b8;font-size:11px;">Data CP, Materi Semester, TP, dan Modul Ajar akan terisi otomatis.${mapelAda ? '' : ' Mapel baru akan dibuat.'}</div>
+                </div>`,
+                input: 'checkbox',
+                inputValue: 0,
+                inputPlaceholder: 'Timpa data yang sudah ada (TP & modul dengan kode/bab yang sama)',
+                showCancelButton: true,
+                confirmButtonText: 'Impor Sekarang',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#65a30d',
+                background: '#1e293b', color: '#f8fafc'
+            });
+            if (!konfirmasi.isConfirmed) return;
+            let ringkas;
+            try {
+                ringkas = terapkanImporModulAjar(hasil, !!konfirmasi.value);
+            } catch (e) {
+                console.error(e);
+                return Swal.fire({ title: 'Gagal menyimpan', text: e.message || String(e), icon: 'error', background: '#1e293b', color: '#f8fafc' });
+            }
+            try { initModulAjarTab(); } catch (e) { console.warn(e); }
+            Swal.fire({
+                title: 'Impor selesai',
+                html: `<div style="text-align:left;font-size:13px;line-height:1.8;">
+                    <div>Modul Ajar: <b>${ringkas.ma}</b> baru${ringkas.maUpd ? ', ' + ringkas.maUpd + ' diperbarui' : ''}${ringkas.maSkip ? ', ' + ringkas.maSkip + ' dilewati (sudah ada)' : ''}</div>
+                    <div>TP: <b>${ringkas.tp}</b> baru${ringkas.tpUpd ? ', ' + ringkas.tpUpd + ' diperbarui' : ''}${ringkas.tpSkip ? ', ' + ringkas.tpSkip + ' dilewati (sudah ada)' : ''}</div>
+                    <div>Materi Semester: <b>${ringkas.ms}</b> baru${ringkas.msSkip ? ', ' + ringkas.msSkip + ' sudah ada' : ''}</div>
+                    <div>CP: <b>${ringkas.cp}</b> baru${ringkas.cpSkip ? ', ' + ringkas.cpSkip + ' sudah ada' : ''}</div>
+                    ${ringkas.mapelBaru ? '<div>Mapel baru dibuat: <b>' + hasil.meta.mapel + '</b></div>' : ''}
+                </div>`,
+                icon: 'success', confirmButtonColor: '#65a30d', background: '#1e293b', color: '#f8fafc'
+            });
+        }
+
+        function terapkanImporModulAjar(h, timpa) {
+            const meta = h.meta;
+            const stamp = Date.now();
+            const st = { ma: 0, maUpd: 0, maSkip: 0, tp: 0, tpUpd: 0, tpSkip: 0, ms: 0, msSkip: 0, cp: 0, cpSkip: 0, mapelBaru: false };
+
+            // Mapel
+            let mapel = db.mapel.find(m => (m.nama || '').trim().toLowerCase() === meta.mapel.toLowerCase());
+            if (!mapel) { mapel = { id: 'M_' + stamp, nama: meta.mapel, kkm: 75 }; db.mapel.push(mapel); st.mapelBaru = true; }
+            const mapelId = mapel.id;
+            const sem = meta.semester;
+
+            // CP: satu entri per elemen (deskripsi unik dari semua bab digabung)
+            const deskPerElemen = {};
+            h.babs.forEach(b => b.cp.forEach(c => {
+                const arr = deskPerElemen[c.elemen] = deskPerElemen[c.elemen] || [];
+                if (!arr.includes(c.deskripsi)) arr.push(c.deskripsi);
+            }));
+            const cpIdPerElemen = {};
+            Object.keys(deskPerElemen).forEach((elemen, i) => {
+                const ada = db.cp.find(c => c.mapelId == mapelId && (c.elemen || '').trim().toLowerCase() === elemen.toLowerCase());
+                if (ada) { cpIdPerElemen[elemen] = ada.id; st.cpSkip++; return; }
+                const id = 'cp_' + stamp + '_' + i;
+                db.cp.push({ id, mapelId, fase: meta.fase, elemen, deskripsi: deskPerElemen[elemen].join(' '), catatan: 'Diimpor dari modul ajar' });
+                cpIdPerElemen[elemen] = id; st.cp++;
+            });
+
+            const pilihModel = t => /problem based|pbl/i.test(t) ? 'Problem Based Learning (PBL)'
+                : /project based|pjbl/i.test(t) ? 'Project Based Learning (PjBL)'
+                : /discovery/i.test(t) ? 'Discovery Learning'
+                : /inquiry/i.test(t) ? 'Inquiry Learning'
+                : 'Cooperative Learning';
+
+            h.babs.forEach((b, bi) => {
+                // Materi semester per bab
+                const namaMateri = 'Bab ' + b.nomor + ' ' + b.judul;
+                let ms = db.materiSemester.find(m => m.mapelId == mapelId && ((m.nama || '').trim().toLowerCase() === namaMateri.toLowerCase()));
+                if (ms) { st.msSkip++; }
+                else {
+                    ms = { id: 'ms_' + stamp + '_' + bi, mapelId, nama: namaMateri, jp: b.jp || '', pertemuan: b.jumlahPertemuan || String(b.pertemuan.length), urutan: b.nomor, catatan: b.periode ? 'Periode: ' + b.periode : '' };
+                    db.materiSemester.push(ms); st.ms++;
+                }
+
+                // TP
+                const tpIds = [];
+                b.tp.forEach((t, ti) => {
+                    const adaIdx = db.tp.findIndex(x => x.mapelId == mapelId && x.nomor === t.kode && String(x.semester) === String(sem));
+                    const cpId = cpIdPerElemen[t.elemen] || '';
+                    const data = { nomor: t.kode, tujuan: t.tujuan, materi: t.materi, mapelId, cpId, materiId: ms.id, jp: t.jp || '', semester: sem };
+                    if (adaIdx >= 0) {
+                        tpIds.push(db.tp[adaIdx].id);
+                        if (timpa) { db.tp[adaIdx] = { ...db.tp[adaIdx], ...data }; st.tpUpd++; } else st.tpSkip++;
+                    } else {
+                        const id = 'tp_' + stamp + '_' + bi + '_' + ti;
+                        db.tp.push({ id, ...data, profil: '' });
+                        tpIds.push(id); st.tp++;
+                    }
+                });
+
+                // Modul ajar
+                const catatan = [
+                    'Bab ' + b.nomor + ': ' + b.judul + (b.periode ? ' (' + b.periode + ')' : ''),
+                    b.pemahaman.length ? 'Pemahaman bermakna:\n' + b.pemahaman.map(x => '\u2022 ' + x).join('\n') : '',
+                    b.pemantik.length ? 'Pertanyaan pemantik:\n' + b.pemantik.map(x => '\u2022 ' + x).join('\n') : '',
+                    b.modelTeks ? b.modelTeks : ''
+                ].filter(Boolean).join('\n\n');
+                const modul = {
+                    penyusun: meta.penyusun || (db.profil && db.profil.wali) || '',
+                    institusi: (db.profil && db.profil.sekolah) || '',
+                    mapelId,
+                    tahun: meta.tahun,
+                    jenjang: 'Kelas ' + meta.kelas,
+                    semester: sem,
+                    alokasiJP: b.jp ? b.jp + ' JP' : '',
+                    fase: meta.fase,
+                    cpId: '',
+                    cpText: b.cp.map(c => c.elemen + ': ' + c.deskripsi).join('\n'),
+                    tpIds,
+                    kompAwal: b.kompAwal.map(x => '\u2022 ' + x).join('\n'),
+                    profil: '',
+                    targetPD: 'Reguler',
+                    model: pilihModel(b.modelTeks),
+                    media: b.sarana.join('; '),
+                    alat: '',
+                    sumber: b.bukuTeks || '',
+                    pertemuan: b.pertemuan.map((p, i) => ({
+                        no: i + 1,
+                        alokasi: [p.hari, p.alokasi].filter(Boolean).join(' \u2022 '),
+                        materi: p.judul,
+                        pendahuluan: (p.tujuan ? 'Tujuan: ' + p.tujuan + '\n' : '') + p.pendahuluan,
+                        inti: p.inti,
+                        penutup: p.penutup
+                    })),
+                    asmtDiag: b.asmtDiag,
+                    asmtForm: b.asmtForm,
+                    asmtSum: b.asmtSum,
+                    instrumen: '',
+                    pengayaan: b.pengayaan,
+                    remedial: b.remedial,
+                    refleksiGuru: b.refleksiGuru,
+                    refleksiPD: b.refleksiMurid,
+                    catatan,
+                    babNo: b.nomor,
+                    babJudul: b.judul,
+                    updatedAt: getTodayLocalStr()
+                };
+                const idxMa = db.modulAjar.findIndex(m => m.mapelId == mapelId && String(m.semester) === String(sem) && m.babNo == b.nomor);
+                if (idxMa >= 0) {
+                    if (timpa) { db.modulAjar[idxMa] = { ...db.modulAjar[idxMa], ...modul }; st.maUpd++; } else st.maSkip++;
+                } else {
+                    modul.id = 'ma_' + stamp + '_' + bi;
+                    modul.createdAt = getTodayLocalStr();
+                    db.modulAjar.push(modul); st.ma++;
+                }
+            });
+
+            saveDB();
+            return st;
+        }
+
+        // ============================================================
+        // IMPOR KALENDER PENDIDIKAN & JADWAL PELAJARAN DARI WORD (.docx)
+        // ============================================================
+        function parseKalenderJadwalHtml(html) {
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const kids = Array.from(doc.body.children);
+            const norm = s => (s || '').replace(/\s+/g, ' ').trim();
+            const BLN = { januari: 1, februari: 2, maret: 3, april: 4, mei: 5, juni: 6, juli: 7, agustus: 8, september: 9, oktober: 10, november: 11, desember: 12 };
+            const pad = n => String(n).padStart(2, '0');
+            const iso = (y, m, d) => y + '-' + pad(m) + '-' + pad(d);
+            const tok = s => { // "13 Juli 2026" / "13" / "13 Juli"
+                const m = norm(s).match(/(\d{1,2})(?:\s+([A-Za-z]+))?(?:\s+(\d{4}))?/);
+                if (!m) return null;
+                const bln = m[2] ? BLN[m[2].toLowerCase()] : null;
+                return { d: parseInt(m[1]), m: bln || null, y: m[3] ? parseInt(m[3]) : null };
+            };
+            const parseRentang = (s) => {
+                let t = norm(s).replace(/\(.*?\)/g, '').replace(/\*/g, '');
+                const atau = t.match(/(\d{1,2})\s+atau\s+\d{1,2}\s+([A-Za-z]+)\s+(\d{4})/i);
+                if (atau && BLN[atau[2].toLowerCase()]) { const d = iso(+atau[3], BLN[atau[2].toLowerCase()], +atau[1]); return { start: d, end: d }; }
+                const parts = t.split(/\s*[\u2013\u2014-]\s*/).filter(Boolean);
+                const e = tok(parts[parts.length - 1]);
+                if (!e || !e.m || !e.y) return null;
+                let st = parts.length > 1 ? tok(parts[0]) : e;
+                if (!st) return null;
+                const sm = st.m || e.m;
+                let sy = st.y || e.y;
+                if (!st.y && sm > e.m) sy = e.y - 1;
+                return { start: iso(sy, sm, st.d), end: iso(e.y, e.m, e.d) };
+            };
+            const hariDalam = (start, end) => {
+                const out = [];
+                const cur = new Date(start + 'T00:00:00'), fin = new Date(end + 'T00:00:00');
+                for (let i = 0; i < 400 && cur <= fin; i++) {
+                    if (cur.getDay() !== 0) out.push(iso(cur.getFullYear(), cur.getMonth() + 1, cur.getDate()));
+                    cur.setDate(cur.getDate() + 1);
+                }
+                return out;
+            };
+            const rowsOf = t => Array.from(t.rows).map(r => Array.from(r.cells).map(c => norm(c.textContent)));
+
+            const res = { tahunAjaran: '', semester: { gasal: { mulai: '', akhir: '', libur: [], asesmen: [] }, genap: { mulai: '', akhir: '', libur: [], asesmen: [] } }, jadwal: {}, wali: '' };
+            const all = kids.map(k => norm(k.textContent)).join(' \n ');
+            let m = all.match(/Tahun Ajaran\s+(\d{4}\/\d{4})/i); if (m) res.tahunAjaran = m[1];
+            m = all.match(/Wali Kelas\s*:\s*([^\u2022\n]+?)\s*(?:\u2022|Semester|$)/i); if (m) res.wali = norm(m[1]);
+
+            // Ringkasan periode & rincian kegiatan
+            kids.forEach(k => {
+                if (k.tagName !== 'TABLE') return;
+                const rows = rowsOf(k);
+                if (!rows.length) return;
+                const head = rows[0].join('|').toLowerCase();
+                if (head.startsWith('periode|waktu')) {
+                    rows.slice(1).forEach(r => {
+                        const key = (r[0] || '').toLowerCase();
+                        const sem = key === 'semester gasal' ? 'gasal' : key === 'semester genap' ? 'genap' : '';
+                        if (!sem) return;
+                        const rg = parseRentang(r[1] || '');
+                        if (rg) { res.semester[sem].mulai = rg.start; res.semester[sem].akhir = rg.end; }
+                    });
+                } else if (head.startsWith('no|tanggal|kegiatan')) {
+                    let sem = 'gasal';
+                    rows.slice(1).forEach(r => {
+                        if (r.length === 1) { sem = /genap/i.test(r[0]) ? 'genap' : 'gasal'; return; }
+                        const [, tgl, keg, jenis] = r;
+                        const rg = parseRentang(tgl || '');
+                        if (!rg) return;
+                        if (/libur/i.test(jenis || '')) {
+                            hariDalam(rg.start, rg.end).forEach(d => res.semester[sem].libur.push({ tgl: d, ket: (keg || 'Libur').replace(/\s*\(menyesuaikan.*?\)/i, '') }));
+                        } else if (/asesmen/i.test(jenis || '')) {
+                            res.semester[sem].asesmen.push({ ket: keg, mulai: rg.start, akhir: rg.end });
+                        }
+                    });
+                }
+            });
+
+            // Jadwal pelajaran
+            const jt = kids.find(k => k.tagName === 'TABLE' && /senin/i.test(k.rows[0] ? k.rows[0].textContent : '') && /selasa/i.test(k.rows[0].textContent) && /jp/i.test(k.rows[0].textContent));
+            if (jt) {
+                const hari = Array.from(jt.rows[0].cells).map(c => norm(c.textContent)).slice(2);
+                hari.forEach(h => res.jadwal[h] = []);
+                const last = {}; // entri terakhir per hari untuk penggabungan JP berurutan
+                Array.from(jt.rows).slice(1).forEach(row => {
+                    const cells = Array.from(row.cells);
+                    if (cells.length < 3) { hari.forEach(h => last[h] = null); return; } // baris istirahat
+                    const jp = parseInt((cells[0].textContent.match(/\d+/) || [])[0]);
+                    const wm = norm(cells[1].textContent).match(/(\d{1,2})[.:](\d{2})\s*[\u2013\u2014-]\s*(\d{1,2})[.:](\d{2})/);
+                    if (!jp || !wm) return;
+                    const mulai = pad(+wm[1]) + ':' + wm[2], selesai = pad(+wm[3]) + ':' + wm[4];
+                    hari.forEach((h, i) => {
+                        const c = cells[i + 2]; if (!c) return;
+                        const mapel = norm(c.textContent);
+                        if (!mapel || /^[\u2014\u2013-]+$/.test(mapel)) { last[h] = null; return; }
+                        const milikWali = !!c.querySelector('strong');
+                        const prev = last[h];
+                        if (prev && prev.mapel === mapel && prev._jpAkhir === jp - 1) {
+                            prev.selesai = selesai; prev._jpAkhir = jp; prev.jp = prev._jpAwal + '-' + jp;
+                        } else {
+                            const e = { jp: String(jp), mulai, selesai, mapel, _milikWali: milikWali, _jpAwal: jp, _jpAkhir: jp };
+                            res.jadwal[h].push(e); last[h] = e;
+                        }
+                    });
+                });
+                Object.keys(res.jadwal).forEach(h => res.jadwal[h].forEach(e => { delete e._jpAwal; delete e._jpAkhir; }));
+            }
+            if (!res.jadwal || !Object.values(res.jadwal).some(a => a.length) && !res.semester.gasal.mulai && !res.semester.genap.mulai) {
+                throw new Error('Kalender pendidikan dan jadwal pelajaran tidak ditemukan di file ini.');
+            }
+            return res;
+        }
+
+        function pilihFileImporKalenderJadwal() {
+            const el = document.getElementById('input-impor-kalender-jadwal');
+            if (el) el.click();
+        }
+
+        async function mulaiImporKalenderJadwal(inputEl) {
+            const file = inputEl && inputEl.files && inputEl.files[0];
+            if (inputEl) inputEl.value = '';
+            if (!file) return;
+            const gaya = { background: '#1e293b', color: '#f8fafc' };
+            if (!/\.docx$/i.test(file.name)) return Swal.fire({ title: 'Format belum didukung', text: 'Pilih file Word berekstensi .docx', icon: 'warning', ...gaya });
+            let h;
+            try {
+                Swal.fire({ title: 'Membaca file...', allowOutsideClick: false, didOpen: () => Swal.showLoading(), ...gaya });
+                await lazyLoad('https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js', 'mammoth');
+                const buf = await file.arrayBuffer();
+                const r = await window.mammoth.convertToHtml({ arrayBuffer: buf }, { convertImage: window.mammoth.images.imgElement(() => ({ src: '' })) });
+                h = parseKalenderJadwalHtml(r.value);
+            } catch (e) {
+                console.warn('Impor kalender/jadwal gagal:', e);
+                return Swal.fire({ title: 'Gagal membaca file', text: (e && e.message) || 'File tidak bisa dibaca. Pastikan koneksi internet aktif.', icon: 'error', ...gaya });
+            }
+            const fmt = t => t ? new Date(t + 'T00:00:00').toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }) : '-';
+            const g = h.semester.gasal, n = h.semester.genap;
+            const liburDalam = s => s.libur.filter(l => l.tgl >= s.mulai && l.tgl <= s.akhir).length;
+            const jmlJadwal = Object.values(h.jadwal).reduce((s, a) => s + a.length, 0);
+            const adaJadwalLama = Object.values(db.jadwal || {}).some(a => Array.isArray(a) && a.length);
+            const opsiSem = (id, label, s, cek) => s.mulai ? `<label style="display:block;margin:4px 0;cursor:pointer;"><input type="radio" name="ki-sem" value="${id}" ${cek ? 'checked' : ''}> ${label}: ${fmt(s.mulai)} \u2013 ${fmt(s.akhir)} <span style="color:#94a3b8">(${liburDalam(s)} hari libur)</span></label>` : '';
+            const konfirmasi = await Swal.fire({
+                title: 'Impor kalender & jadwal?',
+                html: `<div style="text-align:left;font-size:13px;line-height:1.6;">
+                    <div style="font-weight:800;margin-bottom:4px;">Kalender hari efektif</div>
+                    ${opsiSem('gasal', 'Semester Gasal', g, true)}
+                    ${opsiSem('genap', 'Semester Genap', n, !g.mulai)}
+                    <label style="display:block;margin:4px 0;cursor:pointer;"><input type="radio" name="ki-sem" value="none"> Lewati kalender</label>
+                    <div style="font-weight:800;margin:12px 0 4px;">Jadwal pelajaran</div>
+                    <label style="display:block;cursor:pointer;"><input type="checkbox" id="ki-jadwal" ${jmlJadwal ? 'checked' : 'disabled'}> Impor jadwal (${jmlJadwal} sesi, ${Object.keys(h.jadwal).filter(k => h.jadwal[k].length).join(', ')})</label>
+                    ${adaJadwalLama ? '<div style="color:#fbbf24;font-size:11px;margin-top:4px;">Jadwal hari yang sama akan diganti dengan isi file.</div>' : ''}
+                    <div style="color:#94a3b8;font-size:11px;margin-top:10px;">Pengaturan libur Sabtu/Minggu Anda tidak diubah. Guru pada jadwal diisi hanya untuk pelajaran yang ditandai (tebal) di file.</div>
+                </div>`,
+                showCancelButton: true,
+                confirmButtonText: 'Impor Sekarang',
+                cancelButtonText: 'Batal',
+                confirmButtonColor: '#0284c7',
+                preConfirm: () => ({
+                    sem: (document.querySelector('input[name="ki-sem"]:checked') || {}).value || 'none',
+                    jadwal: !!(document.getElementById('ki-jadwal') || {}).checked
+                }),
+                ...gaya
+            });
+            if (!konfirmasi.isConfirmed) return;
+            const pilih = konfirmasi.value;
+            if (pilih.sem === 'none' && !pilih.jadwal) return;
+            let ringkas;
+            try { ringkas = terapkanImporKalenderJadwal(h, pilih); }
+            catch (e) { console.error(e); return Swal.fire({ title: 'Gagal menyimpan', text: e.message || String(e), icon: 'error', ...gaya }); }
+            try { if (typeof initHariEfektif === 'function') initHariEfektif(); } catch (e) { console.warn(e); }
+            try { if (typeof renderJadwalTab === 'function') renderJadwalTab(); } catch (e) { console.warn(e); }
+            Swal.fire({
+                title: 'Impor selesai',
+                html: `<div style="text-align:left;font-size:13px;line-height:1.8;">
+                    ${pilih.sem !== 'none' ? `<div>Hari efektif: ${fmt(ringkas.mulai)} \u2013 ${fmt(ringkas.akhir)}</div><div>Hari libur: <b>${ringkas.libur}</b> baru${ringkas.liburAda ? ', ' + ringkas.liburAda + ' sudah ada' : ''}</div>` : ''}
+                    ${pilih.jadwal ? `<div>Jadwal: <b>${ringkas.sesi}</b> sesi di ${ringkas.hari} hari</div>` : ''}
+                </div>`,
+                icon: 'success', confirmButtonColor: '#0284c7', ...gaya
+            });
+        }
+
+        function terapkanImporKalenderJadwal(h, pilih) {
+            const st = { mulai: '', akhir: '', libur: 0, liburAda: 0, sesi: 0, hari: 0 };
+            if (pilih.sem === 'gasal' || pilih.sem === 'genap') {
+                const s = h.semester[pilih.sem];
+                if (!s.mulai || !s.akhir) throw new Error('Tanggal semester tidak ditemukan.');
+                const d = (typeof getHEData === 'function') ? getHEData() : (db.hariEfektif = db.hariEfektif || { mulai: '', akhir: '', liburSabtu: false, liburMinggu: true, hariLibur: [] });
+                d.hariLibur = d.hariLibur || [];
+                db.libur = db.libur || [];
+                d.mulai = s.mulai; d.akhir = s.akhir;
+                st.mulai = s.mulai; st.akhir = s.akhir;
+                s.libur.filter(l => l.tgl >= s.mulai && l.tgl <= s.akhir).forEach(l => {
+                    if (d.hariLibur.find(x => x.tgl === l.tgl)) st.liburAda++;
+                    else { d.hariLibur.push({ tgl: l.tgl, ket: l.ket }); st.libur++; }
+                    if (!db.libur.find(x => x.tgl === l.tgl)) db.libur.push({ tgl: l.tgl, ket: l.ket });
+                });
+                d.hariLibur.sort((a, b) => a.tgl.localeCompare(b.tgl));
+                db.hariEfektif = d;
+            }
+            if (pilih.jadwal) {
+                db.jadwal = db.jadwal || { Senin: [], Selasa: [], Rabu: [], Kamis: [], Jumat: [], Sabtu: [] };
+                Object.keys(h.jadwal).forEach(hari => {
+                    if (!h.jadwal[hari].length) return;
+                    db.jadwal[hari] = h.jadwal[hari].map(e => ({ jp: e.jp, mulai: e.mulai, selesai: e.selesai, mapel: e.mapel, guru: (e._milikWali && h.wali) ? h.wali : '-' }));
+                    st.sesi += db.jadwal[hari].length; st.hari++;
+                });
+            }
+            saveDB();
+            return st;
         }
 
         function hapusModulAjar(id) {
@@ -23126,6 +24128,48 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             return parseInt(d) + ' ' + BLN[parseInt(m) - 1] + ' ' + y;
         }
 
+        // Tampilan kartu rekap absensi untuk HP (tabel tetap dipakai desktop & cetak)
+        function renderRekapAbsensiCards(data) {
+            const box = document.getElementById('rkabs-cards');
+            if (!box) return;
+            if (!data.length) {
+                box.innerHTML = '<div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center text-slate-500 italic text-xs">Belum ada data absensi pada periode ini.</div>';
+                return;
+            }
+            const esc = (typeof escapeHtml === 'function') ? escapeHtml : (t => String(t));
+            box.innerHTML = data.map(d => {
+                const warna = d.pct >= 80
+                    ? { t: 'text-emerald-400', bar: 'bg-emerald-500' }
+                    : d.pct >= 60
+                        ? { t: 'text-amber-400', bar: 'bg-amber-500' }
+                        : { t: 'text-red-400', bar: 'bg-red-500' };
+                const tile = (lbl, val, tc, bd) => `<div class="rounded-lg bg-slate-950 border ${bd} py-1.5 text-center">
+                        <p class="text-[9px] font-bold ${tc} uppercase tracking-wide">${lbl}</p>
+                        <p class="text-base font-black ${tc} leading-tight">${val}</p>
+                    </div>`;
+                return `<div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 shadow-sm">
+                    <div class="flex items-start gap-3">
+                        <span class="w-8 h-8 shrink-0 rounded-lg bg-slate-800 text-slate-400 text-xs font-black font-mono flex items-center justify-center">${d.no}</span>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-[13px] font-extrabold text-slate-100 leading-snug break-words uppercase">${esc(d.nama)}</p>
+                            <p class="text-[10px] text-slate-500 mt-0.5">${d.masuk} hari tercatat</p>
+                        </div>
+                        <div class="text-right shrink-0">
+                            <p class="text-lg font-black ${warna.t} leading-none">${d.pct}%</p>
+                            <p class="text-[9px] font-black ${warna.t} mt-1">${d.label}</p>
+                        </div>
+                    </div>
+                    <div class="h-1.5 bg-slate-800 rounded-full mt-3 overflow-hidden"><div class="h-full ${warna.bar} rounded-full" style="width:${d.pct}%"></div></div>
+                    <div class="grid grid-cols-4 gap-2 mt-3">
+                        ${tile('Hadir', d.H, 'text-emerald-400', 'border-emerald-900/30')}
+                        ${tile('Sakit', d.S, 'text-amber-400', 'border-amber-900/30')}
+                        ${tile('Izin', d.I, 'text-blue-400', 'border-blue-900/30')}
+                        ${tile('Alfa', d.A, 'text-red-400', 'border-red-900/30')}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
         function renderRekapAbsensi() {
             const range = getRkAbsDateRange();
             if (!range) return;
@@ -23145,6 +24189,7 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             let totalH = 0, totalS = 0, totalI = 0, totalA = 0;
             let totalHari = tglList.filter(tgl => db.absensi[tgl]).length;
 
+            const cardData = [];
             const rows = siswaList.map((s, idx) => {
                 let H = 0, S = 0, I = 0, A = 0;
                 tglList.forEach(tgl => {
@@ -23161,6 +24206,7 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
                 const pct = masuk > 0 ? Math.round((H / masuk) * 100) : 0;
                 const statusColor = pct >= 80 ? 'text-emerald-400' : pct >= 60 ? 'text-amber-400' : 'text-red-400';
                 const statusLabel = pct >= 80 ? '✓ Baik' : pct >= 60 ? '⚠ Perhatian' : '✗ Rendah';
+                cardData.push({ no: idx + 1, nama: s.nama, H, S, I, A, masuk, pct, label: statusLabel });
                 return `<tr class="hover:bg-slate-800/40 transition">
                     <td class="p-3 text-center font-mono text-slate-400">${idx + 1}</td>
                     <td class="p-3 font-bold text-slate-100">${s.nama}</td>
@@ -23177,6 +24223,7 @@ document.fonts.ready.then(function() { setTimeout(function() { window.print(); }
             document.getElementById('rkabs-tbody').innerHTML = rows.length
                 ? rows.join('')
                 : '<tr><td colspan="9" class="p-6 text-center text-slate-500 italic">Belum ada data absensi pada periode ini.</td></tr>';
+            renderRekapAbsensiCards(cardData);
 
             // Update statistik
             document.getElementById('rkabs-stat-hari').textContent = totalHari;
