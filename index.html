@@ -54,6 +54,13 @@
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
         .modal-enter { animation: modalFadeIn 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
+        @keyframes bounceIn {
+            0%   { transform: translateX(-50%) translateY(30px); opacity:0; }
+            60%  { transform: translateX(-50%) translateY(-6px); opacity:1; }
+            80%  { transform: translateX(-50%) translateY(3px); }
+            100% { transform: translateX(-50%) translateY(0); opacity:1; }
+        }
+        .animate-bounce-in { animation: bounceIn 0.45s cubic-bezier(.4,1.6,.6,1) forwards; }
         @keyframes modalFadeIn { from { opacity: 0; transform: scale(0.97) translateY(5px); } to { opacity: 1; transform: scale(1) translateY(0); } }
         .swal2-popup { background: #1e293b !important; color: #f8fafc !important; border: 1px solid #334155; }
         .swal2-title, .swal2-html-container { color: #f8fafc !important; }
@@ -5610,6 +5617,11 @@
                 <input type="text" id="form-ej-guru" placeholder="cth: Pak Ahmad, S.Pd" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-white outline-none focus:border-emerald-500">
                 <p class="text-[9px] text-slate-500 mt-1">Kosongkan jika tidak ada guru / belum diisi</p>
             </div>
+            <div class="flex items-center gap-2 bg-amber-900/20 border border-amber-700/40 rounded-lg px-3 py-2">
+                <input type="checkbox" id="form-ej-istirahat" class="w-4 h-4 accent-amber-500 cursor-pointer" onchange="toggleIstirahatMode()">
+                <label for="form-ej-istirahat" class="text-xs text-amber-300 font-semibold cursor-pointer select-none"><i class="fas fa-coffee mr-1.5 text-amber-400"></i> Ini adalah Jam Istirahat</label>
+                <span class="text-[9px] text-slate-500 ml-auto">Baris ini tidak dihitung sebagai JP</span>
+            </div>
             <div class="flex justify-between items-center gap-2 pt-1">
                 <button onclick="hapusBarisJadwal()" id="btn-hapus-ej" class="px-3 py-1.5 rounded-lg bg-red-900/40 text-red-400 border border-red-900/50 hover:bg-red-600 hover:text-white text-xs font-bold transition hidden"><i class="fas fa-trash mr-1"></i> Hapus Baris</button>
                 <div class="flex gap-2 ml-auto">
@@ -7036,21 +7048,27 @@
         _updateHeaderDateTime();
         setInterval(_updateHeaderDateTime, 1000);
 
-        // Live Schedule — update tiap 1 menit
-        setInterval(() => {
+        // Live Schedule — update tiap 1 detik untuk countdown live
+        let _liveSchedInterval = setInterval(() => {
             const d = new Date();
-            updateLiveScheduleInfo(d.getHours(), d.getMinutes(), d.getDay());
-        }, 60000);
+            updateLiveScheduleInfo(d.getHours(), d.getMinutes(), d.getDay(), d.getSeconds());
+        }, 1000);
         // Update sekali saat pertama load
-        setTimeout(() => { const d = new Date(); updateLiveScheduleInfo(d.getHours(), d.getMinutes(), d.getDay()); }, 600);
+        setTimeout(() => { const d = new Date(); updateLiveScheduleInfo(d.getHours(), d.getMinutes(), d.getDay(), d.getSeconds()); }, 600);
 
-        function updateLiveScheduleInfo(hours, minutes, dayIndex) {
+        // Track notifikasi pergantian supaya tidak spam
+        let _notifSentFor = '';
+
+        function updateLiveScheduleInfo(hours, minutes, dayIndex, seconds) {
             const dNames = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
             const today = dNames[dayIndex];
+            const sec = seconds || 0;
+            const currentTotalSecs = (hours * 3600) + (minutes * 60) + sec;
             const currentTotalMins = (hours * 60) + minutes;
             const statusContainer = document.getElementById('live-schedule-status');
+            if (!statusContainer) return;
 
-            // Cek hari libur terlebih dahulu
+            // Cek hari libur
             const todayStr = getTodayLocalStr();
             const liburHariIni = isTanggalLibur(todayStr);
             if (liburHariIni) {
@@ -7061,7 +7079,7 @@
                 </div>`;
                 return;
             }
-            
+
             if (!db.jadwal[today] || db.jadwal[today].length === 0) {
                 statusContainer.innerHTML = '<div class="text-slate-500 text-center italic py-2">Tidak ada jadwal terdaftar hari ini.</div>';
                 return;
@@ -7069,6 +7087,7 @@
 
             let activeMapel = null;
             let nextMapel = null;
+            let activeIstirahat = null;
 
             let todayJadwal = [...db.jadwal[today]].sort((a,b) => {
                 let aM = parseInt(a.mulai.split(':')[0])*60 + parseInt(a.mulai.split(':')[1]);
@@ -7080,54 +7099,194 @@
                 let j = todayJadwal[i];
                 let startMins = parseInt(j.mulai.split(':')[0])*60 + parseInt(j.mulai.split(':')[1]);
                 let endMins = parseInt(j.selesai.split(':')[0])*60 + parseInt(j.selesai.split(':')[1]);
-                
                 if (currentTotalMins >= startMins && currentTotalMins < endMins) {
-                    activeMapel = j;
-                    if (i + 1 < todayJadwal.length) nextMapel = todayJadwal[i+1];
+                    if (j.isIstirahat) {
+                        activeIstirahat = j;
+                        // Cari pelajaran berikutnya setelah istirahat
+                        for (let k = i + 1; k < todayJadwal.length; k++) {
+                            if (!todayJadwal[k].isIstirahat) { nextMapel = todayJadwal[k]; break; }
+                        }
+                    } else {
+                        activeMapel = j;
+                        // Cari berikutnya (bisa pelajaran atau istirahat)
+                        if (i + 1 < todayJadwal.length) nextMapel = todayJadwal[i+1];
+                    }
                     break;
                 } else if (currentTotalMins < startMins && !nextMapel) {
-                    nextMapel = j; 
+                    nextMapel = j;
                 }
             }
 
+            // Helper: label guru
             const guruLabel = (j) => {
                 const g = j.guru && j.guru !== '-' ? j.guru : null;
-                return g ? `<span class="flex items-center gap-1 text-[10px] text-amber-300 font-semibold"><i class="fas fa-chalkboard-teacher text-amber-400"></i> ${g}</span>` : `<span class="text-[10px] text-slate-600 italic">Guru belum diisi</span>`;
+                return g
+                    ? `<span class="flex items-center gap-1 text-[10px] text-amber-300 font-semibold"><i class="fas fa-chalkboard-teacher text-amber-400 text-[9px]"></i> ${g}</span>`
+                    : `<span class="text-[10px] text-slate-600 italic">Guru belum diisi</span>`;
+            };
+
+            // Helper: format detik → HH:MM:SS atau MM:SS
+            const fmtCountdown = (totalSecs) => {
+                if(totalSecs <= 0) return '00:00';
+                const h = Math.floor(totalSecs / 3600);
+                const m = Math.floor((totalSecs % 3600) / 60);
+                const s = totalSecs % 60;
+                const mm = String(m).padStart(2,'0');
+                const ss = String(s).padStart(2,'0');
+                return h > 0 ? `${h}:${mm}:${ss}` : `${mm}:${ss}`;
             };
 
             let html = '';
+
+            if (activeIstirahat) {
+                // Sedang jam istirahat
+                const endSecs = parseInt(activeIstirahat.selesai.split(':')[0])*3600 + parseInt(activeIstirahat.selesai.split(':')[1])*60;
+                const startSecs = parseInt(activeIstirahat.mulai.split(':')[0])*3600 + parseInt(activeIstirahat.mulai.split(':')[1])*60;
+                const sisaSecs = endSecs - currentTotalSecs;
+                const durasiTotal = endSecs - startSecs;
+                const durasiMins = Math.round(durasiTotal / 60);
+                const progressPct = Math.max(0, Math.min(100, Math.round(((currentTotalSecs - startSecs) / durasiTotal) * 100)));
+                const sisaMins = sisaSecs / 60;
+                const countColor = sisaMins <= 3 ? 'text-red-400' : sisaMins <= 7 ? 'text-amber-400' : 'text-amber-300';
+                const barColor = sisaMins <= 3 ? 'bg-red-500' : 'bg-amber-500';
+
+                html += `<div class="bg-amber-900/25 border border-amber-700/50 p-2.5 rounded relative overflow-hidden">
+                    <div class="absolute left-0 top-0 bottom-0 w-1 ${barColor}"></div>
+                    <div class="pl-2">
+                        <span class="text-[9px] uppercase font-bold text-amber-400 tracking-wider">☕ Sedang Istirahat</span>
+                        <h5 class="text-sm font-black text-amber-200 mt-0.5">ISTIRAHAT <span class="text-xs font-normal text-amber-400/70">(${durasiMins} menit)</span></h5>
+                        <div class="flex justify-between items-center mt-1">
+                            <span class="text-[10px] text-slate-400"><i class="fas fa-clock mr-1"></i>${activeIstirahat.mulai} – ${activeIstirahat.selesai}</span>
+                            <span class="font-mono font-bold text-xs ${countColor}"><i class="fas fa-hourglass-half mr-1 text-[9px]"></i>${fmtCountdown(sisaSecs)} lagi</span>
+                        </div>
+                        <div class="mt-2 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                            <div class="${barColor} h-full rounded-full transition-all duration-1000" style="width:${progressPct}%"></div>
+                        </div>
+                        <div class="flex justify-between items-center mt-1">
+                            <span class="text-[9px] text-slate-500">${progressPct}% selesai</span>
+                            ${nextMapel ? `<span class="text-[9px] text-amber-400/70"><i class="fas fa-arrow-right mr-1 text-[8px]"></i>Lanjut: ${nextMapel.mapel} pukul ${nextMapel.mulai}</span>` : ''}
+                        </div>
+                    </div>
+                </div>`;
+
+                // Tampilkan pelajaran berikutnya setelah istirahat
+                if (nextMapel) {
+                    const nStartSecs = parseInt(nextMapel.mulai.split(':')[0])*3600 + parseInt(nextMapel.mulai.split(':')[1])*60;
+                    const diffSecs = nStartSecs - currentTotalSecs;
+                    const isSoon = (diffSecs / 60) < 5;
+                    html += `<div class="border p-2.5 rounded mt-2 ${isSoon ? 'bg-orange-950/30 border-orange-700/50' : 'bg-slate-900/80 border-slate-800'}">
+                        <div class="flex justify-between items-center">
+                            <span class="text-[9px] uppercase font-bold ${isSoon ? 'text-orange-400' : 'text-blue-400'} tracking-wider">⏭ Setelah Istirahat</span>
+                            <span class="font-mono font-bold text-xs ${isSoon ? 'text-orange-300' : 'text-blue-300'}">${fmtCountdown(diffSecs)}</span>
+                        </div>
+                        <div class="flex justify-between items-center mt-1 flex-wrap gap-1">
+                            <h5 class="text-xs font-bold text-slate-200">${nextMapel.mapel}</h5>
+                            <span class="text-[10px] text-slate-400"><i class="fas fa-clock mr-1"></i>${nextMapel.mulai}</span>
+                        </div>
+                        <div class="mt-1">${guruLabel(nextMapel)}</div>
+                        ${isSoon ? `<div class="mt-1.5 text-[9px] text-orange-300/80 flex items-center gap-1"><i class="fas fa-bell animate-bounce text-[8px]"></i> Istirahat hampir selesai!</div>` : ''}
+                    </div>`;
+                }
+                statusContainer.innerHTML = html;
+                return;
+            }
+
             if (activeMapel) {
+                // Hitung sisa waktu pelajaran aktif (dalam detik)
+                const endSecs = parseInt(activeMapel.selesai.split(':')[0])*3600 + parseInt(activeMapel.selesai.split(':')[1])*60;
+                const startSecs = parseInt(activeMapel.mulai.split(':')[0])*3600 + parseInt(activeMapel.mulai.split(':')[1])*60;
+                const sisaSecs = endSecs - currentTotalSecs;
+                const durasiTotal = endSecs - startSecs;
+                const progressPct = Math.max(0, Math.min(100, Math.round(((currentTotalSecs - startSecs) / durasiTotal) * 100)));
+
+                // Warna countdown: merah jika ≤5 menit, kuning ≤15 mnt, hijau lainnya
+                const sisaMins = sisaSecs / 60;
+                const countColor = sisaMins <= 5 ? 'text-red-400' : sisaMins <= 15 ? 'text-amber-400' : 'text-emerald-400';
+                const barColor = sisaMins <= 5 ? 'bg-red-500' : sisaMins <= 15 ? 'bg-amber-400' : 'bg-emerald-500';
+
+                // Notifikasi H-5 menit sekali per pergantian
+                if (nextMapel) {
+                    const notifKey = `${today}-${activeMapel.mapel}-${activeMapel.selesai}`;
+                    if (sisaMins <= 5 && sisaMins > 4.9 && _notifSentFor !== notifKey) {
+                        _notifSentFor = notifKey;
+                        _showPergantianToast(activeMapel, nextMapel, Math.ceil(sisaMins));
+                    }
+                    // Reset key saat pelajaran baru mulai
+                    if (sisaMins > 6) { const resetKey = `${today}-${activeMapel.mapel}-${activeMapel.selesai}`; if(_notifSentFor === resetKey) _notifSentFor = ''; }
+                }
+
                 html += `<div class="bg-emerald-900/30 border border-emerald-900/50 p-2.5 rounded relative overflow-hidden">
-                            <div class="absolute left-0 top-0 bottom-0 w-1 bg-emerald-500"></div>
-                            <div class="pl-2">
-                                <span class="text-[9px] uppercase font-bold text-emerald-400 tracking-wider">🟢 Sedang Berlangsung</span>
-                                <h5 class="text-sm font-black text-slate-100 mt-0.5">${activeMapel.mapel}</h5>
-                                <div class="flex justify-between items-center mt-1.5 flex-wrap gap-1">
-                                    <span class="text-[10px] text-slate-400"><i class="fas fa-clock mr-1"></i>${activeMapel.mulai} – ${activeMapel.selesai}</span>
-                                    ${guruLabel(activeMapel)}
-                                </div>
-                            </div>
-                         </div>`;
+                    <div class="absolute left-0 top-0 bottom-0 w-1 ${barColor}"></div>
+                    <div class="pl-2">
+                        <span class="text-[9px] uppercase font-bold text-emerald-400 tracking-wider">🟢 Sedang Berlangsung</span>
+                        <h5 class="text-sm font-black text-slate-100 mt-0.5">${activeMapel.mapel}</h5>
+                        <div class="flex justify-between items-center mt-1 flex-wrap gap-1">
+                            <span class="text-[10px] text-slate-400"><i class="fas fa-clock mr-1"></i>${activeMapel.mulai} – ${activeMapel.selesai}</span>
+                            ${guruLabel(activeMapel)}
+                        </div>
+                        <!-- Progress bar -->
+                        <div class="mt-2 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                            <div class="${barColor} h-full rounded-full transition-all duration-1000" style="width:${progressPct}%"></div>
+                        </div>
+                        <div class="flex justify-between items-center mt-1">
+                            <span class="text-[9px] text-slate-500">${progressPct}% selesai</span>
+                            <span class="font-mono font-bold text-xs ${countColor}"><i class="fas fa-hourglass-half mr-1 text-[9px]"></i>${fmtCountdown(sisaSecs)} lagi</span>
+                        </div>
+                    </div>
+                </div>`;
             } else {
                 html += `<div class="text-slate-400 text-center italic py-1 text-[11px]">Sedang istirahat atau jam kosong.</div>`;
             }
 
             if (nextMapel) {
-                let nStart = parseInt(nextMapel.mulai.split(':')[0])*60 + parseInt(nextMapel.mulai.split(':')[1]);
-                let diffMins = nStart - currentTotalMins;
-                html += `<div class="bg-slate-900/80 border border-slate-800 p-2.5 rounded mt-2">
-                            <span class="text-[9px] uppercase font-bold text-blue-400 tracking-wider">⏭ Selanjutnya · ${diffMins} mnt lagi</span>
-                            <div class="flex justify-between items-center mt-1 flex-wrap gap-1">
-                                <h5 class="text-xs font-bold text-slate-200">${nextMapel.mapel}</h5>
-                                <span class="text-[10px] text-slate-400"><i class="fas fa-clock mr-1"></i>${nextMapel.mulai}</span>
-                            </div>
-                            <div class="mt-1">${guruLabel(nextMapel)}</div>
-                         </div>`;
+                const nStartSecs = parseInt(nextMapel.mulai.split(':')[0])*3600 + parseInt(nextMapel.mulai.split(':')[1])*60;
+                const diffSecs = nStartSecs - currentTotalSecs;
+                const diffMins = Math.floor(diffSecs / 60);
+                const isSoon = diffMins < 10;
+                const isNextIstirahat = nextMapel.isIstirahat;
+                const nextDurMins = (() => { try { const [eh,em]=nextMapel.selesai.split(':').map(Number); const [sh,sm]=nextMapel.mulai.split(':').map(Number); return (eh*60+em)-(sh*60+sm); } catch(e){ return 0; } })();
+
+                html += `<div class="border p-2.5 rounded mt-2 ${isNextIstirahat ? 'bg-amber-900/20 border-amber-700/40' : isSoon ? 'bg-orange-950/30 border-orange-700/50' : 'bg-slate-900/80 border-slate-800'}">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[9px] uppercase font-bold ${isNextIstirahat ? 'text-amber-400' : isSoon ? 'text-orange-400' : 'text-blue-400'} tracking-wider">${isNextIstirahat ? '☕ Istirahat Berikutnya' : '⏭ Selanjutnya'}</span>
+                        <span class="font-mono font-bold text-xs ${isNextIstirahat ? 'text-amber-300' : isSoon ? 'text-orange-300' : 'text-blue-300'}">${fmtCountdown(diffSecs)}</span>
+                    </div>
+                    <div class="flex justify-between items-center mt-1 flex-wrap gap-1">
+                        <h5 class="text-xs font-bold ${isNextIstirahat ? 'text-amber-200' : 'text-slate-200'}">${isNextIstirahat ? `☕ ISTIRAHAT <span class="text-[9px] font-normal text-amber-500/70">(${nextDurMins} mnt)</span>` : nextMapel.mapel}</h5>
+                        <span class="text-[10px] text-slate-400"><i class="fas fa-clock mr-1"></i>${nextMapel.mulai}</span>
+                    </div>
+                    ${!isNextIstirahat ? `<div class="mt-1">${guruLabel(nextMapel)}</div>` : ''}
+                    ${isSoon && !isNextIstirahat ? `<div class="mt-1.5 text-[9px] text-orange-300/80 flex items-center gap-1"><i class="fas fa-bell animate-bounce text-[8px]"></i> Segera berganti pelajaran!</div>` : ''}
+                    ${isSoon && isNextIstirahat ? `<div class="mt-1.5 text-[9px] text-amber-300/80 flex items-center gap-1"><i class="fas fa-coffee text-[8px]"></i> Sebentar lagi istirahat!</div>` : ''}
+                </div>`;
             } else if (activeMapel && !nextMapel) {
-                html += `<div class="text-[10px] text-slate-500 mt-2 text-center">Ini adalah jam terakhir untuk hari ini.</div>`;
+                html += `<div class="text-[10px] text-slate-500 mt-2 text-center">🏁 Ini adalah jam terakhir untuk hari ini.</div>`;
             }
 
             statusContainer.innerHTML = html;
+        }
+
+        // Toast notifikasi pergantian pelajaran
+        function _showPergantianToast(dari, ke, menitLagi) {
+            const existing = document.getElementById('pergantian-toast');
+            if(existing) existing.remove();
+            const toast = document.createElement('div');
+            toast.id = 'pergantian-toast';
+            toast.className = 'fixed bottom-20 left-1/2 -translate-x-1/2 z-[200] flex items-start gap-3 bg-slate-900 border border-orange-600/60 shadow-2xl rounded-2xl p-4 max-w-xs w-[90vw] animate-bounce-in';
+            toast.innerHTML = `
+                <div class="w-9 h-9 rounded-full bg-orange-500/20 border border-orange-500/40 flex items-center justify-center shrink-0 mt-0.5">
+                    <i class="fas fa-bell text-orange-400"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-[11px] font-black text-orange-300 uppercase tracking-wide">Pergantian Pelajaran ±${menitLagi} mnt lagi</p>
+                    <p class="text-xs text-slate-300 mt-0.5 font-semibold">${dari.mapel} <i class="fas fa-arrow-right text-slate-500 mx-1 text-[9px]"></i> ${ke.mapel}</p>
+                    ${(ke.guru && ke.guru !== '-') ? `<p class="text-[10px] text-amber-300 mt-0.5"><i class="fas fa-chalkboard-teacher mr-1 text-[9px]"></i>${ke.guru}</p>` : ''}
+                    <p class="text-[9px] text-slate-500 mt-0.5">Mulai pukul ${ke.mulai}</p>
+                </div>
+                <button onclick="this.parentElement.remove()" class="text-slate-500 hover:text-white text-lg leading-none shrink-0">×</button>`;
+            document.body.appendChild(toast);
+            // Auto hilang setelah 12 detik
+            setTimeout(() => { if(toast.parentElement) toast.style.cssText = 'opacity:0;transition:opacity 0.5s'; setTimeout(()=>toast.remove(), 500); }, 12000);
         }
 
         // Splash Screen Logic
@@ -7900,7 +8059,21 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             const cards = hari.map(h => {
                 let jHTML = '';
                 if(db.jadwal[h] && db.jadwal[h].length > 0) {
-                    let rows = db.jadwal[h].map((j, idx) => `<tr class="hover:bg-slate-800/60 group">
+                    let rows = db.jadwal[h].map((j, idx) => {
+                        if (j.isIstirahat) {
+                            const durMins = (() => { try { const [eh,em]=j.selesai.split(':').map(Number); const [sh,sm]=j.mulai.split(':').map(Number); return (eh*60+em)-(sh*60+sm); } catch(e){ return 0; } })();
+                            return `<tr class="bg-amber-900/15 group">
+                                <td class="p-1 text-center text-amber-500 font-bold">☕</td>
+                                <td class="p-1 text-amber-400/70 font-mono whitespace-nowrap text-[9px]">${j.mulai} - ${j.selesai}</td>
+                                <td class="p-1" colspan="1">
+                                    <div class="font-bold text-amber-400 flex items-center gap-1"><i class="fas fa-coffee text-[9px]"></i> ISTIRAHAT <span class="text-[9px] text-amber-500/70 font-normal">(${durMins} menit)</span></div>
+                                </td>
+                                <td class="p-1 text-right">
+                                    <button onclick="openModalEditJadwal('${h}', ${idx})" class="text-blue-400 hover:text-blue-200 opacity-60 hover:opacity-100 transition" title="Edit baris ini"><i class="fas fa-pencil-alt text-[9px]"></i></button>
+                                </td>
+                            </tr>`;
+                        }
+                        return `<tr class="hover:bg-slate-800/60 group">
                             <td class="p-1 text-center font-bold text-slate-300">${j.jp || '-'}</td>
                             <td class="p-1 text-slate-400 font-mono whitespace-nowrap">${j.mulai} - ${j.selesai}</td>
                             <td class="p-1">
@@ -7910,7 +8083,8 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
                             <td class="p-1 text-right">
                                 <button onclick="openModalEditJadwal('${h}', ${idx})" class="text-blue-400 hover:text-blue-200 opacity-60 hover:opacity-100 transition" title="Edit baris ini"><i class="fas fa-pencil-alt text-[9px]"></i></button>
                             </td>
-                        </tr>`).join('');
+                        </tr>`;
+                    }).join('');
                     jHTML = `<table class="w-full text-left text-[10px]"><thead class="bg-slate-800 text-slate-400"><tr><th class="p-1 text-center w-8">JP</th><th class="p-1 w-20">Waktu</th><th class="p-1">Mapel & Guru</th><th class="p-1 w-6"></th></tr></thead><tbody class="divide-y divide-slate-800">${rows}</tbody></table>`;
                 } else {
                     jHTML = '<div class="text-slate-500 text-[10px] italic py-2 text-center border border-dashed border-slate-700 rounded bg-slate-950/50">Kosong / Libur</div>';
@@ -7944,8 +8118,38 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             document.getElementById('form-ej-selesai').value = '';
             document.getElementById('form-ej-mapel').value = '';
             document.getElementById('form-ej-guru').value = '';
+            document.getElementById('form-ej-istirahat').checked = false;
+            toggleIstirahatMode();
             document.getElementById('btn-hapus-ej').classList.add('hidden');
             document.getElementById('modal-edit-jadwal').classList.remove('hidden');
+        }
+
+        function toggleIstirahatMode() {
+            const isIst = document.getElementById('form-ej-istirahat').checked;
+            const mapelInput = document.getElementById('form-ej-mapel');
+            const guruInput = document.getElementById('form-ej-guru');
+            const jpInput = document.getElementById('form-ej-jp');
+            if (isIst) {
+                mapelInput.value = 'ISTIRAHAT';
+                mapelInput.setAttribute('readonly', true);
+                mapelInput.classList.add('opacity-50');
+                guruInput.value = '-';
+                guruInput.setAttribute('readonly', true);
+                guruInput.classList.add('opacity-50');
+                jpInput.value = '-';
+                jpInput.setAttribute('readonly', true);
+                jpInput.classList.add('opacity-50');
+            } else {
+                if (mapelInput.value === 'ISTIRAHAT') mapelInput.value = '';
+                if (guruInput.value === '-') guruInput.value = '';
+                if (jpInput.value === '-') jpInput.value = '';
+                mapelInput.removeAttribute('readonly');
+                mapelInput.classList.remove('opacity-50');
+                guruInput.removeAttribute('readonly');
+                guruInput.classList.remove('opacity-50');
+                jpInput.removeAttribute('readonly');
+                jpInput.classList.remove('opacity-50');
+            }
         }
 
         function openModalEditJadwal(hari, idx) {
@@ -7959,6 +8163,8 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             document.getElementById('form-ej-selesai').value = j.selesai || '';
             document.getElementById('form-ej-mapel').value = j.mapel || '';
             document.getElementById('form-ej-guru').value = (j.guru && j.guru !== '-') ? j.guru : '';
+            document.getElementById('form-ej-istirahat').checked = !!j.isIstirahat;
+            toggleIstirahatMode();
             document.getElementById('btn-hapus-ej').classList.remove('hidden');
             document.getElementById('modal-edit-jadwal').classList.remove('hidden');
         }
@@ -7979,7 +8185,8 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             if(!mapel) return Swal.fire('Gagal', 'Nama mapel wajib diisi.', 'error');
             if(!mulai || !selesai) return Swal.fire('Gagal', 'Jam mulai dan selesai wajib diisi.', 'error');
 
-            const data = { jp, mulai, selesai, mapel, guru };
+            const isIstirahat = document.getElementById('form-ej-istirahat').checked;
+            const data = { jp, mulai, selesai, mapel, guru, isIstirahat };
 
             if(!db.jadwal[hari]) db.jadwal[hari] = [];
 
@@ -8226,12 +8433,15 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             lines.forEach(line => {
                 const p = line.split(',');
                 if(p.length >= 4) {
+                    const mapelVal = p[3].trim();
+                    const isIstirahat = mapelVal.toUpperCase() === 'ISTIRAHAT' || mapelVal.toUpperCase().includes('ISTIRAHAT');
                     newJadwal.push({
                         jp: p[0].trim(),
                         mulai: p[1].trim(),
                         selesai: p[2].trim(),
-                        mapel: p[3].trim(),
-                        guru: p[4] ? p[4].trim() : '-'
+                        mapel: isIstirahat ? 'ISTIRAHAT' : mapelVal,
+                        guru: p[4] ? p[4].trim() : '-',
+                        isIstirahat: isIstirahat
                     });
                 }
             });
