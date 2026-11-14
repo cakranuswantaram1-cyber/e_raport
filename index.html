@@ -17983,6 +17983,292 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             return { meta, babs };
         }
 
+        // ------------------------------------------------------------
+        // Parser format "Modul Ajar KBC / Deep Learning" (sampul + banner "BAB n",
+        // A. Informasi Umum, B. Komponen Inti, C. Lampiran). Hasilnya SAMA bentuknya
+        // dengan parseModulAjarHtml sehingga terapkanImporModulAjar bisa dipakai apa adanya.
+        // ------------------------------------------------------------
+        function parseModulAjarOtomatis(html) {
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const adaH1 = Array.from(doc.body.children).some(k => k.tagName === 'H1');
+            return adaH1 ? parseModulAjarHtml(html) : parseModulAjarHtmlKBC(html);
+        }
+
+        function parseModulAjarHtmlKBC(html) {
+            const doc = new DOMParser().parseFromString(html, 'text/html');
+            const kids = Array.from(doc.body.children);
+            const norm = s => (s || '').replace(/\s+/g, ' ').trim();
+            const txt = el => norm(el.textContent);
+            const safe = s => (s || '').replace(/"/g, '”').replace(/<(?=[A-Za-z\/!])/g, '‹');
+            const cellText = c => {
+                const parts = [];
+                Array.from(c.children).forEach(ch => {
+                    if (/^(UL|OL)$/.test(ch.tagName)) Array.from(ch.querySelectorAll('li')).forEach(li => parts.push('• ' + norm(li.textContent)));
+                    else parts.push(norm(ch.textContent));
+                });
+                return (parts.length ? parts.filter(Boolean).join('\n') : norm(c.textContent));
+            };
+            const rowsOf = t => Array.from(t.rows).map(r => Array.from(r.cells).map(cellText));
+            const paras = els => { const out = []; els.forEach(e => { if (e.tagName === 'P') { const t = txt(e); if (t) out.push(t); } else if (/^(UL|OL)$/.test(e.tagName)) Array.from(e.querySelectorAll('li')).forEach(li => out.push(norm(li.textContent))); }); return out; };
+            const kecil = /^(yang|dan|di|ke|dari|untuk|melalui|dengan|pada|atau|sampai|serta|dalam)$/;
+            const titleCase = s => s.toLowerCase().split(' ').map((w, i) => (i > 0 && kecil.test(w)) ? w : w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+            const isLampiran = t => /^(lampiran|daftar pustaka)\b/i.test(t);
+            const isBannerHuruf = k => k.tagName === 'TABLE' && k.rows.length === 1 && k.rows[0].cells.length === 1 && /^[A-D]\.\s+[A-Z][A-Z\s]{3,}/.test(txt(k));
+            const kodeTP = /\d+\.[A-Z]/g;
+
+            // ---- Banner "BAB n" (tabel 1 baris, paragraf pertama "BAB 1") ----
+            const banners = [];
+            kids.forEach((k, i) => {
+                if (k.tagName !== 'TABLE' || k.rows.length !== 1 || k.rows[0].cells.length !== 1) return;
+                const p = k.querySelector('p');
+                if (p && /^BAB\s+\d+$/i.test(txt(p))) banners.push(i);
+            });
+            if (!banners.length) throw new Error('Format tidak dikenali: tidak ditemukan banner "BAB n" pada modul.');
+
+            // ---- Sampul / meta ----
+            const meta = { mapel: '', fase: 'C', kelas: '', semester: '1', tahun: '', penyusun: '', jumlahMurid: '' };
+            const tocTitle = {};
+            for (let i = 0; i < banners[0]; i++) {
+                const t = txt(kids[i]); let m;
+                if ((m = t.match(/Fase\s+([A-F])\s*\|\s*Kelas\s+(.+?)\s*\|\s*Semester\s+\S+\s*\((\w+)\)/i))) {
+                    meta.fase = m[1].toUpperCase(); meta.kelas = (m[2].match(/\d+/) || [m[2]])[0]; meta.semester = /genap/i.test(m[3]) ? '2' : '1';
+                    if (!meta.mapel && i > 0) meta.mapel = titleCase(txt(kids[i - 1]));
+                }
+                if ((m = t.match(/^Penyusun\s*:\s*(.+)$/i))) meta.penyusun = m[1];
+                if ((m = t.match(/^Tahun Ajaran\s*:\s*(\d{4}\/\d{4})/i))) meta.tahun = m[1];
+                if ((m = t.match(/^Bab\s+(\d+)\s+(.+?)\s+\d+$/i))) tocTitle[m[1]] = m[2];
+            }
+
+            const babs = banners.map((hi, bi) => {
+                const end = bi + 1 < banners.length ? banners[bi + 1] : kids.length;
+                const seg = kids.slice(hi + 1, end);
+                const bp = Array.from(kids[hi].querySelectorAll('p')).map(txt).filter(Boolean);
+                const nomor = parseInt(bp[0].match(/\d+/)[0]);
+                const judul = tocTitle[nomor] || titleCase(bp[1] || ('Bab ' + nomor));
+                const bab = { nomor, judul, jp: '', jumlahPertemuan: '', periode: '', bukuTeks: '', cp: [], kompAwal: [], tp: [], pemahaman: [], pemantik: [], sarana: [], modelTeks: '', pertemuan: [], asmtDiag: '', asmtForm: '', asmtSum: '', pengayaan: '', remedial: '', refleksiGuru: '', refleksiMurid: '' };
+
+                // Sampul bab + lembar pengesahan (sebelum seksi bernomor pertama)
+                const firstH2 = seg.findIndex(k => k.tagName === 'H2');
+                seg.slice(0, firstH2 < 0 ? seg.length : firstH2).filter(k => k.tagName === 'TABLE').forEach(t => rowsOf(t).forEach(r => {
+                    const lab = (r[0] || '').toLowerCase(), val = r[r.length - 1] || ''; let m;
+                    if (lab.startsWith('alokasi waktu')) {
+                        if (!bab.jp && (m = val.match(/(\d+)\s*JP/i))) bab.jp = m[1];
+                        if (!bab.jumlahPertemuan && (m = val.match(/(\d+)\s*pertemuan/i))) bab.jumlahPertemuan = m[1];
+                    }
+                    if (lab.startsWith('periode materi') && !bab.periode) bab.periode = val;
+                }));
+
+                // Pecah seksi H2 bernomor (lampiran dan banner A/B/C tidak ikut)
+                const sec = {};
+                let cur = null;
+                seg.forEach(k => {
+                    if (isBannerHuruf(k)) { cur = null; return; }
+                    if (k.tagName === 'H2') {
+                        const t = txt(k), m = t.match(/^\d+\.\s*(.+)$/);
+                        cur = (m && !isLampiran(t)) ? m[1].toLowerCase() : null;
+                        if (cur) sec[cur] = [];
+                        return;
+                    }
+                    if (cur) sec[cur].push(k);
+                });
+                const get = prefix => { const key = Object.keys(sec).find(k => k.startsWith(prefix)); return key ? sec[key] : []; };
+                const tabelDenganHeader = (els, re) => els.find(k => k.tagName === 'TABLE' && re.test(((rowsOf(k)[0] || [''])[0]) || ''));
+
+                // Identitas
+                const ident = {};
+                get('identitas').filter(k => k.tagName === 'TABLE').forEach(t => rowsOf(t).forEach(r => { if (r[0] && r[1]) ident[r[0].toLowerCase()] = r[1]; }));
+                if (!meta.mapel && ident['mata pelajaran']) meta.mapel = ident['mata pelajaran'];
+                let mm;
+                Object.keys(ident).forEach(k => { if (!bab.bukuTeks && (mm = ident[k].match(/\((Buku[^)]*)\)/i))) bab.bukuTeks = mm[1]; });
+                if (!bab.jp && (mm = (ident['alokasi waktu'] || '').match(/(\d+)\s*JP/i))) bab.jp = mm[1];
+                if (!bab.jumlahPertemuan && (mm = (ident['alokasi waktu'] || '').match(/(\d+)\s*pertemuan/i))) bab.jumlahPertemuan = mm[1];
+                if (!bab.periode && ident['waktu pelaksanaan']) bab.periode = ident['waktu pelaksanaan'].replace(/\s*\(.*\)\s*$/, '');
+                const elemenIdent = ((ident['bab dan elemen cp'] || '').match(/Elemen\s*:\s*(.+)$/i) || [])[1] || '';
+
+                // CP
+                get('capaian pembelajaran').filter(k => k.tagName === 'TABLE').forEach(t => {
+                    const c = t.rows[0] && t.rows[0].cells[0]; if (!c) return;
+                    const full = norm(cellText(c).replace(/\n/g, ' '));
+                    const m2 = full.match(/^(?:Kutipan\s+)?CP\s*\(([^)]+)\)\s*([\s\S]*)$/i);
+                    const m1 = m2 ? null : full.match(/^CP\s+(?:Elemen\s+)?(.+?)\s*\(([^)]*)\)\s*([\s\S]*)$/i);
+                    const elemen = m2 ? m2[1] : (m1 ? m1[1] : (elemenIdent || 'Umum'));
+                    const desk = (m2 ? m2[2] : (m1 ? m1[3] : full)).replace(/^[“"]\s*/, '').replace(/\s*[”"]$/, '');
+                    if (desk) bab.cp.push({ elemen, deskripsi: desk, tp: [] });
+                });
+                if (!bab.cp.length && elemenIdent) bab.cp.push({ elemen: elemenIdent, deskripsi: '', tp: [] });
+
+                bab.kompAwal = paras(get('kompetensi awal')).filter(t => !/^kompetensi awal\b/i.test(t));
+                bab.sarana = paras(get('sarana')).filter(t => !/:\s*$/.test(t));
+                bab.pemahaman = paras(get('pemahaman bermakna'));
+                bab.pemantik = paras(get('pertanyaan pemantik'));
+
+                // Model + ringkasan dimensi profil & Panca Cinta (masuk ke catatan modul)
+                const modelLines = get('model, pendekatan').filter(k => k.tagName === 'P').map(txt).filter(t => /^(Model|Pendekatan|Metode)\s*:/i.test(t));
+                if (!modelLines.length && ident['model pembelajaran']) modelLines.push('Model: ' + ident['model pembelajaran']);
+                const namaKolom1 = els => { const t = els.find(k => k.tagName === 'TABLE'); return t ? rowsOf(t).slice(1).map(r => r[0]).filter(Boolean).join(', ') : ''; };
+                const dim = namaKolom1(get('dimensi profil')), pc = namaKolom1(get('nilai panca cinta'));
+                if (dim) modelLines.push('Dimensi Profil Lulusan: ' + dim);
+                if (pc) modelLines.push('Nilai Panca Cinta (KBC): ' + pc);
+                bab.modelTeks = modelLines.join('\n');
+
+                // TP (tabel ABCD: Kode | Audience | Behavior | Condition | Degree)
+                const tpSec = get('tujuan pembelajaran');
+                const tpTable = tabelDenganHeader(tpSec, /^kode$/i);
+                if (tpTable) rowsOf(tpTable).slice(1).forEach(r => {
+                    if (!/^\d+\.[A-Z]$/.test(r[0] || '')) return;
+                    let t = norm(r.slice(1).join(' '));
+                    if (!/[.!?]$/.test(t)) t += '.';
+                    bab.tp.push({ kode: r[0], tujuan: t, jp: '', materi: '' });
+                });
+
+                // Rencana pertemuan -> materi per pertemuan & per TP, JP per TP
+                const rencana = get('rencana pertemuan');
+                const rencTable = rencana.find(k => k.tagName === 'TABLE');
+                const renc = {};
+                rencana.filter(k => k.tagName === 'TABLE').forEach(t => {
+                    const rs = rowsOf(t), hdr = (rs[0] || []).map(x => x.toLowerCase());
+                    if (!/^subbab$/.test(hdr[0] || '')) return;
+                    const iJP = hdr.findIndex(h => /^jp$/.test(h)), iMat = hdr.findIndex(h => /^materi/.test(h));
+                    rs.slice(1).forEach(r => { const tp = bab.tp.find(x => x.kode === r[0]); if (!tp) return; if (iJP >= 0 && /^\d+$/.test(r[iJP] || '')) tp.jp = r[iJP]; if (iMat >= 0 && r[iMat]) tp.materi = r[iMat]; });
+                });
+                if (rencTable) {
+                    const rs = rowsOf(rencTable), hdr = (rs[0] || []).map(x => x.toLowerCase());
+                    const iM = hdr.findIndex(h => /materi/.test(h)), iTP = hdr.findIndex(h => /^tp\b/.test(h));
+                    rs.slice(1).forEach(r => {
+                        if (!/^\d+$/.test(r[0] || '')) return;
+                        const materi = (iM >= 0 ? r[iM] : '').replace(/\s+/g, ' ');
+                        renc[parseInt(r[0])] = materi;
+                        const kodeStr = iTP >= 0 ? (r[iTP] || '') : materi;
+                        (kodeStr.match(kodeTP) || []).forEach(kd => { const tp = bab.tp.find(x => x.kode === kd); if (tp && !tp.materi) tp.materi = materi; });
+                    });
+                }
+                rencana.filter(k => k.tagName === 'P').forEach(p => {
+                    let m; const re = /(\d+\.[A-Z])\s*=\s*(\d+)\s*JP/g, t = txt(p);
+                    while ((m = re.exec(t))) { const tp = bab.tp.find(x => x.kode === m[1]); if (tp && !tp.jp) tp.jp = m[2]; }
+                });
+                bab.tp.forEach(tp => { if (!tp.materi) tp.materi = judul; const c = bab.cp.length === 1 ? bab.cp[0] : (bab.cp.find(x => (tp.tujuan + ' ' + tp.materi).toLowerCase().includes((x.elemen || '').toLowerCase())) || bab.cp[0]); tp.elemen = c ? c.elemen : ''; if (c && !c.tp.includes(tp.kode)) c.tp.push(tp.kode); });
+
+                // Pertemuan (H3 "Pertemuan n • ...")
+                const kp = get('kegiatan pembelajaran per pertemuan');
+                const starts = [];
+                kp.forEach((k, i) => { if (k.tagName === 'H3' && /^Pertemuan\s+\d+/i.test(txt(k))) starts.push(i); });
+                const reHari = /\b(senin|selasa|rabu|kamis|jum'?at|sabtu|minggu)\b/i;
+                const bagOf = s => /^PENDAHULUAN/i.test(s) ? 'pendahuluan' : /^(KEGIATAN\s+)?INTI\b/i.test(s) ? 'inti' : /^PENUTUP/i.test(s) ? 'penutup' : null;
+                starts.forEach((si, n) => {
+                    const blk = kp.slice(si + 1, n + 1 < starts.length ? starts[n + 1] : kp.length);
+                    const hm = txt(kp[si]).match(/^Pertemuan\s+(\d+)\s*(?:[•·\-–:]\s*(.*))?$/i);
+                    const rest = (hm && hm[2]) || '';
+                    const parts = rest.split(/\s*[•·]\s*/).filter(Boolean);
+                    const pt = { no: parseInt(hm[1]), judul: '', hari: parts.find(x => reHari.test(x)) || '', alokasi: parts.find(x => /\bJP\b/.test(x)) || '', tujuan: '', pendahuluan: '', inti: '', penutup: '' };
+                    if (!pt.hari && !pt.alokasi) pt.judul = rest;
+                    let subMateri = '';
+                    blk.filter(k => k.tagName === 'TABLE').forEach(t => {
+                        const rs = rowsOf(t);
+                        if (/^tahap$/i.test((rs[0] || [''])[0])) return;
+                        rs.forEach(r => {
+                            const key = (r[0] || '').toLowerCase(), val = r[1] || '';
+                            if (key.startsWith('hari') && !pt.hari) pt.hari = val;
+                            else if (key.startsWith('alokasi') && !pt.alokasi) pt.alokasi = val;
+                            else if (key.startsWith('tujuan') && !pt.tujuan) pt.tujuan = val;
+                            else if (key.startsWith('subbab')) subMateri = val;
+                        });
+                    });
+                    pt.hari = pt.hari.replace(/\s*\((?:rencana|prosem)[^)]*\)/i, '');
+                    // "Tujuan pertemuan" bergaya daftar (H3 + paragraf)
+                    if (!pt.tujuan) {
+                        const hs = blk.findIndex(k => k.tagName === 'H3' && /^tujuan/i.test(txt(k)));
+                        if (hs >= 0) { const isi = []; for (let j = hs + 1; j < blk.length && blk[j].tagName !== 'H3'; j++) isi.push(...paras([blk[j]])); pt.tujuan = isi.join(' '); }
+                    }
+                    if (!pt.judul) pt.judul = renc[pt.no] || subMateri || '';
+                    // Langkah kegiatan
+                    const stepT = blk.find(k => k.tagName === 'TABLE' && /^tahap$/i.test((rowsOf(k)[0] || [''])[0]));
+                    if (stepT) {
+                        const rs = rowsOf(stepT), gayaBanner = rs.some(r => r.length === 1);
+                        const buf = { pendahuluan: [], inti: [], penutup: [] };
+                        let bag = null;
+                        rs.forEach(r => {
+                            const first = (r[0] || '').trim();
+                            if (!first || /^tahap$/i.test(first) || /^jumlah/i.test(first)) return;
+                            if (gayaBanner) {
+                                if (r.length === 1) { const b = bagOf(first); if (b) bag = b; return; }
+                                if (!bag || r.length < 2) return;
+                                const menit = r[2] ? ` (${r[2]} menit)` : '';
+                                buf[bag].push(`${first.replace(/\n/g, ' ')}${menit}: ${(r[1] || '').replace(/\n+/g, ' ')}`);
+                            } else {
+                                const b = bagOf(first);
+                                if (b && r.length >= 2) buf[b].push(r[1] || '');
+                            }
+                        });
+                        pt.pendahuluan = buf.pendahuluan.join('\n');
+                        pt.inti = buf.inti.join('\n');
+                        pt.penutup = buf.penutup.join('\n');
+                    }
+                    bab.pertemuan.push(pt);
+                });
+
+                // Asesmen
+                const asm = tabelDenganHeader(get('asesmen'), /^jenis$/i);
+                if (asm) rowsOf(asm).slice(1).forEach(r => {
+                    const jenis = (r[0] || '').toLowerCase();
+                    const isi = r.slice(1).filter(Boolean).join('. ').replace(/\n+/g, '; ');
+                    if (jenis.startsWith('diagnostik')) bab.asmtDiag = isi;
+                    else if (jenis.startsWith('formatif')) bab.asmtForm = isi;
+                    else if (jenis.startsWith('sumatif')) bab.asmtSum = isi;
+                }); else {
+                    let jenisNow = '';
+                    const bucket = { diagnostik: [], formatif: [], sumatif: [] };
+                    get('asesmen').forEach(k => {
+                        if (/^H[34]$/.test(k.tagName)) { const t = txt(k).toLowerCase(); jenisNow = ['diagnostik', 'formatif', 'sumatif'].find(j => t.includes(j)) || ''; return; }
+                        if (!jenisNow) return;
+                        if (k.tagName === 'P') { const t = txt(k); if (t) bucket[jenisNow].push(t); }
+                        else if (k.tagName === 'TABLE') {
+                            const rs = rowsOf(k);
+                            if (jenisNow === 'sumatif' && rs[0] && rs[0].length === 2) rs.forEach(r => bucket.sumatif.push(r[0] + ': ' + r[1].replace(/\n+/g, '; ')));
+                            else if (jenisNow === 'formatif' && rs[0] && /^(pert|no)/i.test(rs[0][0])) rs.slice(1).forEach(r => { if (r[1]) bucket.formatif.push('Pertemuan ' + r[0] + ': ' + r.slice(1).filter(Boolean).join('; ').replace(/\n+/g, '; ')); });
+                        }
+                    });
+                    bab.asmtDiag = bucket.diagnostik.join(' ');
+                    bab.asmtForm = bucket.formatif.join('\n');
+                    bab.asmtSum = bucket.sumatif.join('\n');
+                }
+
+                // Pengayaan & Remedial
+                const pr = get('pengayaan').find(k => k.tagName === 'TABLE');
+                if (pr) rowsOf(pr).forEach(r => {
+                    const lab = (r[0] || '').toLowerCase(), isi = (r[1] || '').replace(/\n+/g, ' ');
+                    if (lab.startsWith('pengayaan')) bab.pengayaan = isi;
+                    else if (lab.startsWith('remedial')) bab.remedial = isi;
+                });
+
+                // Refleksi (H3 "Refleksi Guru" / "Refleksi Murid ...")
+                let rfNow = '';
+                const rfBuf = { guru: [], murid: [] };
+                get('refleksi').forEach(k => {
+                    const subP = k.tagName === 'P' && txt(k).length < 80 && /^refleksi\s+(guru|murid)/i.test(txt(k));
+                    if (/^H[34]$/.test(k.tagName) || subP) { const t = txt(k).toLowerCase(); rfNow = /^refleksi guru/.test(t) ? 'guru' : /^refleksi murid/.test(t) ? 'murid' : ''; return; }
+                    if (!rfNow) return;
+                    if (k.tagName === 'TABLE') {
+                        const rs = rowsOf(k);
+                        if (rs[0] && /^no\.?$/i.test(rs[0][0])) rs.slice(1).forEach(r => { if (r[1]) rfBuf[rfNow].push(r[0] + '. ' + r[1]); });
+                        else rs.forEach(r => r.forEach(c => c.split('\n').forEach(line => {
+                            line = line.replace(/…+|\.{4,}/g, '...').trim();
+                            if (line && !/^Nama\s*:/i.test(line)) rfBuf[rfNow].push(line);
+                        })));
+                    } else paras([k]).forEach(t => { if (rfNow === 'guru' || !/^Nama\s*:/i.test(t)) rfBuf[rfNow].push(t); });
+                });
+                bab.refleksiGuru = rfBuf.guru.join('\n');
+                bab.refleksiMurid = rfBuf.murid.join('\n');
+
+                // Amankan karakter yang bisa merusak tampilan form (sama seperti parser lama)
+                const amankan = o => { Object.keys(o).forEach(k => { if (typeof o[k] === 'string') o[k] = safe(o[k]); else if (Array.isArray(o[k])) o[k].forEach((x, i) => { if (typeof x === 'string') o[k][i] = safe(x); else if (x && typeof x === 'object') amankan(x); }); }); };
+                amankan(bab);
+                if (!bab.jumlahPertemuan) bab.jumlahPertemuan = String(bab.pertemuan.length);
+                return bab;
+            });
+            if (!meta.mapel) meta.mapel = 'Bahasa Indonesia';
+            return { meta, babs };
+        }
+
         function pilihFileImporModulAjar() {
             const el = document.getElementById('input-impor-modul-ajar');
             if (el) el.click();
@@ -18001,7 +18287,7 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
                 await lazyLoad('https://cdn.jsdelivr.net/npm/mammoth@1.8.0/mammoth.browser.min.js', 'mammoth');
                 const buf = await file.arrayBuffer();
                 const res = await window.mammoth.convertToHtml({ arrayBuffer: buf }, { convertImage: window.mammoth.images.imgElement(() => ({ src: '' })) });
-                hasil = parseModulAjarHtml(res.value);
+                hasil = parseModulAjarOtomatis(res.value);
             } catch (e) {
                 console.warn('Impor modul ajar gagal:', e);
                 return Swal.fire({ title: 'Gagal membaca file', text: (e && e.message) ? e.message : 'File tidak bisa dibaca. Pastikan koneksi internet aktif dan format modul sesuai.', icon: 'error', background: '#1e293b', color: '#f8fafc' });
