@@ -618,6 +618,11 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Siswa</label>
+                                <div class="relative mb-2">
+                                    <input type="text" id="tcs-input-frm" autocomplete="off" placeholder="🔍 Ketik nama / no. absen, lalu Enter..." oninput="tcsKetik('frm')" onfocus="this.select();tcsCari('frm')" onblur="setTimeout(function(){tcsTutup('frm')},120)" onkeydown="tcsKey('frm',event)" class="w-full bg-slate-950 border border-pink-700/60 rounded-lg p-2 text-xs text-slate-100 outline-none focus:border-pink-500">
+                                    <div id="tcs-list-frm" class="hidden absolute left-0 right-0 mt-1 z-40 bg-slate-900 border border-slate-600 rounded-lg shadow-xl overflow-hidden"></div>
+                                    <p id="tcs-info-frm" class="text-[10px] text-slate-400 mt-1 min-h-[12px]"></p>
+                                </div>
                                 <select id="frm-tab-siswa" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 outline-none focus:border-pink-500"></select>
                             </div>
                             <div>
@@ -630,6 +635,14 @@
                             <div>
                                 <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Jumlah (Rp)</label>
                                 <input type="number" id="frm-tab-nominal" min="0" placeholder="Contoh: 10000" oninput="previewNominal(this,'frm-tab-nominal-preview')" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 outline-none focus:border-pink-500">
+                                <div class="flex flex-wrap gap-1.5 mt-2">
+                                    <button type="button" onclick="tambahNominalTabFrm(1000)" class="px-2.5 py-1.5 rounded-lg text-[11px] font-black bg-slate-800 border border-slate-600 text-emerald-300 hover:bg-emerald-700 hover:text-white active:scale-95 transition">+1.000</button>
+                                    <button type="button" onclick="tambahNominalTabFrm(2000)" class="px-2.5 py-1.5 rounded-lg text-[11px] font-black bg-slate-800 border border-slate-600 text-emerald-300 hover:bg-emerald-700 hover:text-white active:scale-95 transition">+2.000</button>
+                                    <button type="button" onclick="tambahNominalTabFrm(5000)" class="px-2.5 py-1.5 rounded-lg text-[11px] font-black bg-slate-800 border border-slate-600 text-emerald-300 hover:bg-emerald-700 hover:text-white active:scale-95 transition">+5.000</button>
+                                    <button type="button" onclick="tambahNominalTabFrm(10000)" class="px-2.5 py-1.5 rounded-lg text-[11px] font-black bg-slate-800 border border-slate-600 text-emerald-300 hover:bg-emerald-700 hover:text-white active:scale-95 transition">+10.000</button>
+                                    <button type="button" id="tcs-last-frm" onclick="tcsPakaiTerakhir('frm')" class="hidden px-2.5 py-1.5 rounded-lg text-[11px] font-black bg-slate-800 border border-amber-700 text-amber-300 hover:bg-amber-700 hover:text-white active:scale-95 transition"></button>
+                                    <button type="button" onclick="tambahNominalTabFrm(0)" class="px-2.5 py-1.5 rounded-lg text-[11px] font-black bg-slate-800 border border-rose-700 text-rose-300 hover:bg-rose-700 hover:text-white active:scale-95 transition">Reset</button>
+                                </div>
                                 <p id="frm-tab-nominal-preview" class="text-[10px] text-emerald-400 font-bold mt-1 h-3"></p>
                             </div>
                             <div>
@@ -746,6 +759,10 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] text-slate-400 mb-1 font-bold uppercase">Siswa</label>
+                                <div class="relative mb-2">
+                                    <input type="text" id="tcs-input-modal" autocomplete="off" placeholder="🔍 Ketik nama / no. absen, lalu Enter..." oninput="tcsKetik('modal')" onfocus="this.select();tcsCari('modal')" onblur="setTimeout(function(){tcsTutup('modal')},120)" onkeydown="tcsKey('modal',event)" class="w-full bg-slate-950 border border-pink-700/60 rounded-lg p-2 text-xs text-slate-100 outline-none focus:border-pink-500">
+                                    <div id="tcs-list-modal" class="hidden absolute left-0 right-0 mt-1 z-40 bg-slate-900 border border-slate-600 rounded-lg shadow-xl overflow-hidden"></div>
+                                </div>
                                 <select id="modal-tab-siswa" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2 text-xs text-slate-100 outline-none focus:border-pink-500"></select>
                             </div>
                             <div>
@@ -765,6 +782,7 @@
                                     <button type="button" onclick="tambahNominalTab(10000)" class="px-2.5 py-1.5 rounded-lg text-[11px] font-black bg-slate-800 border border-slate-600 text-emerald-300 hover:bg-emerald-700 hover:text-white active:scale-95 transition">+10.000</button>
                                     <button type="button" onclick="tambahNominalTab(50000)" class="px-2.5 py-1.5 rounded-lg text-[11px] font-black bg-slate-800 border border-slate-600 text-emerald-300 hover:bg-emerald-700 hover:text-white active:scale-95 transition">+50.000</button>
                                     <button type="button" onclick="tambahNominalTab(100000)" class="px-2.5 py-1.5 rounded-lg text-[11px] font-black bg-slate-800 border border-slate-600 text-emerald-300 hover:bg-emerald-700 hover:text-white active:scale-95 transition">+100.000</button>
+                                    <button type="button" id="tcs-last-modal" onclick="tcsPakaiTerakhir('modal')" class="hidden px-2.5 py-1.5 rounded-lg text-[11px] font-black bg-slate-800 border border-amber-700 text-amber-300 hover:bg-amber-700 hover:text-white active:scale-95 transition"></button>
                                     <button type="button" onclick="tambahNominalTab(0)" class="px-2.5 py-1.5 rounded-lg text-[11px] font-black bg-slate-800 border border-rose-700 text-rose-300 hover:bg-rose-700 hover:text-white active:scale-95 transition">Reset</button>
                                 </div>
                                 <p id="modal-tab-nominal-preview" class="text-[10px] text-emerald-400 font-bold mt-1 h-3"></p>
@@ -19620,6 +19638,251 @@ Panjang nasehat: 4-6 kalimat. Gunakan bahasa Indonesia yang baik, hangat, dan pe
             renderTabunganRekap();
             notifTabunganBerhasil(siswaId, _tabJenisAktif, nominal, db.tabungan[db.tabungan.length - 1].id);
         }
+
+        // === CARI SISWA CEPAT (Tabungan) ===
+        // Alur: ketik nama / no. absen → Enter → isi jumlah → Enter = tersimpan, lalu kembali ke kotak cari.
+        const TCS_CFG = {
+            frm:   { select: 'frm-tab-siswa',   nominal: 'frm-tab-nominal',   tanggal: 'frm-tab-tanggal' },
+            modal: { select: 'modal-tab-siswa', nominal: 'modal-tab-nominal', tanggal: 'modal-tab-tanggal' }
+        };
+        const TCS_MAX = 6;
+        let _tcsHasil = { frm: [], modal: [] };
+        let _tcsIdx = { frm: 0, modal: 0 };
+
+        function tcsEsc(t) {
+            return String(t == null ? '' : t).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        }
+
+        function tcsJenis(ctx) { return ctx === 'frm' ? _tabJenisAktif : _modalTabJenis; }
+
+        // Nominal setoran manual terakhir (untuk tombol "Terakhir")
+        function tcsNominalTerakhir() {
+            const arr = db.tabungan || [];
+            for (let i = arr.length - 1; i >= 0; i--) {
+                const t = arr[i];
+                if (t.jenis === 'setor' && !String(t.ket || '').startsWith('Pembayaran pinjaman') && (parseInt(t.nominal) || 0) > 0) return parseInt(t.nominal);
+            }
+            return 0;
+        }
+
+        function tcsRefreshTerakhir() {
+            const n = tcsNominalTerakhir();
+            ['frm', 'modal'].forEach(ctx => {
+                const b = document.getElementById('tcs-last-' + ctx);
+                if (!b) return;
+                if (n > 0) { b.textContent = 'Terakhir: ' + rupiah(n); b.classList.remove('hidden'); }
+                else b.classList.add('hidden');
+            });
+        }
+
+        function tcsPakaiTerakhir(ctx) {
+            const n = tcsNominalTerakhir();
+            const el = document.getElementById(TCS_CFG[ctx].nominal);
+            if (!n || !el) return;
+            el.value = n;
+            previewNominal(el, ctx === 'frm' ? 'frm-tab-nominal-preview' : 'modal-tab-nominal-preview');
+            el.focus();
+        }
+
+        // Tombol nominal cepat di form Transaksi Baru: tiap klik menambah jumlah (0 = reset)
+        function tambahNominalTabFrm(n) {
+            const el = document.getElementById('frm-tab-nominal');
+            if (!el) return;
+            el.value = n === 0 ? '' : ((parseInt(el.value) || 0) + n);
+            previewNominal(el, 'frm-tab-nominal-preview');
+        }
+
+        // Dipanggil saat mengetik di kotak cari: kalau teks tidak lagi sama dengan siswa terpilih, pilihan dilepas
+        function tcsKetik(ctx) {
+            const cfg = TCS_CFG[ctx];
+            const sel = document.getElementById(cfg.select);
+            const inp = document.getElementById('tcs-input-' + ctx);
+            if (sel && inp && sel.value) {
+                const s0 = (db.siswa || []).find(x => x.id === sel.value);
+                if (!s0 || s0.nama !== inp.value) { sel.value = ''; sel.dispatchEvent(new Event('change')); }
+            }
+            tcsCari(ctx);
+        }
+
+        function tcsCari(ctx) {
+            const cfg = TCS_CFG[ctx];
+            const inp = document.getElementById('tcs-input-' + ctx);
+            if (!inp || !cfg) return;
+            tcsRefreshTerakhir();
+            const q = inp.value.trim().toLowerCase();
+            const tglEl = document.getElementById(cfg.tanggal);
+            const tgl = (tglEl && tglEl.value) || getTodayLocalStr();
+            const jenis = tcsJenis(ctx);
+            let daftar = (db.siswa || []).map(s => ({
+                s: s,
+                saldo: getSaldoSiswa(s.id).saldo,
+                sudah: !!cekSetorGandaTabungan(s.id, tgl)
+            }));
+            if (q) {
+                daftar = daftar.filter(x => String(x.s.nama || '').toLowerCase().includes(q) || String(x.s.absen || '') === q);
+                daftar.sort((a, b) => {
+                    const pa = String(a.s.nama || '').toLowerCase().startsWith(q) ? 0 : 1;
+                    const pb = String(b.s.nama || '').toLowerCase().startsWith(q) ? 0 : 1;
+                    return pa - pb;
+                });
+            } else if (jenis === 'tarik') {
+                daftar = daftar.filter(x => x.saldo > 0);
+            } else {
+                daftar = daftar.filter(x => !x.sudah);
+            }
+            _tcsHasil[ctx] = daftar;
+            _tcsIdx[ctx] = 0;
+            tcsGambar(ctx);
+        }
+
+        function tcsGambar(ctx) {
+            const box = document.getElementById('tcs-list-' + ctx);
+            const inp = document.getElementById('tcs-input-' + ctx);
+            if (!box || !inp) return;
+            const jenis = tcsJenis(ctx);
+            const hasil = _tcsHasil[ctx];
+            if (!hasil.length) {
+                const kosong = inp.value.trim()
+                    ? 'Nama tidak ditemukan'
+                    : (jenis === 'tarik' ? 'Belum ada siswa yang punya saldo' : '✓ Semua siswa sudah setor di tanggal ini');
+                box.innerHTML = '<div class="px-3 py-2 text-[11px] text-slate-500 italic">' + kosong + '</div>';
+                box.classList.remove('hidden');
+                return;
+            }
+            const tampil = hasil.slice(0, TCS_MAX);
+            box.innerHTML = tampil.map((x, i) => {
+                const s = x.s;
+                const aktif = i === _tcsIdx[ctx];
+                const badge = jenis === 'setor'
+                    ? (x.sudah
+                        ? '<span class="shrink-0 text-[9px] font-bold text-emerald-300 bg-emerald-900/40 border border-emerald-700/50 px-1.5 py-0.5 rounded">✓ Sudah setor</span>'
+                        : '<span class="shrink-0 text-[9px] text-slate-400 bg-slate-800 px-1.5 py-0.5 rounded">Belum</span>')
+                    : '';
+                return '<div onmousedown="event.preventDefault(); tcsPilih(\'' + ctx + '\',\'' + s.id + '\')" class="px-3 py-2 cursor-pointer flex items-center justify-between gap-2 border-b border-slate-800 ' + (aktif ? 'bg-pink-900/40' : 'hover:bg-slate-800') + '">' +
+                    '<div class="min-w-0">' +
+                        '<div class="text-xs font-bold text-slate-100 truncate">' + (s.absen ? tcsEsc(s.absen) + '. ' : '') + tcsEsc(s.nama) + '</div>' +
+                        '<div class="text-[10px] text-slate-500">Saldo ' + rupiah(x.saldo) + '</div>' +
+                    '</div>' + badge + '</div>';
+            }).join('') + (hasil.length > TCS_MAX ? '<div class="px-3 py-1.5 text-[10px] text-slate-500 italic">+' + (hasil.length - TCS_MAX) + ' lainnya — ketik lebih spesifik</div>' : '');
+            box.classList.remove('hidden');
+        }
+
+        function tcsTutup(ctx) {
+            const box = document.getElementById('tcs-list-' + ctx);
+            if (box) box.classList.add('hidden');
+        }
+
+        function tcsKey(ctx, ev) {
+            const n = Math.min(_tcsHasil[ctx].length, TCS_MAX);
+            if (ev.key === 'ArrowDown') {
+                ev.preventDefault();
+                if (n) { _tcsIdx[ctx] = (_tcsIdx[ctx] + 1) % n; tcsGambar(ctx); }
+            } else if (ev.key === 'ArrowUp') {
+                ev.preventDefault();
+                if (n) { _tcsIdx[ctx] = (_tcsIdx[ctx] - 1 + n) % n; tcsGambar(ctx); }
+            } else if (ev.key === 'Enter') {
+                ev.preventDefault();
+                const it = _tcsHasil[ctx][_tcsIdx[ctx]];
+                if (it) tcsPilih(ctx, it.s.id);
+            } else if (ev.key === 'Escape') {
+                tcsTutup(ctx);
+            }
+        }
+
+        function tcsPilih(ctx, id) {
+            const cfg = TCS_CFG[ctx];
+            const sel = document.getElementById(cfg.select);
+            const inp = document.getElementById('tcs-input-' + ctx);
+            const s = (db.siswa || []).find(x => x.id === id);
+            if (!sel || !s) return;
+            if (!Array.from(sel.options).some(o => o.value === id)) populateTabunganSiswaSelects();
+            sel.value = id;
+            sel.dispatchEvent(new Event('change'));
+            if (inp) inp.value = s.nama;
+            tcsTutup(ctx);
+            const nom = document.getElementById(cfg.nominal);
+            if (nom) { nom.focus(); if (nom.select) nom.select(); }
+        }
+
+        // Samakan teks kotak cari + info saldo dengan siswa yang sedang terpilih di dropdown
+        function tcsSinkron(ctx) {
+            const cfg = TCS_CFG[ctx];
+            const sel = document.getElementById(cfg.select);
+            const inp = document.getElementById('tcs-input-' + ctx);
+            const info = document.getElementById('tcs-info-' + ctx);
+            if (!sel || !inp) return;
+            const s = sel.value ? (db.siswa || []).find(x => x.id === sel.value) : null;
+            if (document.activeElement !== inp) inp.value = s ? s.nama : '';
+            if (info) {
+                if (!s) { info.innerHTML = ''; return; }
+                const saldo = getSaldoSiswa(s.id).saldo;
+                const tglEl = document.getElementById(cfg.tanggal);
+                const sudah = tcsJenis(ctx) === 'setor' && !!cekSetorGandaTabungan(s.id, (tglEl && tglEl.value) || getTodayLocalStr());
+                info.innerHTML = 'Saldo: <b class="text-emerald-400">' + rupiah(saldo) + '</b>' + (sudah ? ' • <b class="text-amber-300">sudah setor di tanggal ini</b>' : '');
+            }
+        }
+
+        // Enter di kolom jumlah = simpan. Di form Transaksi Baru, setelah tersimpan langsung siap siswa berikutnya.
+        function tcsNominalKey(ctx, ev) {
+            if (ev.key !== 'Enter') return;
+            ev.preventDefault();
+            if (ctx === 'frm') {
+                const inp = document.getElementById('tcs-input-frm');
+                const sel = document.getElementById('frm-tab-siswa');
+                const sebelum = (db.tabungan || []).length;
+                // fokus dipindah dulu agar toast sukses tidak mengembalikan fokus ke kolom jumlah
+                if (inp) inp.focus();
+                saveTabunganQuick();
+                if ((db.tabungan || []).length > sebelum) {
+                    if (sel) { sel.value = ''; sel.dispatchEvent(new Event('change')); }
+                    if (inp) inp.value = '';
+                    tcsCari('frm');
+                }
+            } else {
+                saveModalTabungan();
+            }
+        }
+
+        (function tcsInit() {
+            function pasang() {
+                ['frm', 'modal'].forEach(ctx => {
+                    const cfg = TCS_CFG[ctx];
+                    const sel = document.getElementById(cfg.select);
+                    const nom = document.getElementById(cfg.nominal);
+                    if (sel) sel.addEventListener('change', () => tcsSinkron(ctx));
+                    if (nom) nom.addEventListener('keydown', ev => tcsNominalKey(ctx, ev));
+                });
+                // Kolom cari di Daftar Saldo: Enter saat hasil tinggal 1 siswa → langsung buka form setor siswa itu
+                const cari = document.getElementById('tab-search');
+                if (cari) cari.addEventListener('keydown', ev => {
+                    if (ev.key !== 'Enter') return;
+                    const q = cari.value.trim().toLowerCase();
+                    if (!q) return;
+                    const cocok = (db.siswa || []).filter(s => String(s.nama || '').toLowerCase().includes(q));
+                    if (cocok.length === 1) { ev.preventDefault(); openModalTabunganTransaksi(cocok[0].id, 'setor'); }
+                });
+                // Modal Setor/Tarik: saat dibuka fokus ke kotak cari (atau ke jumlah bila siswa sudah terpilih); saat ditutup pilihan dikosongkan
+                const modal = document.getElementById('modal-tabungan');
+                if (modal) new MutationObserver(() => {
+                    const sel = document.getElementById('modal-tab-siswa');
+                    const inp = document.getElementById('tcs-input-modal');
+                    if (modal.classList.contains('hidden')) {
+                        if (sel && sel.value) { sel.value = ''; }
+                        if (inp) inp.value = '';
+                        tcsTutup('modal');
+                        return;
+                    }
+                    tcsRefreshTerakhir();
+                    tcsSinkron('modal');
+                    setTimeout(() => {
+                        if (sel && sel.value) { const n = document.getElementById('modal-tab-nominal'); if (n) n.focus(); }
+                        else if (inp) inp.focus();
+                    }, 40);
+                }).observe(modal, { attributes: true, attributeFilter: ['class'] });
+            }
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', pasang);
+            else pasang();
+        })();
 
         // === LARANGAN SETOR GANDA (1 siswa hanya boleh 1x setor manual per tanggal) ===
         // Setoran otomatis dari cicilan pinjaman (ket "Pembayaran pinjaman...") tidak dihitung.
