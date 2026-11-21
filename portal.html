@@ -63,17 +63,18 @@ async function masuk(k){
     localStorage.setItem('portal_kode',k);tampil(s.data());
   }catch(x){$('err').textContent='Gagal terhubung. Cek koneksi internet.'}
 }
+const J=x=>{try{return typeof x==='string'?JSON.parse(x):(x||[])}catch(e){return[]}};
 function tampil(d){
   $('login').classList.add('hide');$('app').classList.remove('hide');
   $('sk').textContent=d.sekolah||'';$('nm').textContent=d.nama;$('info').textContent=[d.kelas&&'Kelas '+d.kelas,d.nis&&'NIS '+d.nis].filter(Boolean).join(' • ');
   $('tab').innerHTML='<div class="card"><small>Saldo tabungan</small><div class="saldo">'+rp(d.saldo)+'</div></div><div class="card"><b>Riwayat terakhir</b>'+
-    ((d.tabungan||[]).map(t=>'<div class="r"><div>'+tgl(t[0])+'<br><small>'+e(t[3]||(t[1]==='setor'?'Setoran':'Penarikan'))+'</small></div><div class="'+(t[1]==='setor'?'in':'out')+'">'+(t[1]==='setor'?'+':'-')+rp(t[2])+'</div></div>').join('')||'<p class="m">Belum ada transaksi.</p>')+'</div>';
+    (J(d.tabungan).map(t=>'<div class="r"><div>'+tgl(t[0])+'<br><small>'+e(t[3]||(t[1]==='setor'?'Setoran':'Penarikan'))+'</small></div><div class="'+(t[1]==='setor'?'in':'out')+'">'+(t[1]==='setor'?'+':'-')+rp(t[2])+'</div></div>').join('')||'<p class="m">Belum ada transaksi.</p>')+'</div>';
   $('nil').innerHTML='<div class="card sc"><table><tr><th>Mapel</th><th>Form.</th><th>STS</th><th>SAS</th><th>Akhir</th></tr>'+
-    ((d.nilai||[]).map(n=>'<tr><td>'+e(n[0])+'</td><td>'+n[1]+'</td><td>'+n[2]+'</td><td>'+n[3]+'</td><td class="'+(n[5]&&n[4]<n[5]?'low':'')+'"><b>'+n[4]+'</b></td></tr>').join('')||'<tr><td colspan="5" class="m">Belum ada nilai.</td></tr>')+
+    (J(d.nilai).map(n=>'<tr><td>'+e(n[0])+'</td><td>'+n[1]+'</td><td>'+n[2]+'</td><td>'+n[3]+'</td><td class="'+(n[5]&&n[4]<n[5]?'low':'')+'"><b>'+n[4]+'</b></td></tr>').join('')||'<tr><td colspan="5" class="m">Belum ada nilai.</td></tr>')+
     '</table></div><p class="m">Nilai merah berarti di bawah KKM.</p>';
   const a=d.absensi||{};
   $('abs').innerHTML='<div class="g4">'+['Hadir','Sakit','Izin','Alfa'].map(s=>'<div class="st"><b>'+(a[s]||0)+'</b><small>'+s+'</small></div>').join('')+'</div><div class="card"><b>Riwayat terakhir</b>'+
-    ((d.riwayatAbsensi||[]).map(r=>'<div class="r"><span>'+tgl(r[0])+'</span><b class="'+(r[1]==='Hadir'?'in':r[1]==='Alfa'?'out':'')+'">'+e(r[1])+'</b></div>').join('')||'<p class="m">Belum ada data.</p>')+'</div>';
+    (J(d.riwayatAbsensi).map(r=>'<div class="r"><span>'+tgl(r[0])+'</span><b class="'+(r[1]==='Hadir'?'in':r[1]==='Alfa'?'out':'')+'">'+e(r[1])+'</b></div>').join('')||'<p class="m">Belum ada data.</p>')+'</div>';
   $('upd').textContent=d.updatedAt?'Data diperbarui: '+new Date(d.updatedAt).toLocaleString('id-ID'):'';
 }
 function keluar(){localStorage.removeItem('portal_kode');location.href=location.pathname}

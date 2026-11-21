@@ -4459,9 +4459,9 @@
                             return {
                                 nama: s.nama, nis: String(s.nis || ''), kelas: (db.raporSettings || {}).kelas || '', sekolah: (db.profil && db.profil.sekolah) || '',
                                 saldo: getSaldoTabunganSiswa(s.id),
-                                tabungan: tab.slice(-60).reverse().map(t => [t.tanggal, t.jenis, parseInt(t.nominal) || 0, t.ket || '']),
-                                absensi: rk, riwayatAbsensi: rw.slice(-45).reverse(),
-                                nilai: db.mapel.map(m => { const n = db.nilai[s.id + '_' + m.id] || {}; return [m.nama, Math.round(getNilaiFormatifAuto(s.id, m.id)), parseFloat(n.sts) || 0, parseFloat(n.sas) || 0, Math.round(hitungNilaiAkhirMapel(s.id, m.id)), parseFloat(m.kkm) || 0]; }),
+                                tabungan: JSON.stringify(tab.slice(-60).reverse().map(t => [t.tanggal, t.jenis, parseInt(t.nominal) || 0, t.ket || ''])),
+                                absensi: rk, riwayatAbsensi: JSON.stringify(rw.slice(-45).reverse()),
+                                nilai: JSON.stringify(db.mapel.map(m => { const n = db.nilai[s.id + '_' + m.id] || {}; return [m.nama, Math.round(getNilaiFormatifAuto(s.id, m.id)), parseFloat(n.sts) || 0, parseFloat(n.sas) || 0, Math.round(hitungNilaiAkhirMapel(s.id, m.id)), parseFloat(m.kkm) || 0]; })),
                                 updatedAt: new Date().toISOString()
                             };
                         }
