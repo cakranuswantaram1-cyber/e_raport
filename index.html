@@ -4460,6 +4460,7 @@
                                 nama: s.nama, nis: String(s.nis || ''), kelas: (db.raporSettings || {}).kelas || '', fase: (db.raporSettings || {}).fase || '', semester: (db.raporSettings || {}).semester || '', tahunajaran: (db.raporSettings || {}).tahunajaran || '', wali: (db.profil && db.profil.wali) || '', kepsek: (db.profil && db.profil.kepsek) || (db.raporSettings || {}).kepsek || '', sekolah: (db.profil && db.profil.sekolah) || '',
                                 saldo: getSaldoTabunganSiswa(s.id),
                                 tabungan: JSON.stringify(tab.slice(-60).reverse().map(t => [t.tanggal, t.jenis, parseInt(t.nominal) || 0, t.ket || ''])),
+                                tugas: JSON.stringify((db.tugas || []).slice().sort((a, b) => (b.tenggat || '').localeCompare(a.tenggat || '')).slice(0, 60).map(tg => { const nt = db.nilaiTugas[s.id + '_' + tg.id] || {}; const mp = db.mapel.find(m => m.id === tg.mapelId); const sd = nt.status === 'Sudah'; return [mp ? mp.nama : '', tg.nama || '', tg.ket || '', tg.tenggat || '', sd ? 'Sudah' : 'Belum', sd ? (parseFloat(nt.nilai) || 0) : 0]; })),
                                 absensi: rk, riwayatAbsensi: JSON.stringify(rw.slice(-45).reverse()),
                                 nilai: JSON.stringify(db.mapel.map(m => { const n = db.nilai[s.id + '_' + m.id] || {}; return [m.nama, Math.round(getNilaiFormatifAuto(s.id, m.id)), parseFloat(n.sts) || 0, parseFloat(n.sas) || 0, Math.round(hitungNilaiAkhirMapel(s.id, m.id)), parseFloat(m.kkm) || 0]; })),
                                 updatedAt: new Date().toISOString()
@@ -5833,6 +5834,10 @@
             <div>
                 <label class="block text-[10px] text-slate-400 mb-1">Nama / Judul Penugasan</label>
                 <input type="text" id="form-tugas-nama" placeholder="Contoh: Mengerjakan LKS Bab 2 Pecahan" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white outline-none focus:border-emerald-500">
+            </div>
+            <div>
+                <label class="block text-[10px] text-slate-400 mb-1">Halaman / Keterangan <span class="text-sky-400">(tampil di Portal Orang Tua, opsional)</span></label>
+                <input type="text" id="form-tugas-ket" placeholder="Contoh: LKS halaman 24-26 nomor 1-10" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-white outline-none focus:border-emerald-500">
             </div>
             <div>
                 <label class="block text-[10px] text-slate-400 mb-1">Tenggat / Tanggal</label>
@@ -9411,7 +9416,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             const s = document.getElementById('form-tugas-mapel');
             s.innerHTML = db.mapel.map(m => `<option value="${m.id}">${m.nama}</option>`).join('');
             loadTPOptionsForTugas();
-            document.getElementById('form-tugas-nama').value = '';
+            document.getElementById('form-tugas-nama').value = ''; document.getElementById('form-tugas-ket').value = '';
             document.getElementById('form-tugas-tenggat').value = '';
         }
         function closeModalTugas() { document.getElementById('modal-tugas').classList.add('hidden'); }
@@ -9422,7 +9427,7 @@ Mulailah langsung dengan HTML, tanpa markdown, tanpa backtick, tanpa penjelasan 
             const n = document.getElementById('form-tugas-nama').value.trim();
             const t = document.getElementById('form-tugas-tenggat').value;
             if (!n || !t) return Swal.fire('Peringatan', 'Nama agenda dan tenggat harus diisi.', 'warning');
-            db.tugas.push({ id: 'T_' + Date.now(), mapelId: m, tpId: tpId || '', nama: n, tenggat: t });
+            db.tugas.push({ id: 'T_' + Date.now(), mapelId: m, tpId: tpId || '', nama: n, ket: (document.getElementById('form-tugas-ket').value || '').trim(), tenggat: t });
             saveDB(); closeModalTugas(); renderTugasTable();
             Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Agenda berhasil dibuat!', showConfirmButton: false, timer: 2000 });
         }

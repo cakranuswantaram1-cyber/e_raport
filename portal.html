@@ -75,7 +75,7 @@ main.wrap{margin-top:-46px;padding-bottom:calc(96px + env(safe-area-inset-bottom
 .kpi{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
 .k{background:var(--c);border:1px solid var(--l);border-radius:16px;padding:12px 10px;box-shadow:var(--sh);min-width:0}
 .k .ic{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;margin-bottom:8px}
-.k b{display:block;font-size:17px;font-weight:800;letter-spacing:-.3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.k b{display:block;font-size:clamp(14px,4.2vw,17px);font-weight:800;letter-spacing:-.4px;white-space:nowrap}
 .k small{display:block;font-size:11px;margin-top:1px}
 .i-g{background:var(--g4);color:var(--g2)}.i-b{background:#dbeafe;color:#1d4ed8}.i-a{background:#fef3c7;color:#b45309}.i-r{background:#fee2e2;color:#b91c1c}
 @media(prefers-color-scheme:dark){.i-b{background:#17305a;color:#93c5fd}.i-a{background:#3b2a0b;color:#fcd34d}.i-r{background:#3f1515;color:#fca5a5}}
@@ -145,13 +145,27 @@ main.wrap{margin-top:-46px;padding-bottom:calc(96px + env(safe-area-inset-bottom
 .empty svg{margin:0 auto 8px;opacity:.5}
 
 nav.bn{position:fixed;left:0;right:0;bottom:0;z-index:20;background:color-mix(in srgb,var(--c) 92%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--l);padding:6px 8px calc(6px + env(safe-area-inset-bottom))}
-nav.bn .bni{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:2px}
-.nb{border:0;background:transparent;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 2px;border-radius:12px;font-size:10.5px;font-weight:700;color:var(--m)}
+nav.bn .bni{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr);gap:2px}
+.nb{border:0;background:transparent;display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;border-radius:12px;font-size:10px;font-weight:700;color:var(--m)}
 .nb.on{color:var(--g2)}
 .nb.on .pill{background:var(--g4)}
-.pill{width:46px;height:28px;border-radius:99px;display:grid;place-items:center;transition:.15s}
+.pill{position:relative;width:42px;height:28px;border-radius:99px;display:grid;place-items:center;transition:.15s}
 @media(prefers-color-scheme:dark){.nb.on{color:#6ee7b7}}
 
+.tg{background:var(--c);border:1px solid var(--l);border-left:4px solid var(--g3);border-radius:16px;padding:13px 14px;margin-bottom:10px;box-shadow:var(--sh)}
+.tg.late{border-left-color:var(--bad)}.tg.soon{border-left-color:var(--gold)}.tg.done{border-left-color:var(--l);opacity:.96}
+.tg-h{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}
+.mpc{font-size:11px;font-weight:800;color:var(--g2);background:var(--g4);padding:3px 9px;border-radius:7px}
+.due{font-size:11px;font-weight:800;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.d-late{background:#fee2e2;color:#991b1b}.d-soon{background:#fef3c7;color:#92400e}.d-ok{background:var(--bg);color:var(--m)}
+.tg b.t{font-size:14.5px;display:block;line-height:1.35}
+.hal{display:flex;gap:7px;align-items:flex-start;background:var(--bg);border-radius:10px;padding:8px 10px;margin-top:8px;font-size:13px;font-weight:600}
+.hal svg{color:var(--g2);flex:none;margin-top:1px}
+.tg-f{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:10px}
+.nv{font-size:18px;font-weight:800;color:var(--ok);display:flex;align-items:center;gap:6px}
+.nv.lo{color:var(--bad)}
+@media(prefers-color-scheme:dark){.d-late{background:#3f1515;color:#fca5a5}.d-soon{background:#3b2a0b;color:#fcd34d}}
+.bdg{position:absolute;top:-5px;right:-1px;min-width:17px;height:17px;border-radius:99px;background:var(--bad);color:#fff;font-size:10px;font-weight:800;font-style:normal;display:grid;place-items:center;padding:0 4px;border:2px solid var(--c)}
 .pane{animation:fd .25s ease}@keyframes fd{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .sk-l{height:14px;border-radius:7px;background:linear-gradient(90deg,var(--l),var(--bg),var(--l));background-size:200% 100%;animation:sm 1.2s infinite}
 @keyframes sm{to{background-position:-200% 0}}
@@ -172,7 +186,7 @@ nav.bn .bni{max-width:640px;margin:0 auto;display:grid;grid-template-columns:rep
   <div class="lg-hero">
     <div class="logo"><svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10 12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2.3 9 2.3 12 0v-5"/><path d="M22 10v6"/></svg></div>
     <h1>Portal Orang Tua</h1>
-    <p>Pantau tabungan, nilai, dan kehadiran putra/putri Anda kapan saja.</p>
+    <p>Pantau tugas, tabungan, nilai, dan kehadiran putra/putri Anda kapan saja.</p>
   </div>
   <form class="lg-box" onsubmit="event.preventDefault();masuk()">
     <label for="kode">Kode Akses</label>
@@ -210,6 +224,7 @@ nav.bn .bni{max-width:640px;margin:0 auto;display:grid;grid-template-columns:rep
 
   <main class="wrap">
     <section id="p-ring" class="pane"></section>
+    <section id="p-tug" class="pane hide"></section>
     <section id="p-tab" class="pane hide"></section>
     <section id="p-nil" class="pane hide"></section>
     <section id="p-abs" class="pane hide"></section>
@@ -219,6 +234,7 @@ nav.bn .bni{max-width:640px;margin:0 auto;display:grid;grid-template-columns:rep
 
   <nav class="bn"><div class="bni">
     <button class="nb on" data-t="ring"><span class="pill"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg></span>Ringkasan</button>
+    <button class="nb" data-t="tug"><span class="pill"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3 8-8"/><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h9"/></svg><em class="bdg hide" id="bdg"></em></span>Tugas</button>
     <button class="nb" data-t="tab"><span class="pill"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="3"/><path d="M2 10h20M6 15h3"/></svg></span>Tabungan</button>
     <button class="nb" data-t="nil"><span class="pill"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2 2 2 0 0 0 2 2h13"/><path d="M9 8h6M9 12h6"/></svg></span>Nilai</button>
     <button class="nb" data-t="abs"><span class="pill"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="3"/><path d="M16 2v4M8 2v4M3 10h18m-11 5 2 2 4-4"/></svg></span>Kehadiran</button>
@@ -253,7 +269,7 @@ const I={
   out:'<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4m7 14 5-5-5-5m5 5H9"/>',
   user:'<circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/>'
 };
-let D=null,KODE=null,flt='all';
+let D=null,KODE=null,flt='all',flt2='all';
 
 async function masuk(k,silent){
   k=(k||$('kode').value).trim().toLowerCase();$('err').textContent='';
@@ -288,7 +304,11 @@ function hitung(d){
   const tot=H+S+Iz+A;const pers=tot?Math.round(H/tot*100):0;
   const tr=J(d.tabungan).map(t=>({d:t[0],j:t[1],n:num(t[2]),k:t[3]||''}));
   const set=tr.filter(t=>t.j==='setor').reduce((a,t)=>a+t.n,0),tar=tr.filter(t=>t.j!=='setor').reduce((a,t)=>a+t.n,0);
-  return{nil,isi,rata,bawah,best,H,S,Iz,A,tot,pers,tr,set,tar};
+  const hr=new Date();hr.setHours(0,0,0,0);
+  const tg=J(d.tugas).map(t=>{const w=dt(t[3]);const sel=w?Math.round((w-hr)/864e5):null;return{m:String(t[0]||''),n:String(t[1]||''),k:String(t[2]||''),t:t[3]||'',s:t[4]==='Sudah',v:num(t[5]),sel}});
+  const tgB=tg.filter(x=>!x.s).sort((a,b)=>(a.sel??9e9)-(b.sel??9e9)),tgS=tg.filter(x=>x.s);
+  const tgR=tgS.length?tgS.reduce((a,x)=>a+x.v,0)/tgS.length:0;
+  return{nil,isi,rata,bawah,best,H,S,Iz,A,tot,pers,tr,set,tar,tg,tgB,tgS,tgR};
 }
 
 /* ---------- render ---------- */
@@ -301,19 +321,23 @@ function tampil(d,reload){
   $('av').textContent=ini;$('nm').textContent=d.nama||'';
   const ch=[d.kelas&&'Kelas '+d.kelas,d.nis&&'NIS '+d.nis,d.semester&&'Semester '+d.semester,d.tahunajaran].filter(Boolean);
   $('chips').innerHTML=ch.map(x=>'<span class="chip">'+e(x)+'</span>').join('');
-  $('p-ring').innerHTML=rRing(d,c);$('p-tab').innerHTML=rTab(d,c);$('p-nil').innerHTML=rNil(d,c);$('p-abs').innerHTML=rAbs(d,c);$('p-inf').innerHTML=rInf(d,c);
+  $('p-ring').innerHTML=rRing(d,c);$('p-tug').innerHTML=rTug(d,c);{const b=$('bdg');b.textContent=c.tgB.length;b.classList.toggle('hide',!c.tgB.length)}$('p-tab').innerHTML=rTab(d,c);$('p-nil').innerHTML=rNil(d,c);$('p-abs').innerHTML=rAbs(d,c);$('p-inf').innerHTML=rInf(d,c);
   $('upd').textContent=d.updatedAt?'Data diperbarui: '+new Date(d.updatedAt).toLocaleString('id-ID',{day:'numeric',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'}):'';
   bindFilter();
 }
+function dueTxt(x){if(x.sel==null)return['','d-ok'];if(x.sel<0)return['Terlambat '+(-x.sel)+' hari','d-late'];if(x.sel===0)return['Hari ini','d-soon'];if(x.sel===1)return['Besok','d-soon'];if(x.sel<=3)return[x.sel+' hari lagi','d-soon'];return[x.sel+' hari lagi','d-ok']}
 function rRing(d,c){
   const p=predikat(c.rata);
   let al='';
   if(c.isi.length&&!c.bawah.length)al='<div class="alert ok">'+ic(I.ok,20)+'<div><b>Alhamdulillah, semua mata pelajaran tuntas.</b><br>Nilai seluruh mapel sudah mencapai KKM. Terus dukung semangat belajarnya.</div></div>';
   else if(c.bawah.length)al='<div class="alert warn">'+ic(I.warn,20)+'<div><b>Perlu perhatian pada '+c.bawah.length+' mata pelajaran</b><br>'+c.bawah.map(x=>e(x.m)).join(', ')+' masih di bawah KKM. Mohon dampingi belajar di rumah.</div></div>';
   if(c.A>=3)al+='<div class="alert warn">'+ic(I.warn,20)+'<div><b>Ketidakhadiran tanpa keterangan: '+c.A+' hari.</b><br>Mohon konfirmasi ke wali kelas bila ada kendala.</div></div>';
+  if(c.tgB.length){const late=c.tgB.filter(x=>x.sel!=null&&x.sel<0).length;
+    al='<div class="alert warn" style="cursor:pointer" onclick="document.querySelector(\'.nb[data-t=tug]\').click()">'+ic(I.warn,20)+'<div><b>'+c.tgB.length+' tugas belum dikerjakan'+(late?' ('+late+' terlambat)':'')+'</b><br>'+c.tgB.slice(0,3).map(x=>e(x.m)+': '+e(x.n)+(x.k?' ('+e(x.k)+')':'')).join('<br>')+'<br><u>Lihat semua tugas</u></div></div>'+al}
+  else if(c.tgS.length)al='<div class="alert ok">'+ic(I.ok,20)+'<div><b>Semua tugas sudah dikerjakan.</b><br>Barakallahu fiikum, pertahankan.</div></div>'+al;
   const last=c.tr[0];
   return '<div class="kpi">'+
-   '<div class="k"><div class="ic i-g">'+ic(I.wallet,16)+'</div><b>'+rp(d.saldo)+'</b><small>Saldo tabungan</small></div>'+
+   '<div class="k"><div class="ic i-g">'+ic(I.wallet,16)+'</div><b>'+rp(d.saldo).replace('Rp ','Rp\u00a0')+'</b><small>Saldo tabungan</small></div>'+
    '<div class="k"><div class="ic i-a">'+ic(I.star,16)+'</div><b>'+(c.isi.length?c.rata.toFixed(1):'–')+'</b><small>Rata-rata nilai</small></div>'+
    '<div class="k"><div class="ic i-b">'+ic(I.cal,16)+'</div><b>'+(c.tot?c.pers+'%':'–')+'</b><small>Kehadiran</small></div></div>'+al+
    (c.isi.length?'<div class="card"><h2>'+ic(I.star,18)+'Capaian Belajar</h2><div style="display:flex;align-items:center;gap:14px"><div class="score"><strong style="font-size:34px">'+c.rata.toFixed(1)+'</strong></div><div><span class="pred '+p[2]+'">Predikat '+p[0]+' · '+p[1]+'</span>'+(c.best?'<div class="sm" style="margin-top:6px">Nilai tertinggi: <b style="color:var(--t)">'+e(c.best.m)+' ('+c.best.n+')</b></div>':'')+'</div></div></div>':'')+
@@ -326,6 +350,23 @@ function absMini(c){
   if(!c.tot)return '<div class="empty">Belum ada data kehadiran.</div>';
   return '<div style="display:flex;gap:8px;flex-wrap:wrap"><span class="bd b-H">Hadir '+c.H+'</span><span class="bd b-S">Sakit '+c.S+'</span><span class="bd b-I">Izin '+c.Iz+'</span><span class="bd b-A">Alfa '+c.A+'</span></div>'}
 
+function rTug(d,c){
+  if(!c.tg.length)return '<div class="card"><div class="empty">'+ic(I.inbox,34)+'<br>Belum ada tugas dari guru.</div></div>';
+  return '<div class="kpi"><div class="k"><div class="ic i-r">'+ic(I.warn,16)+'</div><b>'+c.tgB.length+'</b><small>Belum dikerjakan</small></div><div class="k"><div class="ic i-g">'+ic(I.ok,16)+'</div><b>'+c.tgS.length+'</b><small>Sudah dikerjakan</small></div><div class="k"><div class="ic i-a">'+ic(I.star,16)+'</div><b>'+(c.tgS.length?c.tgR.toFixed(0):'–')+'</b><small>Rata-rata nilai</small></div></div>'+
+   '<div class="seg" id="segT"><button data-f="all" class="on">Semua</button><button data-f="belum">Belum</button><button data-f="sudah">Sudah</button></div><div id="tgl"></div>';
+}
+function tgCard(x,KKM){
+  const du=dueTxt(x),cl=x.s?'done':(x.sel!=null&&x.sel<0?'late':(x.sel!=null&&x.sel<=3?'soon':''));
+  const w=dt(x.t);
+  return '<div class="tg '+cl+'"><div class="tg-h"><span class="mpc">'+e(x.m||'Tugas')+'</span>'+(x.s?'<span class="bd b-H">Selesai</span>':'<span class="due '+du[1]+'">'+du[0]+'</span>')+'</div>'+
+   '<b class="t">'+e(x.n)+'</b>'+(x.k?'<div class="hal">'+ic('<path d="M4 19V5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2 2 2 0 0 0 2 2h13"/>',16)+'<span>'+e(x.k)+'</span></div>':'')+
+   '<div class="tg-f"><small>Tenggat: '+(w?w.toLocaleDateString('id-ID',{weekday:'short',day:'numeric',month:'short',year:'numeric'}):'-')+'</small>'+
+   (x.s?'<div class="nv'+(x.v<70?' lo':'')+'">'+ic(I.star,16)+x.v+'</div>':'<span class="bd b-A">Belum dikerjakan</span>')+'</div></div>';
+}
+function listTg(){
+  const c=hitung(D);let a=flt2==='belum'?c.tgB:flt2==='sudah'?c.tgS:c.tgB.concat(c.tgS);
+  $('tgl').innerHTML=a.length?a.map(tgCard).join(''):'<div class="card"><div class="empty">'+ic(I.ok,34)+'<br>'+(flt2==='belum'?'Tidak ada tugas yang tertunda.':'Belum ada data.')+'</div></div>';
+}
 function rTab(d,c){
   // grafik per bulan (dari riwayat yang tersedia)
   const per={};c.tr.forEach(t=>{const k=(t.d||'').slice(0,7);if(!per[k])per[k]={s:0,t:0};t.j==='setor'?per[k].s+=t.n:per[k].t+=t.n});
@@ -344,6 +385,8 @@ function listTr(){
 function bindFilter(){
   const sg=$('seg');if(sg){sg.onclick=ev=>{const b=ev.target.closest('button');if(!b)return;flt=b.dataset.f;sg.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));listTr()}}
   flt='all';if($('trl'))listTr();
+  const sT=$('segT');if(sT){sT.onclick=ev=>{const b=ev.target.closest('button');if(!b)return;flt2=b.dataset.f;sT.querySelectorAll('button').forEach(x=>x.classList.toggle('on',x===b));listTg()}}
+  flt2='all';if($('tgl'))listTg();
 }
 
 function rNil(d,c){
@@ -384,7 +427,7 @@ function rInf(d,c){
 function keluar(){try{localStorage.removeItem('portal_kode')}catch(_){}location.href=location.pathname}
 document.querySelectorAll('.nb').forEach(b=>b.onclick=()=>{
   document.querySelectorAll('.nb').forEach(x=>x.classList.toggle('on',x===b));
-  ['ring','tab','nil','abs','inf'].forEach(i=>$('p-'+i).classList.toggle('hide',i!==b.dataset.t));
+  ['ring','tug','tab','nil','abs','inf'].forEach(i=>$('p-'+i).classList.toggle('hide',i!==b.dataset.t));
   window.scrollTo({top:0,behavior:'smooth'});
 });
 window.masuk=()=>masuk();window.keluar=keluar;window.tempel=tempel;window.muat=muat;
