@@ -4457,7 +4457,7 @@
                                 if (a && a.status) { if (rk[a.status] !== undefined) rk[a.status]++; rw.push([tgl, a.status]); }
                             });
                             return {
-                                nama: s.nama, nis: String(s.nis || ''), kelas: (db.raporSettings || {}).kelas || '', sekolah: (db.profil && db.profil.sekolah) || '',
+                                nama: s.nama, nis: String(s.nis || ''), kelas: (db.raporSettings || {}).kelas || '', fase: (db.raporSettings || {}).fase || '', semester: (db.raporSettings || {}).semester || '', tahunajaran: (db.raporSettings || {}).tahunajaran || '', wali: (db.profil && db.profil.wali) || '', kepsek: (db.profil && db.profil.kepsek) || (db.raporSettings || {}).kepsek || '', sekolah: (db.profil && db.profil.sekolah) || '',
                                 saldo: getSaldoTabunganSiswa(s.id),
                                 tabungan: JSON.stringify(tab.slice(-60).reverse().map(t => [t.tanggal, t.jenis, parseInt(t.nominal) || 0, t.ket || ''])),
                                 absensi: rk, riwayatAbsensi: JSON.stringify(rw.slice(-45).reverse()),
