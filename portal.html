@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#059669">
+<title>Portal Orang Tua</title>
+<style>
+:root{--g:#059669;--bg:#f1f5f9;--c:#fff;--t:#0f172a;--m:#64748b;--l:#e2e8f0}
+@media(prefers-color-scheme:dark){:root{--bg:#0b1220;--c:#131c2f;--t:#f1f5f9;--m:#94a3b8;--l:#24304a}}
+*{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--t);padding-bottom:env(safe-area-inset-bottom)}
+.w{max-width:520px;margin:0 auto;padding:16px}
+.card{background:var(--c);border:1px solid var(--l);border-radius:16px;padding:16px;margin-bottom:12px}
+h1{font-size:18px;margin:0}small,.m{color:var(--m);font-size:12px}
+input{width:100%;padding:14px;font-size:16px;border:1px solid var(--l);border-radius:12px;background:var(--bg);color:var(--t);margin:10px 0;text-align:center;letter-spacing:1px}
+button{font:inherit;cursor:pointer}.btn{width:100%;padding:14px;border:0;border-radius:12px;background:var(--g);color:#fff;font-weight:700;font-size:15px}
+.hd{background:var(--g);color:#fff;padding:20px 16px 16px;padding-top:calc(20px + env(safe-area-inset-top))}
+.hd .w{padding:0}.tabs{display:flex;gap:6px;margin:12px 0}
+.tab{flex:1;padding:10px 4px;border:1px solid var(--l);background:var(--c);color:var(--m);border-radius:12px;font-weight:600;font-size:13px}
+.tab.on{background:var(--g);border-color:var(--g);color:#fff}
+.saldo{font-size:30px;font-weight:800;color:var(--g)}
+.r{display:flex;justify-content:space-between;gap:8px;padding:10px 0;border-bottom:1px solid var(--l);font-size:14px}.r:last-child{border:0}
+.in{color:#059669;font-weight:700}.out{color:#dc2626;font-weight:700}
+.sc{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px 6px;text-align:center;border-bottom:1px solid var(--l)}th:first-child,td:first-child{text-align:left}th{color:var(--m);font-weight:600}
+.low{color:#dc2626;font-weight:800}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}.st{background:var(--c);border:1px solid var(--l);border-radius:12px;padding:10px 4px;text-align:center}.st b{display:block;font-size:20px}
+.err{color:#dc2626;font-size:13px;min-height:18px;text-align:center}.hide{display:none}
+</style>
+</head>
+<body>
+<div id="login" class="w" style="padding-top:12vh">
+  <div class="card" style="text-align:center">
+    <h1>Portal Orang Tua</h1><small>Lihat tabungan, nilai &amp; kehadiran putra/putri Anda</small>
+    <input id="kode" placeholder="Masukkan kode akses" autocapitalize="off" autocomplete="off" spellcheck="false">
+    <div class="err" id="err"></div>
+    <button class="btn" onclick="masuk()">Masuk</button>
+    <p class="m">Kode akses dibagikan oleh wali kelas.</p>
+  </div>
+</div>
+<div id="app" class="hide">
+  <div class="hd"><div class="w"><small style="color:#d1fae5" id="sk"></small><h1 id="nm"></h1><small style="color:#d1fae5" id="info"></small></div></div>
+  <div class="w">
+    <div class="tabs"><button class="tab on" data-t="tab">Tabungan</button><button class="tab" data-t="nil">Nilai</button><button class="tab" data-t="abs">Kehadiran</button></div>
+    <div id="tab"></div><div id="nil" class="hide"></div><div id="abs" class="hide"></div>
+    <p class="m" id="upd" style="text-align:center"></p>
+    <button class="tab" style="width:100%" onclick="keluar()">Keluar</button>
+  </div>
+</div>
+<script type="module">
+import {initializeApp} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+import {getFirestore,doc,getDoc} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+const db=getFirestore(initializeApp({apiKey:"AIzaSyCsJq0wS7WGtVilMLXetmVvFnZZLBf2BgU",authDomain:"portal-ortu-mis.firebaseapp.com",projectId:"portal-ortu-mis",storageBucket:"portal-ortu-mis.firebasestorage.app",messagingSenderId:"460119893896",appId:"1:460119893896:web:fb8d6d69397d0b5eaffc3d"}));
+const $=id=>document.getElementById(id);
+const e=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const rp=n=>'Rp '+(n||0).toLocaleString('id-ID');
+const tgl=t=>{const d=new Date(t+'T00:00:00');return isNaN(d)?e(t):d.toLocaleDateString('id-ID',{day:'numeric',month:'short',year:'numeric'})};
+async function masuk(k){
+  k=(k||$('kode').value).trim().toLowerCase();$('err').textContent='';
+  if(k.length<8){$('err').textContent='Kode tidak valid.';return}
+  try{
+    const s=await getDoc(doc(db,'portal',k));
+    if(!s.exists()){$('err').textContent='Kode tidak ditemukan. Periksa kembali.';return}
+    localStorage.setItem('portal_kode',k);tampil(s.data());
+  }catch(x){$('err').textContent='Gagal terhubung. Cek koneksi internet.'}
+}
+function tampil(d){
+  $('login').classList.add('hide');$('app').classList.remove('hide');
+  $('sk').textContent=d.sekolah||'';$('nm').textContent=d.nama;$('info').textContent=[d.kelas&&'Kelas '+d.kelas,d.nis&&'NIS '+d.nis].filter(Boolean).join(' • ');
+  $('tab').innerHTML='<div class="card"><small>Saldo tabungan</small><div class="saldo">'+rp(d.saldo)+'</div></div><div class="card"><b>Riwayat terakhir</b>'+
+    ((d.tabungan||[]).map(t=>'<div class="r"><div>'+tgl(t[0])+'<br><small>'+e(t[3]||(t[1]==='setor'?'Setoran':'Penarikan'))+'</small></div><div class="'+(t[1]==='setor'?'in':'out')+'">'+(t[1]==='setor'?'+':'-')+rp(t[2])+'</div></div>').join('')||'<p class="m">Belum ada transaksi.</p>')+'</div>';
+  $('nil').innerHTML='<div class="card sc"><table><tr><th>Mapel</th><th>Form.</th><th>STS</th><th>SAS</th><th>Akhir</th></tr>'+
+    ((d.nilai||[]).map(n=>'<tr><td>'+e(n[0])+'</td><td>'+n[1]+'</td><td>'+n[2]+'</td><td>'+n[3]+'</td><td class="'+(n[5]&&n[4]<n[5]?'low':'')+'"><b>'+n[4]+'</b></td></tr>').join('')||'<tr><td colspan="5" class="m">Belum ada nilai.</td></tr>')+
+    '</table></div><p class="m">Nilai merah berarti di bawah KKM.</p>';
+  const a=d.absensi||{};
+  $('abs').innerHTML='<div class="g4">'+['Hadir','Sakit','Izin','Alfa'].map(s=>'<div class="st"><b>'+(a[s]||0)+'</b><small>'+s+'</small></div>').join('')+'</div><div class="card"><b>Riwayat terakhir</b>'+
+    ((d.riwayatAbsensi||[]).map(r=>'<div class="r"><span>'+tgl(r[0])+'</span><b class="'+(r[1]==='Hadir'?'in':r[1]==='Alfa'?'out':'')+'">'+e(r[1])+'</b></div>').join('')||'<p class="m">Belum ada data.</p>')+'</div>';
+  $('upd').textContent=d.updatedAt?'Data diperbarui: '+new Date(d.updatedAt).toLocaleString('id-ID'):'';
+}
+function keluar(){localStorage.removeItem('portal_kode');location.href=location.pathname}
+document.querySelectorAll('.tab[data-t]').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.tab[data-t]').forEach(x=>x.classList.toggle('on',x===b));
+  ['tab','nil','abs'].forEach(i=>$(i).classList.toggle('hide',i!==b.dataset.t));
+});
+window.masuk=()=>masuk();window.keluar=keluar;
+const q=new URLSearchParams(location.search).get('k')||localStorage.getItem('portal_kode');
+if(q){history.replaceState(null,'',location.pathname);masuk(q)}
+</script>
+</body>
+</html>

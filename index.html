@@ -4404,6 +4404,116 @@
                         </div>
                         <!-- ===== END GOOGLE DRIVE BACKUP ===== -->
 
+                        <!-- ===== PORTAL ORANG TUA ===== -->
+                        <div class="pt-6 mt-4 border-t border-slate-800" id="portal-ortu-section">
+                            <h4 class="text-xs font-bold text-slate-300 mb-1 flex items-center gap-2"><i class="fas fa-people-roof text-sky-400"></i> Portal Orang Tua</h4>
+                            <p class="text-[10px] text-slate-500 mb-3">Kirim ringkasan tabungan, nilai &amp; kehadiran tiap siswa ke portal online (hanya lihat). Orang tua masuk dengan kode akses masing-masing.</p>
+                            <div class="grid grid-cols-1 gap-2 mb-3">
+                                <input id="portal-email" type="email" placeholder="Email akun guru Firebase" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-[11px] text-white outline-none focus:border-sky-500">
+                                <input id="portal-url" type="text" placeholder="Link portal (contoh: https://namamu.github.io/portal/portal.html)" class="w-full bg-slate-950 border border-slate-700 rounded p-2 text-[11px] text-white outline-none focus:border-sky-500">
+                            </div>
+                            <div class="flex gap-2 flex-wrap">
+                                <button onclick="portalSinkron()" class="bg-sky-700 hover:bg-sky-600 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-2"><i class="fas fa-cloud-arrow-up"></i> Sinkron ke Portal</button>
+                                <button onclick="portalDaftarKode()" class="bg-slate-700 hover:bg-slate-600 text-white font-bold text-xs px-4 py-2.5 rounded-xl transition flex items-center gap-2"><i class="fas fa-key"></i> Kode Akses &amp; Kirim WA</button>
+                            </div>
+                            <p id="portal-status" class="text-[10px] text-slate-500 mt-2"></p>
+                        </div>
+                        <script>
+                        // ===== PORTAL ORANG TUA (Firebase Firestore) =====
+                        const PORTAL_FB = { apiKey: "AIzaSyCsJq0wS7WGtVilMLXetmVvFnZZLBf2BgU", authDomain: "portal-ortu-mis.firebaseapp.com", projectId: "portal-ortu-mis", storageBucket: "portal-ortu-mis.firebasestorage.app", messagingSenderId: "460119893896", appId: "1:460119893896:web:fb8d6d69397d0b5eaffc3d" };
+                        let _portalF = null;
+                        document.getElementById('portal-email').value = localStorage.getItem('portal_email') || '';
+                        document.getElementById('portal-url').value = localStorage.getItem('portal_url') || '';
+                        async function portalFB() {
+                            if (_portalF) return _portalF;
+                            const B = 'https://www.gstatic.com/firebasejs/10.14.1/';
+                            const [a, au, fs] = await Promise.all([import(B + 'firebase-app.js'), import(B + 'firebase-auth.js'), import(B + 'firebase-firestore.js')]);
+                            const app = a.initializeApp(PORTAL_FB);
+                            _portalF = { au, fs, auth: au.getAuth(app), dbf: fs.getFirestore(app) };
+                            return _portalF;
+                        }
+                        function portalKodeBaru() {
+                            const c = 'abcdefghjkmnpqrstuvwxyz23456789';
+                            return Array.from(crypto.getRandomValues(new Uint8Array(12)), x => c[x % c.length]).join('');
+                        }
+                        async function portalAuth() {
+                            const em = document.getElementById('portal-email').value.trim();
+                            if (!em) { Swal.fire('Isi email', 'Masukkan email akun guru Firebase dulu.', 'info'); return null; }
+                            localStorage.setItem('portal_email', em);
+                            localStorage.setItem('portal_url', document.getElementById('portal-url').value.trim());
+                            const F = await portalFB();
+                            if (!F.auth.currentUser || F.auth.currentUser.email !== em) {
+                                const r = await Swal.fire({ title: 'Password akun guru', input: 'password', showCancelButton: true });
+                                if (!r.isConfirmed) return null;
+                                await F.au.signInWithEmailAndPassword(F.auth, em, r.value);
+                            }
+                            return F;
+                        }
+                        function portalDataSiswa(s) {
+                            const tab = (db.tabungan || []).filter(t => t.siswaId === s.id).sort((a, b) => (a.tanggal + (a.jam || '')).localeCompare(b.tanggal + (b.jam || '')));
+                            const rk = { Hadir: 0, Sakit: 0, Izin: 0, Alfa: 0 }, rw = [];
+                            Object.keys(db.absensi || {}).sort().forEach(tgl => {
+                                const a = db.absensi[tgl] && db.absensi[tgl][s.id];
+                                if (a && a.status) { if (rk[a.status] !== undefined) rk[a.status]++; rw.push([tgl, a.status]); }
+                            });
+                            return {
+                                nama: s.nama, nis: String(s.nis || ''), kelas: (db.raporSettings || {}).kelas || '', sekolah: (db.profil && db.profil.sekolah) || '',
+                                saldo: getSaldoTabunganSiswa(s.id),
+                                tabungan: tab.slice(-60).reverse().map(t => [t.tanggal, t.jenis, parseInt(t.nominal) || 0, t.ket || '']),
+                                absensi: rk, riwayatAbsensi: rw.slice(-45).reverse(),
+                                nilai: db.mapel.map(m => { const n = db.nilai[s.id + '_' + m.id] || {}; return [m.nama, Math.round(getNilaiFormatifAuto(s.id, m.id)), parseFloat(n.sts) || 0, parseFloat(n.sas) || 0, Math.round(hitungNilaiAkhirMapel(s.id, m.id)), parseFloat(m.kkm) || 0]; }),
+                                updatedAt: new Date().toISOString()
+                            };
+                        }
+                        async function portalSinkron() {
+                            const st = document.getElementById('portal-status');
+                            try {
+                                st.textContent = 'Menghubungkan...';
+                                const F = await portalAuth(); if (!F) { st.textContent = ''; return; }
+                                let baru = false;
+                                db.siswa.forEach(s => { if (!s.portalKode) { s.portalKode = portalKodeBaru(); baru = true; } });
+                                if (baru) saveDB();
+                                for (let i = 0; i < db.siswa.length; i += 100) {
+                                    const b = F.fs.writeBatch(F.dbf);
+                                    db.siswa.slice(i, i + 100).forEach(s => b.set(F.fs.doc(F.dbf, 'portal', s.portalKode), portalDataSiswa(s)));
+                                    await b.commit();
+                                    st.textContent = 'Mengirim... ' + Math.min(i + 100, db.siswa.length) + '/' + db.siswa.length;
+                                }
+                                st.textContent = 'Berhasil: ' + db.siswa.length + ' siswa terkirim (' + new Date().toLocaleString('id-ID') + ')';
+                                Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Portal diperbarui', showConfirmButton: false, timer: 2000 });
+                            } catch (e) {
+                                st.textContent = 'Gagal: ' + (e.code || e.message);
+                                Swal.fire('Gagal sinkron', (e.code || '') + ' ' + (e.message || ''), 'error');
+                            }
+                        }
+                        function portalDaftarKode() {
+                            const url = document.getElementById('portal-url').value.trim();
+                            db.siswa.forEach(s => { if (!s.portalKode) s.portalKode = portalKodeBaru(); });
+                            saveDB();
+                            const rows = db.siswa.map(s => {
+                                let wa = String(s.wa || '').replace(/\D/g, ''); if (wa.startsWith('0')) wa = '62' + wa.slice(1);
+                                const msg = 'Assalamu\'alaikum. Berikut akses Portal Orang Tua untuk ' + s.nama + ' (tabungan, nilai, kehadiran): ' + url + '?k=' + s.portalKode + ' . Kode akses: ' + s.portalKode + ' (jangan dibagikan ke orang lain).';
+                                const btn = wa ? '<a href="https://wa.me/' + wa + '?text=' + encodeURIComponent(msg) + '" target="_blank" class="text-emerald-400 mr-3"><i class="fab fa-whatsapp"></i></a>' : '<span class="text-slate-600 mr-3" title="No. WA kosong"><i class="fab fa-whatsapp"></i></span>';
+                                return '<div class="flex items-center justify-between gap-2 py-1.5 border-b border-slate-800 text-xs"><div class="text-left min-w-0"><div class="font-bold text-slate-200 truncate">' + s.nama + '</div><div class="font-mono text-[11px] text-sky-300">' + s.portalKode + '</div></div><div class="whitespace-nowrap">' + btn + '<button onclick="portalResetKode(\'' + s.id + '\')" class="text-amber-400" title="Ganti kode"><i class="fas fa-rotate"></i></button></div></div>';
+                            }).join('');
+                            Swal.fire({ title: 'Kode Akses Siswa', html: '<div style="max-height:55vh;overflow:auto">' + rows + '</div><p class="text-[10px] text-slate-500 mt-2">Ikon WA membuka pesan berisi link masuk langsung. Ikon putar = ganti kode (kode lama langsung tidak berlaku).</p>', width: 520, confirmButtonText: 'Tutup' });
+                        }
+                        async function portalResetKode(id) {
+                            const s = db.siswa.find(x => x.id === id); if (!s) return;
+                            const k = await Swal.fire({ title: 'Ganti kode ' + s.nama + '?', text: 'Kode lama langsung tidak bisa dipakai.', showCancelButton: true, confirmButtonText: 'Ganti' });
+                            if (!k.isConfirmed) return;
+                            try {
+                                const F = await portalAuth(); if (!F) return;
+                                const lama = s.portalKode;
+                                s.portalKode = portalKodeBaru(); saveDB();
+                                await F.fs.setDoc(F.fs.doc(F.dbf, 'portal', s.portalKode), portalDataSiswa(s));
+                                if (lama) await F.fs.deleteDoc(F.fs.doc(F.dbf, 'portal', lama));
+                                portalDaftarKode();
+                            } catch (e) { Swal.fire('Gagal', (e.code || '') + ' ' + (e.message || ''), 'error'); }
+                        }
+                        </script>
+                        <!-- ===== END PORTAL ORANG TUA ===== -->
+
                         <!-- Reset Nilai TP & Remedial -->
                         <div class="pt-5 mt-4 border-t border-orange-900/30">
                             <h4 class="text-xs font-bold text-orange-400 mb-1 flex items-center gap-2"><i class="fas fa-exclamation-triangle"></i> Perbaikan Data</h4>
